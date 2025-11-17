@@ -1176,6 +1176,10 @@ function renderContribCalendar(contrib) {
     gridEl.innerHTML = '';
     legendEl.innerHTML = '';
 
+    // 确保容器可见（初始状态是 display:none）
+    container.style.display = '';
+    console.log('✅ [GitHub Debug] 日历容器已设置为可见');
+
     const { map } = contrib;
     console.log('📊 [GitHub Debug] 贡献数据 map 大小:', map.size);
     console.log('📊 [GitHub Debug] 贡献数据前5条:', Array.from(map.entries()).slice(0, 5));

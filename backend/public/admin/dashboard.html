@@ -7,37 +7,39 @@
     <!-- Font Awesome CDN - 完整图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
     <style>
-        /* ========== Apple 风格设计系统 ========== */
+        /* ========== Apple 官方设计系统 ========== */
         :root {
-            /* Apple 配色 */
-            --bg-primary: #f5f5f7;
-            --bg-secondary: #fafafa;
+            /* Apple.com 官方配色 */
+            --bg-primary: #fbfbfd;
+            --bg-secondary: #f5f5f7;
             --card-bg: #ffffff;
             --text-primary: #1d1d1f;
             --text-secondary: #86868b;
             --text-tertiary: #d2d2d7;
             --accent: #0071e3;
             --accent-hover: #0077ed;
-            --accent-light: rgba(0, 113, 227, 0.1);
-            --border-color: #d2d2d7;
+            --accent-light: rgba(0, 113, 227, 0.08);
+            --border-color: #e8e8ed;
+            --input-border: #d1d1d6;
             --success: #30d158;
             --warning: #ff9f0a;
             --danger: #ff3b30;
 
-            /* 阴影 */
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
-            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
-            --shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.15);
+            /* Apple 精准阴影 */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.1);
+            --shadow-focus: 0 0 0 4px rgba(0, 113, 227, 0.15);
 
-            /* 圆角 */
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 18px;
-            --radius-xl: 24px;
+            /* Apple 标准圆角 */
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 12px;
+            --radius-xl: 18px;
 
-            /* 动画 */
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            /* Apple 流畅动画 */
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * {
@@ -226,34 +228,44 @@
             flex-wrap: wrap;
         }
 
-        /* ========== 大卡片 ========== */
+        /* ========== Apple 卡片设计 ========== */
         .card {
             background: var(--card-bg);
             border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 24px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 28px;
             overflow: hidden;
             border: 1px solid var(--border-color);
         }
 
         .card-header {
-            padding: 24px 32px;
+            padding: 28px 36px 24px 36px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: var(--bg-secondary);
+            background: var(--card-bg);  /* 纯白背景 */
         }
 
         .card-header h2 {
-            font-size: 20px;
-            font-weight: 600;
+            font-size: 22px;
+            font-weight: 700;  /* SF Pro Display Bold */
             color: var(--text-primary);
-            letter-spacing: -0.3px;
+            letter-spacing: -0.5px;
         }
 
         .card-body {
-            padding: 32px;
+            padding: 36px;
+        }
+
+        /* 表单底部按钮区域 */
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding-top: 24px;
+            margin-top: 32px;
+            border-top: 1px solid var(--border-color);
         }
 
         /* ========== 表格 ========== */
@@ -291,53 +303,58 @@
             background: var(--bg-primary);
         }
 
-        /* ========== 按钮系统 ========== */
+        /* ========== Apple 按钮系统 ========== */
         .btn {
-            padding: 10px 20px;
+            min-height: 44px;  /* Apple 标准触摸高度 */
+            padding: 11px 22px;
             border: none;
             border-radius: var(--radius-md);
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 15px;
+            font-weight: 600;
             transition: var(--transition);
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
-            box-shadow: var(--shadow-sm);
+            letter-spacing: -0.2px;
         }
 
         .btn:active {
-            transform: scale(0.98);
+            transform: scale(0.96);
+            transition: transform 0.1s;
         }
 
         .btn-primary {
             background: var(--accent);
             color: white;
+            box-shadow: 0 1px 4px rgba(0, 113, 227, 0.3);
         }
 
         .btn-primary:hover {
             background: var(--accent-hover);
-            box-shadow: var(--shadow-md);
+            box-shadow: 0 2px 8px rgba(0, 113, 227, 0.4);
         }
 
         .btn-danger {
             background: var(--danger);
             color: white;
+            box-shadow: 0 1px 4px rgba(255, 59, 48, 0.3);
         }
 
         .btn-danger:hover {
-            background: #ff4d42;
-            box-shadow: var(--shadow-md);
+            background: #ff453a;
+            box-shadow: 0 2px 8px rgba(255, 59, 48, 0.4);
         }
 
         .btn-secondary {
-            background: var(--text-tertiary);
+            background: #e5e5ea;
             color: var(--text-primary);
+            box-shadow: none;
         }
 
         .btn-secondary:hover {
-            background: var(--text-secondary);
-            color: white;
+            background: #d1d1d6;
         }
 
         .btn-success {
@@ -363,36 +380,39 @@
             background: var(--accent-light);
         }
 
-        /* ========== 表单系统 ========== */
+        /* ========== Apple 标准表单系统 ========== */
         .form-grid {
             display: grid;
-            gap: 24px;
+            gap: 28px;
         }
 
         .form-field {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
 
         .form-field label {
-            font-weight: 500;
+            font-weight: 600;
             color: var(--text-primary);
-            font-size: 14px;
-            letter-spacing: -0.2px;
+            font-size: 13px;
+            letter-spacing: -0.08px;
         }
 
         .form-field input,
         .form-field select,
         .form-field textarea {
-            padding: 12px 16px;
-            border: 1px solid var(--border-color);
+            min-height: 44px;  /* Apple 标准可触摸高度 */
+            padding: 11px 14px;
+            border: 1.5px solid var(--input-border);
             border-radius: var(--radius-md);
-            font-size: 15px;
+            font-size: 17px;  /* Apple 推荐的表单字号 */
             transition: var(--transition);
-            font-family: inherit;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--card-bg);
             color: var(--text-primary);
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         .form-field input:hover,
@@ -406,12 +426,18 @@
         .form-field textarea:focus {
             outline: none;
             border-color: var(--accent);
-            box-shadow: 0 0 0 4px var(--accent-light);
+            box-shadow: var(--shadow-focus);
+        }
+
+        .form-field input::placeholder {
+            color: #c7c7cc;
         }
 
         .form-field small {
             color: var(--text-secondary);
-            font-size: 13px;
+            font-size: 12px;
+            line-height: 1.4;
+            margin-top: -4px;
         }
 
         .code-editor {
