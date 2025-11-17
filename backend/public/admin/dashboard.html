@@ -516,18 +516,12 @@
                             </div>
 
                             <hr>
-                            <h4>🔗 社交链接</h4>
-                            <div class="form-field">
-                                <label>GitHub</label>
-                                <input type="text" id="social_github" placeholder="https://github.com/your-github">
-                            </div>
-                            <div class="form-field">
-                                <label>邮箱</label>
-                                <input type="email" id="social_email" placeholder="you@example.com">
-                            </div>
-                            <div class="form-field">
-                                <label>微信</label>
-                                <input type="text" id="social_wechat" placeholder="your-wechat-id">
+                            <h4 style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>🔗 社交链接</span>
+                                <button type="button" class="btn btn-primary" onclick="addSocialLink()" style="font-size: 12px; padding: 6px 12px;">+ 添加链接</button>
+                            </h4>
+                            <div id="socialLinksContainer">
+                                <!-- 社交链接列表将动态插入这里 -->
                             </div>
 
                             <hr>
@@ -647,17 +641,12 @@
 
                         <hr>
 
-                        <h4>管理后台账号</h4>
+                        <h4>管理后台配置</h4>
 
                         <div class="form-field">
                             <label for="ADMIN_USERNAME">管理员用户名</label>
                             <input type="text" id="ADMIN_USERNAME" name="ADMIN_USERNAME" placeholder="admin">
-                        </div>
-
-                        <div class="form-field">
-                            <label for="ADMIN_PASSWORD">管理员密码</label>
-                            <input type="password" id="ADMIN_PASSWORD" name="ADMIN_PASSWORD" placeholder="留空表示不修改">
-                            <small>重要：请设置强密码</small>
+                            <small>修改密码请前往"用户设置" Tab</small>
                         </div>
 
                         <div class="form-field">
@@ -874,6 +863,69 @@
 
         // ==================== 前端配置 Tab ====================
         let frontendConfigRaw = ''; // 保存原始配置内容
+        let socialLinksData = []; // 存储社交链接数据
+        let socialLinkIdCounter = 0; // 社交链接 ID 计数器
+
+        // 添加社交链接
+        function addSocialLink(title = '', url = '', icon = '') {
+            const id = socialLinkIdCounter++;
+            const linkData = { id, title, url, icon };
+            socialLinksData.push(linkData);
+            renderSocialLink(linkData);
+        }
+
+        // 渲染单个社交链接
+        function renderSocialLink(linkData) {
+            const container = document.getElementById('socialLinksContainer');
+            const linkDiv = document.createElement('div');
+            linkDiv.id = `social-link-${linkData.id}`;
+            linkDiv.style.cssText = 'display: grid; grid-template-columns: 1fr 2fr 1fr auto; gap: 10px; margin-bottom: 15px; padding: 15px; background: #f9fafb; border-radius: 8px;';
+
+            linkDiv.innerHTML = `
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">标题</label>
+                    <input type="text" value="${linkData.title}" onchange="updateSocialLink(${linkData.id}, 'title', this.value)" placeholder="GitHub">
+                </div>
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">链接</label>
+                    <input type="text" value="${linkData.url}" onchange="updateSocialLink(${linkData.id}, 'url', this.value)" placeholder="https://github.com/xxx">
+                </div>
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">图标 (可选)</label>
+                    <input type="text" value="${linkData.icon}" onchange="updateSocialLink(${linkData.id}, 'icon', this.value)" placeholder="fa-github">
+                    <small style="font-size: 10px;">Font Awesome 图标类名</small>
+                </div>
+                <div style="display: flex; align-items: flex-end;">
+                    <button type="button" class="btn btn-danger" onclick="removeSocialLink(${linkData.id})" style="padding: 8px 12px;">删除</button>
+                </div>
+            `;
+
+            container.appendChild(linkDiv);
+        }
+
+        // 更新社交链接数据
+        function updateSocialLink(id, field, value) {
+            const link = socialLinksData.find(l => l.id === id);
+            if (link) {
+                link[field] = value;
+            }
+        }
+
+        // 删除社交链接
+        function removeSocialLink(id) {
+            socialLinksData = socialLinksData.filter(l => l.id !== id);
+            const linkDiv = document.getElementById(`social-link-${id}`);
+            if (linkDiv) {
+                linkDiv.remove();
+            }
+        }
+
+        // 渲染所有社交链接
+        function renderAllSocialLinks() {
+            const container = document.getElementById('socialLinksContainer');
+            container.innerHTML = '';
+            socialLinksData.forEach(link => renderSocialLink(link));
+        }
 
         // 切换前端配置模式
         function toggleFrontendMode() {
@@ -963,10 +1015,33 @@
                     document.getElementById('github_calendarProxyEndpoint').value = configObj.github.calendarProxyEndpoint || '';
                 }
 
+                // 处理社交链接
                 if (configObj.social) {
-                    document.getElementById('social_github').value = configObj.social.github || '';
-                    document.getElementById('social_email').value = configObj.social.email || '';
-                    document.getElementById('social_wechat').value = configObj.social.wechat || '';
+                    socialLinksData = [];
+                    socialLinkIdCounter = 0;
+
+                    // 将对象转换为数组格式
+                    Object.entries(configObj.social).forEach(([title, url]) => {
+                        // 检查是否是新格式（包含 icon）
+                        if (typeof url === 'object' && url.url) {
+                            socialLinksData.push({
+                                id: socialLinkIdCounter++,
+                                title: title,
+                                url: url.url,
+                                icon: url.icon || ''
+                            });
+                        } else {
+                            // 旧格式：直接是 URL 字符串
+                            socialLinksData.push({
+                                id: socialLinkIdCounter++,
+                                title: title,
+                                url: url,
+                                icon: ''
+                            });
+                        }
+                    });
+
+                    renderAllSocialLinks();
                 }
 
                 if (configObj.tags) {
@@ -998,6 +1073,23 @@
 
         // 从表单获取配置对象
         function getConfigFromForm() {
+            // 构建社交链接对象
+            const socialObj = {};
+            socialLinksData.forEach(link => {
+                if (link.title && link.url) {
+                    // 如果有 icon，使用新格式
+                    if (link.icon) {
+                        socialObj[link.title] = {
+                            url: link.url,
+                            icon: link.icon
+                        };
+                    } else {
+                        // 没有 icon，使用简单格式
+                        socialObj[link.title] = link.url;
+                    }
+                }
+            });
+
             return {
                 personal: {
                     name: document.getElementById('personal_name').value || "Your Name",
@@ -1014,11 +1106,7 @@
                     calendarSource: document.getElementById('github_calendarSource').value || "auto",
                     calendarProxyEndpoint: document.getElementById('github_calendarProxyEndpoint').value || "/api/github/contributions"
                 },
-                social: {
-                    github: document.getElementById('social_github').value || "https://github.com/your-github",
-                    email: document.getElementById('social_email').value || "you@example.com",
-                    wechat: document.getElementById('social_wechat').value || "your-wechat-id"
-                },
+                social: socialObj,
                 tags: document.getElementById('tags_input').value.split(',').map(t => t.trim()).filter(t => t),
                 timeline: [],
                 websites: [],
