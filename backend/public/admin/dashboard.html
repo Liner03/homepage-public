@@ -1049,84 +1049,42 @@
         <div id="tab-sections" class="tab-pane">
             <div id="sectionsAlert" class="alert"></div>
 
-            <!-- 栏目子导航 -->
-            <div class="section-sub-nav">
-                <button class="section-sub-tab active" onclick="switchSectionTab('websites')">
-                    <i class="fas fa-globe"></i> 我的站点
-                </button>
-                <button class="section-sub-tab" onclick="switchSectionTab('projects')">
-                    <i class="fas fa-code"></i> 项目集
-                </button>
-                <button class="section-sub-tab" onclick="switchSectionTab('skills')">
-                    <i class="fas fa-tools"></i> 技能栈
-                </button>
-                <button class="section-sub-tab" onclick="switchSectionTab('timeline')">
-                    <i class="fas fa-clock"></i> 时间线
-                </button>
-            </div>
-
-            <!-- 我的站点管理 -->
-            <div id="section-websites" class="section-sub-pane active">
+            <!-- 栏目列表视图 -->
+            <div id="sectionsListView">
                 <div class="card">
                     <div class="card-header">
-                        <h2>🌐 我的站点</h2>
-                        <button class="btn btn-primary" onclick="addWebsiteInSection()">
-                            <i class="fas fa-plus"></i> 添加站点
+                        <h2><i class="fas fa-th-large"></i> 栏目管理</h2>
+                        <button class="btn btn-primary" onclick="showCreateSectionModal()">
+                            <i class="fas fa-plus"></i> 新建栏目
                         </button>
                     </div>
                     <div class="card-body">
-                        <div id="websitesManagement">
+                        <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                            管理您的网站栏目，包括我的站点、项目集、技能栈等。点击栏目名称可编辑栏目下的项目。
+                        </p>
+                        <div id="sectionsListContainer">
                             <div class="loading">加载中...</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 项目集管理 -->
-            <div id="section-projects" class="section-sub-pane">
+            <!-- 栏目项目编辑视图（初始隐藏） -->
+            <div id="sectionItemsView" style="display: none;">
                 <div class="card">
                     <div class="card-header">
-                        <h2>💼 项目集</h2>
-                        <button class="btn btn-primary" onclick="addProjectInSection()">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <button class="btn btn-secondary" onclick="backToSectionsList()" style="padding: 10px;">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <h2 id="currentSectionTitle">栏目名称</h2>
+                        </div>
+                        <button class="btn btn-primary" onclick="showAddItemModal()">
                             <i class="fas fa-plus"></i> 添加项目
                         </button>
                     </div>
                     <div class="card-body">
-                        <div id="projectsManagement">
-                            <div class="loading">加载中...</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 技能栈管理 -->
-            <div id="section-skills" class="section-sub-pane">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>🛠️ 技能栈</h2>
-                        <button class="btn btn-primary" onclick="addSkillInSection()">
-                            <i class="fas fa-plus"></i> 添加技能
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div id="skillsManagement">
-                            <div class="loading">加载中...</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 时间线管理 -->
-            <div id="section-timeline" class="section-sub-pane">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>📅 时间线</h2>
-                        <button class="btn btn-primary" onclick="addTimelineInSection()">
-                            <i class="fas fa-plus"></i> 添加事件
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div id="timelineManagement">
+                        <div id="sectionItemsContainer">
                             <div class="loading">加载中...</div>
                         </div>
                     </div>
