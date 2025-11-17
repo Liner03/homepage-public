@@ -1,0 +1,3783 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台</title>
+    <!-- Font Awesome CDN - 完整图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
+    <!-- Tailwind CSS v4 (via CDN Play) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwind CSS 配置（使用 CSS 变量整合现有设计系统）
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: 'var(--bg-primary)',
+                        secondary: 'var(--bg-secondary)',
+                        accent: 'var(--accent)',
+                        'accent-hover': 'var(--accent-hover)',
+                        success: 'var(--success)',
+                        warning: 'var(--warning)',
+                        danger: 'var(--danger)',
+                    },
+                    fontFamily: {
+                        apple: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ========== Apple 官方设计系统 ========== */
+        :root {
+            /* Apple.com 官方配色 */
+            --bg-primary: #fbfbfd;
+            --bg-secondary: #f5f5f7;
+            --card-bg: #ffffff;
+            --text-primary: #1d1d1f;
+            --text-secondary: #86868b;
+            --text-tertiary: #d2d2d7;
+            --accent: #0071e3;
+            --accent-hover: #0077ed;
+            --accent-light: rgba(0, 113, 227, 0.08);
+            --border-color: #e8e8ed;
+            --input-border: #d1d1d6;
+            --success: #30d158;
+            --warning: #ff9f0a;
+            --danger: #ff3b30;
+
+            /* Apple 精准阴影 */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.1);
+            --shadow-focus: 0 0 0 4px rgba(0, 113, 227, 0.15);
+
+            /* Apple 标准圆角 */
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 12px;
+            --radius-xl: 18px;
+
+            /* Apple 流畅动画 */
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ========== Header ========== */
+        .header {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
+        }
+
+        .logout-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .logout-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .logout-btn:active {
+            transform: translateY(0);
+        }
+
+        /* ========== Container ========== */
+        .container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 40px;
+        }
+
+        /* ========== Tab 导航 ========== */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 40px;
+            background: var(--card-bg);
+            padding: 6px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .nav-tab:hover {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .nav-tab.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+            display: none; /* 简化设计，不显示下划线 */
+        }
+
+        /* ========== 栏目子导航 ========== */
+        .section-sub-nav {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .section-sub-tab {
+            padding: 10px 20px;
+            background: var(--card-bg);
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .section-sub-tab:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .section-sub-tab.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            box-shadow: var(--shadow-md);
+        }
+
+        .section-sub-pane {
+            display: none;
+        }
+
+        .section-sub-pane.active {
+            display: block;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* ========== 小卡片布局 ========== */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .mini-card {
+            background: var(--card-bg);
+            padding: 32px 28px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .mini-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--accent-light);
+        }
+
+        .mini-card h3 {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .mini-card .value {
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .mini-card .label {
+            font-size: 14px;
+            color: var(--text-tertiary);
+            margin-top: 8px;
+        }
+
+        .mini-card .actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* ========== Apple 卡片设计 ========== */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 28px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            padding: 28px 36px 24px 36px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);  /* 纯白背景 */
+        }
+
+        .card-header h2 {
+            font-size: 22px;
+            font-weight: 700;  /* SF Pro Display Bold */
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .card-body {
+            padding: 36px;
+        }
+
+        /* 表单操作按钮 - 粘性定位在顶部 */
+        .form-actions {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 16px 20px;
+            margin: -36px -36px 24px -36px;  /* 负边距使其贴合card边缘 */
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 1px 0 var(--border-color);
+        }
+
+        /* ========== 表格 ========== */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tbody tr {
+            transition: var(--transition);
+        }
+
+        .data-table tbody tr:hover {
+            background: var(--bg-primary);
+        }
+
+        /* ========== Apple 按钮系统 ========== */
+        .btn {
+            min-height: 44px;  /* Apple 标准触摸高度 */
+            padding: 11px 22px;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: -0.2px;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+            transition: transform 0.1s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 1px 4px rgba(0, 113, 227, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 2px 8px rgba(0, 113, 227, 0.4);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            box-shadow: 0 1px 4px rgba(255, 59, 48, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: #ff453a;
+            box-shadow: 0 2px 8px rgba(255, 59, 48, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e5e5ea;
+            color: var(--text-primary);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d1d6;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #32d65a;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            box-shadow: none;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-light);
+        }
+
+        /* ========== Apple 标准表单系统 ========== */
+        .form-grid {
+            display: grid;
+            gap: 28px;
+        }
+
+        .form-field,
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-field label,
+        .form-group label {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 13px;
+            letter-spacing: -0.08px;
+        }
+
+        .form-field input,
+        .form-field select,
+        .form-field textarea,
+        .form-group input,
+        .form-group select,
+        .form-group textarea,
+        .form-control {
+            min-height: 44px;  /* Apple 标准可触摸高度 */
+            padding: 11px 14px;
+            border: 1.5px solid var(--input-border);
+            border-radius: var(--radius-md);
+            font-size: 17px;  /* Apple 推荐的表单字号 */
+            transition: var(--transition);
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+        }
+
+        .form-field input:hover,
+        .form-field select:hover,
+        .form-field textarea:hover,
+        .form-group input:hover,
+        .form-group select:hover,
+        .form-group textarea:hover,
+        .form-control:hover {
+            border-color: var(--text-secondary);
+        }
+
+        .form-field input:focus,
+        .form-field select:focus,
+        .form-field textarea:focus,
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus,
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: var(--shadow-focus);
+        }
+
+        .form-field input::placeholder,
+        .form-group input::placeholder,
+        .form-control::placeholder {
+            color: #c7c7cc;
+        }
+
+        .form-field textarea,
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-field small,
+        .form-group small {
+            color: var(--text-secondary);
+            font-size: 12px;
+            line-height: 1.4;
+            margin-top: -4px;
+        }
+
+        /* Checkbox 样式 */
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            gap: 12px;
+        }
+
+        .simple-checkbox {
+            /* 重置所有可能的自定义样式 */
+            width: 20px !important;
+            height: 20px !important;
+            min-width: 20px !important;
+            min-height: 20px !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            cursor: pointer;
+
+            /* 确保使用浏览器原生样式 */
+            -webkit-appearance: checkbox !important;
+            -moz-appearance: checkbox !important;
+            appearance: checkbox !important;
+
+            /* 移除可能的自定义样式 */
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            outline: none;
+        }
+
+        .simple-checkbox:focus {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .checkbox-text {
+            font-size: 15px;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .code-editor {
+            width: 100%;
+            min-height: 500px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            resize: vertical;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .code-editor:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-light);
+        }
+
+        /* ========== 提示框 ========== */
+        .alert {
+            padding: 16px 20px;
+            border-radius: var(--radius-md);
+            margin-bottom: 24px;
+            display: none;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: #d1f4e0;
+            color: #0f5132;
+            border-left: 4px solid var(--success);
+        }
+
+        .alert-danger {
+            background: #ffe5e5;
+            color: #8b1a1a;
+            border-left: 4px solid var(--danger);
+        }
+
+        .alert-warning {
+            background: #fff3d9;
+            color: #7f5300;
+            border-left: 4px solid var(--warning);
+        }
+
+        /* ========== 其他组件 ========== */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-tertiary);
+            font-size: 15px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: var(--radius-lg);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-success {
+            background: rgba(48, 209, 88, 0.15);
+            color: var(--success);
+        }
+
+        .badge-info {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .badge-warning {
+            background: rgba(255, 159, 10, 0.15);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: rgba(255, 59, 48, 0.15);
+            color: var(--danger);
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 32px 0;
+        }
+
+        /* ========== 栏目管理专用样式 ========== */
+        .section-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .section-item:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--accent);
+        }
+
+        .section-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .section-item-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .template-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .template-card {
+            padding: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .template-card:hover {
+            border-color: var(--accent);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .template-card.selected {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: var(--radius-xl);
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 32px;
+        }
+
+        .modal-footer {
+            padding: 20px 32px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>管理后台</h1>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <button id="headerSaveBtn" class="btn btn-primary" onclick="saveCurrentTab()" style="display: none; min-height: 40px; padding: 10px 20px;">
+                    <i class="fas fa-save"></i> 保存配置
+                </button>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> 退出登录
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Tab 导航 -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchMainTab('overview')">
+                <i class="fas fa-chart-line"></i> 概览
+            </button>
+            <button class="nav-tab" onclick="switchMainTab('frontend')">
+                <i class="fas fa-palette"></i> 前端配置
+            </button>
+            <button class="nav-tab" onclick="switchMainTab('backend')">
+                <i class="fas fa-cog"></i> 后端配置
+            </button>
+            <button class="nav-tab" onclick="switchMainTab('sections')">
+                <i class="fas fa-th-large"></i> 栏目管理
+            </button>
+            <button class="nav-tab" onclick="switchMainTab('settings')">
+                <i class="fas fa-user"></i> 用户设置
+            </button>
+        </div>
+
+        <!-- 概览 Tab -->
+        <div id="tab-overview" class="tab-pane active">
+            <!-- 统计卡片 -->
+            <div class="cards-grid">
+                <div class="mini-card">
+                    <h3>今日访问</h3>
+                    <div class="value" id="todayVisits">-</div>
+                </div>
+                <div class="mini-card">
+                    <h3>累计访问</h3>
+                    <div class="value" id="totalVisits">-</div>
+                </div>
+                <div class="mini-card">
+                    <h3>存储方式</h3>
+                    <div class="value" style="font-size: 20px;" id="storageType">-</div>
+                </div>
+            </div>
+
+            <!-- 访问统计 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>📈 访问统计（最近7天）</h2>
+                    <button class="btn btn-primary" onclick="refreshVisitStats()">刷新</button>
+                </div>
+                <div class="card-body">
+                    <div id="visitStatsContent" class="loading">加载中...</div>
+                </div>
+            </div>
+
+            <!-- 功能卡片布局 -->
+            <div class="cards-grid">
+                <!-- 主题设置 -->
+                <div class="mini-card">
+                    <h3>🎨 全局主题色</h3>
+                    <div id="themePreview" style="margin: 15px 0;">
+                        <div class="loading">加载中...</div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="refreshTheme()">刷新</button>
+                        <button class="btn btn-danger" onclick="deleteTheme()">删除</button>
+                    </div>
+                </div>
+
+                <!-- 系统信息 -->
+                <div class="mini-card">
+                    <h3>⚙️ 系统信息</h3>
+                    <div id="systemInfo" style="margin: 15px 0; font-size: 14px;">
+                        <div class="loading">加载中...</div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="refreshSystemInfo()">刷新</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 前端配置 Tab -->
+        <div id="tab-frontend" class="tab-pane">
+            <div id="frontendAlert" class="alert"></div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>🎨 前端配置 (config.js)</h2>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+                            <input type="checkbox" id="frontendModeToggle" onchange="toggleFrontendMode()" style="cursor: pointer;">
+                            <span style="font-size: 14px; color: #666;">代码模式</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- 表单模式 -->
+                    <div id="frontendFormMode" style="display: block;">
+                        <form id="frontendVisualForm" class="form-grid">
+                            <p style="color: #666; margin-bottom: 20px; font-size: 14px;">通过可视化表单编辑前端配置（点击顶部"保存配置"按钮保存）</p>
+
+                            <h4>👤 个人信息</h4>
+                            <div class="form-field">
+                                <label>姓名</label>
+                                <input type="text" id="personal_name" placeholder="Your Name">
+                            </div>
+                            <div class="form-field">
+                                <label>标题</label>
+                                <input type="text" id="personal_title" placeholder="Your Title">
+                            </div>
+                            <div class="form-field">
+                                <label>座右铭</label>
+                                <input type="text" id="personal_quote" placeholder="Your motto">
+                            </div>
+                            <div class="form-field">
+                                <label>位置</label>
+                                <input type="text" id="personal_location" placeholder="Somewhere">
+                            </div>
+                            <div class="form-field">
+                                <label>状态</label>
+                                <input type="text" id="personal_status" placeholder="Coding">
+                            </div>
+                            <div class="form-field">
+                                <label>头像路径</label>
+                                <input type="text" id="personal_avatar" placeholder="./static/1.png">
+                                <small>相对于网站根目录的路径</small>
+                            </div>
+                            <div class="form-field">
+                                <label>网站图标路径</label>
+                                <input type="text" id="personal_favicon" placeholder="./static/f2.png">
+                                <small>相对于网站根目录的路径</small>
+                            </div>
+
+                            <hr>
+                            <h4>🐙 GitHub 配置</h4>
+                            <div class="form-field">
+                                <label>GitHub 用户名</label>
+                                <input type="text" id="github_username" placeholder="your-github">
+                            </div>
+                            <div class="form-field">
+                                <label>日历数据源</label>
+                                <select id="github_calendarSource">
+                                    <option value="auto">自动 (优先后端代理)</option>
+                                    <option value="direct">直接请求 GitHub</option>
+                                    <option value="proxy">仅使用后端代理</option>
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label>日历代理端点</label>
+                                <input type="text" id="github_calendarProxyEndpoint" placeholder="/api/github/contributions">
+                                <small>后端代理 API 路径</small>
+                            </div>
+
+                            <hr>
+                            <h4 style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>🔗 社交链接</span>
+                                <button type="button" class="btn btn-primary" onclick="addSocialLink()" style="font-size: 12px; padding: 6px 12px;">+ 添加链接</button>
+                            </h4>
+                            <div id="socialLinksContainer">
+                                <!-- 社交链接列表将动态插入这里 -->
+                            </div>
+
+                            <hr>
+                            <h4>🏷️ 标签</h4>
+                            <div class="form-field">
+                                <label>标签（逗号分隔）</label>
+                                <input type="text" id="tags_input" placeholder="tag1, tag2, tag3">
+                                <small>多个标签用逗号分隔</small>
+                            </div>
+
+                            <hr>
+                            <h4>📝 文本配置</h4>
+                            <div class="form-field">
+                                <label>GitHub 统计 - 总提交标签</label>
+                                <input type="text" id="texts_githubStats_totalCommitsLabel" placeholder="总计贡献：">
+                            </div>
+                            <div class="form-field">
+                                <label>GitHub 统计 - 总提交文本</label>
+                                <input type="text" id="texts_githubStats_totalCommitsText" placeholder="过去一年共提交了">
+                            </div>
+                            <div class="form-field">
+                                <label>GitHub 统计 - 总提交单位</label>
+                                <input type="text" id="texts_githubStats_totalCommitsUnit" placeholder="次代码">
+                            </div>
+                            <div class="form-field">
+                                <label>区块标题 - 欢迎</label>
+                                <input type="text" id="texts_sectionTitles_welcome" placeholder="欢迎您">
+                            </div>
+                            <div class="form-field">
+                                <label>区块标题 - 访客IP</label>
+                                <input type="text" id="texts_sectionTitles_visitorIP" placeholder="访客IP: ">
+                            </div>
+                            <div class="form-field">
+                                <label>页脚 - 作者链接</label>
+                                <input type="text" id="texts_footer_authorUrl" placeholder="https://example.com">
+                                <small>页脚格式：Powered by {姓名}，年份自动获取</small>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 代码模式 -->
+                    <div id="frontendCodeMode" style="display: none;">
+                        <form id="frontendCodeForm">
+                            <p style="color: #666; margin-bottom: 20px; font-size: 14px;">直接编辑 config.js 代码（点击顶部"保存配置"按钮保存）</p>
+
+                            <textarea id="frontendConfigEditor" class="code-editor" placeholder="加载中..."></textarea>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 后端配置 Tab -->
+        <div id="tab-backend" class="tab-pane">
+            <div id="backendAlert" class="alert"></div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>⚙️ 后端配置 (.env)</h2>
+                </div>
+                <div class="card-body">
+                    <form id="envForm" class="form-grid">
+                        <p style="color: #666; margin-bottom: 20px; font-size: 14px;">修改后需要重启服务器才能生效（点击顶部"保存配置"按钮保存）</p>
+
+                        <div class="form-field">
+                            <label for="PORT">服务器端口</label>
+                            <input type="number" id="PORT" name="PORT" placeholder="3000">
+                            <small>默认：3000</small>
+                        </div>
+
+                        <div class="form-field">
+                            <label>GitHub 贡献日历数据源</label>
+                            <div style="padding: 16px; background: #f6f8fa; border: 1px solid #d1d5da; border-radius: 8px; font-size: 13px; line-height: 1.8;">
+                                <div style="margin-bottom: 12px;">
+                                    <strong style="color: #24292e;">📊 数据获取方式</strong>
+                                </div>
+                                <div style="color: #586069; margin-bottom: 8px;">
+                                    本系统使用第三方开源API获取GitHub贡献数据，无需配置Token：
+                                </div>
+                                <ul style="margin: 8px 0; padding-left: 20px; color: #586069;">
+                                    <li>✅ 获取完整贡献数（包含组织私有仓库）</li>
+                                    <li>✅ 数据与GitHub Profile完全一致</li>
+                                    <li>✅ 无需Token配置和权限管理</li>
+                                    <li>✅ 自动更新，实时同步</li>
+                                </ul>
+                                <div style="margin-top: 12px; padding: 8px; background: #fff; border-left: 3px solid #0366d6; font-size: 12px;">
+                                    <strong>API来源：</strong>
+                                    <a href="https://github.com/rschristian/github-contribution-calendar-api" target="_blank" style="color: #0366d6; text-decoration: none;">
+                                        github.com/rschristian/github-contribution-calendar-api
+                                    </a>
+                                    <div style="margin-top: 4px; color: #586069;">
+                                        开源项目，Cloudflare Workers部署，稳定可靠
+                                    </div>
+                                </div>
+                                <div style="margin-top: 8px; font-size: 11px; color: #6a737d;">
+                                    💡 提示：GitHub用户名在「前端配置」中设置
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="VISIT_STORAGE">访问统计存储方式</label>
+                            <select id="VISIT_STORAGE" name="VISIT_STORAGE" onchange="toggleCloudflareConfig()">
+                                <option value="json">JSON 文件（默认）</option>
+                                <option value="sqlite">SQLite 数据库</option>
+                                <option value="cloudflare">Cloudflare KV</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="DATA_DIR">数据存储目录</label>
+                            <input type="text" id="DATA_DIR" name="DATA_DIR" placeholder="./data">
+                            <small>仅 JSON 和 SQLite 存储使用</small>
+                        </div>
+
+                        <!-- Cloudflare KV 配置（条件显示） -->
+                        <div id="cloudflareConfigSection" style="display: none;">
+                            <hr>
+                            <h4>☁️ Cloudflare KV 配置</h4>
+
+                            <div class="form-field">
+                                <label for="CF_ACCOUNT_ID">Cloudflare Account ID</label>
+                                <input type="text" id="CF_ACCOUNT_ID" name="CF_ACCOUNT_ID">
+                            </div>
+
+                            <div class="form-field">
+                                <label for="CF_NAMESPACE_ID">Namespace ID</label>
+                                <input type="text" id="CF_NAMESPACE_ID" name="CF_NAMESPACE_ID">
+                            </div>
+
+                            <div class="form-field">
+                                <label for="CF_API_TOKEN">API Token</label>
+                                <input type="text" id="CF_API_TOKEN" name="CF_API_TOKEN">
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <h4>🔐 管理后台配置</h4>
+
+                        <div class="form-field">
+                            <label for="ADMIN_USERNAME">管理员用户名</label>
+                            <input type="text" id="ADMIN_USERNAME" name="ADMIN_USERNAME" placeholder="admin">
+                            <small>修改密码请前往"用户设置" Tab</small>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="SESSION_SECRET">Session 密钥</label>
+                            <input type="text" id="SESSION_SECRET" name="SESSION_SECRET" placeholder="随机字符串">
+                            <small>用于加密 session，建议使用长随机字符串</small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 栏目管理 Tab -->
+        <div id="tab-sections" class="tab-pane">
+            <div id="sectionsAlert" class="alert"></div>
+
+            <!-- 栏目列表视图 -->
+            <div id="sectionsListView">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-th-large"></i> 栏目管理</h2>
+                        <button class="btn btn-primary" onclick="showCreateSectionModal()">
+                            <i class="fas fa-plus"></i> 新建栏目
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                            管理您的网站栏目，包括我的站点、项目集、技能栈等。点击栏目名称可编辑栏目下的项目。
+                        </p>
+                        <div id="sectionsListContainer">
+                            <div class="loading">加载中...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 栏目项目编辑视图（初始隐藏） -->
+            <div id="sectionItemsView" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <button class="btn btn-secondary" onclick="backToSectionsList()" style="padding: 10px;">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <h2 id="currentSectionTitle">栏目名称</h2>
+                        </div>
+                        <button class="btn btn-primary" onclick="showAddItemModal()">
+                            <i class="fas fa-plus"></i> 添加项目
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="sectionItemsContainer">
+                            <div class="loading">加载中...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 项目编辑弹窗 -->
+        <div id="itemEditModal" class="modal">
+            <div class="modal-content" style="max-width: 700px;">
+                <div class="modal-header">
+                    <h2 id="itemEditModalTitle">编辑项目</h2>
+                    <button class="icon-btn" onclick="closeItemEditModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="itemEditForm" class="form-grid">
+                        <!-- 表单内容将由JavaScript动态生成 -->
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeItemEditModal()">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveItemEdit()">
+                        <i class="fas fa-save"></i> 保存
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 栏目编辑弹窗 -->
+        <div id="sectionEditModal" class="modal">
+            <div class="modal-content" style="max-width: 700px;">
+                <div class="modal-header">
+                    <h2 id="sectionEditModalTitle">编辑栏目</h2>
+                    <button class="icon-btn" onclick="closeSectionEditModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="sectionEditForm" class="form-grid">
+                        <div class="form-group">
+                            <label for="sectionId">
+                                栏目 ID <span style="color: var(--danger);">*</span>
+                                <small style="color: #666; font-weight: normal;">
+                                    (英文小写，如: websites, projects)
+                                </small>
+                            </label>
+                            <input type="text" id="sectionId" class="form-control" required
+                                   pattern="[a-z0-9_]+" placeholder="例如: mylinks">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sectionTitle">
+                                栏目标题 <span style="color: var(--danger);">*</span>
+                            </label>
+                            <input type="text" id="sectionTitle" class="form-control" required
+                                   placeholder="例如: 我的链接">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sectionIcon">
+                                图标 <span style="color: var(--danger);">*</span>
+                                <small style="color: #666; font-weight: normal;">
+                                    (Font Awesome 图标类名，如: fa-link)
+                                </small>
+                            </label>
+                            <input type="text" id="sectionIcon" class="form-control" required
+                                   placeholder="例如: fa-link">
+                            <small style="color: #666;">
+                                查找图标：
+                                <a href="https://fontawesome.com/icons" target="_blank" style="color: var(--accent);">
+                                    Font Awesome 图标库
+                                </a>
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sectionField">
+                                配置字段名 <span style="color: var(--danger);">*</span>
+                                <small style="color: #666; font-weight: normal;">
+                                    (对应 config.js 中的字段)
+                                </small>
+                            </label>
+                            <input type="text" id="sectionField" class="form-control" required
+                                   pattern="[a-zA-Z0-9_]+" placeholder="例如: mylinks">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sectionPosition">
+                                显示位置 <span style="color: var(--danger);">*</span>
+                            </label>
+                            <select id="sectionPosition" class="form-control" required>
+                                <option value="content-below">内容下方</option>
+                                <option value="ip-below">IP信息下方</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sectionTemplate">
+                                默认模板
+                            </label>
+                            <select id="sectionTemplate" class="form-control">
+                                <option value="card-grid">卡片网格</option>
+                                <option value="icon-wall">图标墙</option>
+                                <option value="list">列表</option>
+                                <option value="timeline">时间线</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="sectionHidden" class="simple-checkbox">
+                                <span class="checkbox-text">隐藏此栏目（不在前端显示）</span>
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeSectionEditModal()">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveSectionEdit()">
+                        <i class="fas fa-save"></i> 保存
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用户设置 Tab -->
+        <div id="tab-settings" class="tab-pane">
+            <div id="settingsAlert" class="alert"></div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>👤 修改管理员密码</h2>
+                </div>
+                <div class="card-body">
+                    <form id="passwordForm" class="form-grid" style="max-width: 500px;">
+                        <div class="form-field">
+                            <label for="currentPassword">当前密码</label>
+                            <input type="password" id="currentPassword" name="currentPassword" required>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="newPassword">新密码</label>
+                            <input type="password" id="newPassword" name="newPassword" required>
+                            <small>至少 6 个字符</small>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="confirmPassword">确认新密码</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" required>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 全局状态 ====================
+        let currentTab = 'overview';
+
+        // ==================== Tab 切换 ====================
+        function switchMainTab(tabName) {
+            currentTab = tabName;
+
+            // 隐藏所有 tab
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // 显示选中的 tab
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            event.target.classList.add('active');
+
+            // 显示/隐藏保存按钮
+            const saveBtn = document.getElementById('headerSaveBtn');
+            if (['frontend', 'backend', 'sections', 'settings'].includes(tabName)) {
+                saveBtn.style.display = '';
+            } else {
+                saveBtn.style.display = 'none';
+            }
+
+            // 加载对应数据
+            if (tabName === 'frontend') {
+                loadFrontendConfig();
+            } else if (tabName === 'backend') {
+                loadEnvConfig();
+            } else if (tabName === 'sections') {
+                loadSectionManagement();
+            }
+        }
+
+        // 保存当前Tab的配置
+        function saveCurrentTab() {
+            switch(currentTab) {
+                case 'frontend':
+                    // 检查当前模式
+                    const toggle = document.getElementById('frontendModeToggle');
+                    if (toggle && toggle.checked) {
+                        // 代码模式
+                        document.getElementById('frontendCodeForm').dispatchEvent(new Event('submit'));
+                    } else {
+                        // 表单模式
+                        document.getElementById('frontendVisualForm').dispatchEvent(new Event('submit'));
+                    }
+                    break;
+                case 'backend':
+                    document.getElementById('envForm').dispatchEvent(new Event('submit'));
+                    break;
+                case 'settings':
+                    document.getElementById('passwordForm').dispatchEvent(new Event('submit'));
+                    break;
+                case 'sections':
+                    // 栏目管理保存逻辑
+                    saveSectionData();
+                    break;
+                default:
+                    console.log('当前Tab无需保存');
+            }
+        }
+
+        // 栏目子Tab切换
+        function switchSectionTab(sectionName) {
+            // 隐藏所有子tab面板
+            document.querySelectorAll('.section-sub-pane').forEach(pane => {
+                pane.classList.remove('active');
+            });
+            document.querySelectorAll('.section-sub-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // 显示选中的子tab
+            document.getElementById(`section-${sectionName}`).classList.add('active');
+            event.target.classList.add('active');
+
+            // 加载对应数据
+            loadSectionContent(sectionName);
+        }
+
+        // ==================== 认证相关 ====================
+        async function checkAuth() {
+            try {
+                const response = await fetch('/admin/api/check');
+                if (!response.ok) {
+                    window.location.href = '/admin/login';
+                }
+            } catch (error) {
+                window.location.href = '/admin/login';
+            }
+        }
+
+        async function logout() {
+            try {
+                await fetch('/admin/api/logout', { method: 'POST' });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            window.location.href = '/admin/login';
+        }
+
+        // ==================== 概览 Tab ====================
+        async function loadStats() {
+            try {
+                const response = await fetch('/admin/api/stats');
+                const data = await response.json();
+
+                document.getElementById('todayVisits').textContent = data.todayVisits || '0';
+                document.getElementById('totalVisits').textContent = data.totalVisits || '0';
+                document.getElementById('storageType').textContent = data.storageType || 'JSON';
+            } catch (error) {
+                console.error('Load stats error:', error);
+            }
+        }
+
+        async function refreshVisitStats() {
+            const content = document.getElementById('visitStatsContent');
+            content.innerHTML = '<div class="loading">加载中...</div>';
+
+            try {
+                const response = await fetch('/admin/api/visit-stats');
+                const data = await response.json();
+
+                if (data.stats && data.stats.length > 0) {
+                    let html = '<table class="data-table"><thead><tr><th>日期</th><th>访问次数</th></tr></thead><tbody>';
+                    data.stats.forEach(stat => {
+                        html += `<tr><td>${stat.date}</td><td>${stat.count}</td></tr>`;
+                    });
+                    html += '</tbody></table>';
+                    content.innerHTML = html;
+                } else {
+                    content.innerHTML = '<div class="empty">暂无数据</div>';
+                }
+            } catch (error) {
+                content.innerHTML = '<div class="empty">加载失败</div>';
+            }
+        }
+
+        async function refreshTheme() {
+            const preview = document.getElementById('themePreview');
+            preview.innerHTML = '<div class="loading">加载中...</div>';
+
+            try {
+                const response = await fetch('/api/theme');
+                const data = await response.json();
+
+                if (data.success && data.data) {
+                    const theme = data.data;
+                    const color = `rgb(${theme.r}, ${theme.g}, ${theme.b})`;
+                    preview.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="width: 60px; height: 60px; background: ${color}; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"></div>
+                            <div style="font-size: 12px;">
+                                <div>RGB: ${theme.r}, ${theme.g}, ${theme.b}</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    preview.innerHTML = '<div style="color: #999; font-size: 13px;">未设置主题</div>';
+                }
+            } catch (error) {
+                preview.innerHTML = '<div style="color: #999; font-size: 13px;">加载失败</div>';
+            }
+        }
+
+        async function deleteTheme() {
+            if (!confirm('确定要删除全局主题色吗？')) return;
+
+            try {
+                const response = await fetch('/api/theme', { method: 'DELETE' });
+                if (response.ok) {
+                    alert('主题色已删除');
+                    refreshTheme();
+                }
+            } catch (error) {
+                alert('删除失败');
+            }
+        }
+
+        async function refreshSystemInfo() {
+            const info = document.getElementById('systemInfo');
+            info.innerHTML = '<div class="loading">加载中...</div>';
+
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+
+                info.innerHTML = `
+                    <div style="line-height: 1.8;">
+                        <div><strong>状态：</strong><span class="badge badge-success">${data.status}</span></div>
+                        <div><strong>存储：</strong>${data.storage.visit.toUpperCase()}</div>
+                        <div style="font-size: 12px; color: #999; margin-top: 5px;">${new Date(data.timestamp).toLocaleString('zh-CN')}</div>
+                    </div>
+                `;
+            } catch (error) {
+                info.innerHTML = '<div style="color: #999; font-size: 13px;">加载失败</div>';
+            }
+        }
+
+        // ==================== 前端配置 Tab ====================
+        let frontendConfigRaw = ''; // 保存原始配置内容
+        let socialLinksData = []; // 存储社交链接数据
+        let socialLinkIdCounter = 0; // 社交链接 ID 计数器
+        let websitesData = []; // 存储站点数据
+        let websiteIdCounter = 0;
+        let projectsData = []; // 存储项目数据
+        let projectIdCounter = 0;
+        let skillsData = []; // 存储技能数据
+        let skillIdCounter = 0;
+        let timelineData = []; // 存储时间线数据
+        let timelineIdCounter = 0;
+
+        // 添加社交链接
+        function addSocialLink(title = '', url = '', icon = '') {
+            const id = socialLinkIdCounter++;
+            const linkData = { id, title, url, icon };
+            socialLinksData.push(linkData);
+            renderSocialLink(linkData);
+        }
+
+        // 渲染单个社交链接
+        function renderSocialLink(linkData) {
+            const container = document.getElementById('socialLinksContainer');
+            const linkDiv = document.createElement('div');
+            linkDiv.id = `social-link-${linkData.id}`;
+            linkDiv.style.cssText = 'display: grid; grid-template-columns: 1fr 2fr 1fr auto; gap: 10px; margin-bottom: 15px; padding: 15px; background: #f9fafb; border-radius: 8px;';
+
+            linkDiv.innerHTML = `
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">标题</label>
+                    <input type="text" value="${linkData.title}" onchange="updateSocialLink(${linkData.id}, 'title', this.value)" placeholder="GitHub">
+                </div>
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">链接</label>
+                    <input type="text" value="${linkData.url}" onchange="updateSocialLink(${linkData.id}, 'url', this.value)" placeholder="https://github.com/xxx">
+                </div>
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">图标 (可选)</label>
+                    <input type="text" value="${linkData.icon}" onchange="updateSocialLink(${linkData.id}, 'icon', this.value)" placeholder="fa-github">
+                    <small style="font-size: 10px;">Font Awesome 图标类名</small>
+                </div>
+                <div style="display: flex; align-items: flex-end;">
+                    <button type="button" class="btn btn-danger" onclick="removeSocialLink(${linkData.id})" style="padding: 8px 12px;">删除</button>
+                </div>
+            `;
+
+            container.appendChild(linkDiv);
+        }
+
+        // 更新社交链接数据
+        function updateSocialLink(id, field, value) {
+            const link = socialLinksData.find(l => l.id === id);
+            if (link) {
+                link[field] = value;
+            }
+        }
+
+        // 删除社交链接
+        function removeSocialLink(id) {
+            socialLinksData = socialLinksData.filter(l => l.id !== id);
+            const linkDiv = document.getElementById(`social-link-${id}`);
+            if (linkDiv) {
+                linkDiv.remove();
+            }
+        }
+
+        // 渲染所有社交链接
+        function renderAllSocialLinks() {
+            const container = document.getElementById('socialLinksContainer');
+            container.innerHTML = '';
+            socialLinksData.forEach(link => renderSocialLink(link));
+        }
+
+        // ==================== Websites 管理 ====================
+        function addWebsite(title = '', url = '', description = '') {
+            const id = websiteIdCounter++;
+            const itemData = { id, title, url, description };
+            websitesData.push(itemData);
+            renderWebsite(itemData);
+        }
+
+        function renderWebsite(item) {
+            const container = document.getElementById('websitesContainer');
+            const div = document.createElement('div');
+            div.id = `website-${item.id}`;
+            div.style.cssText = 'display: grid; grid-template-columns: 1fr 2fr 2fr auto; gap: 10px; margin-bottom: 15px; padding: 15px; background: #f9fafb; border-radius: 8px;';
+
+            div.innerHTML = `
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">标题</label>
+                    <input type="text" value="${item.title}" onchange="updateWebsite(${item.id}, 'title', this.value)" placeholder="My Blog">
+                </div>
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">链接</label>
+                    <input type="text" value="${item.url}" onchange="updateWebsite(${item.id}, 'url', this.value)" placeholder="https://blog.example.com">
+                </div>
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">描述</label>
+                    <input type="text" value="${item.description}" onchange="updateWebsite(${item.id}, 'description', this.value)" placeholder="个人博客">
+                </div>
+                <div style="display: flex; align-items: flex-end;">
+                    <button type="button" class="btn btn-danger" onclick="removeWebsite(${item.id})" style="padding: 8px 12px;">删除</button>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function updateWebsite(id, field, value) {
+            const item = websitesData.find(w => w.id === id);
+            if (item) item[field] = value;
+        }
+
+        function removeWebsite(id) {
+            websitesData = websitesData.filter(w => w.id !== id);
+            document.getElementById(`website-${id}`)?.remove();
+        }
+
+        function renderAllWebsites() {
+            const container = document.getElementById('websitesContainer');
+            container.innerHTML = '';
+            websitesData.forEach(item => renderWebsite(item));
+        }
+
+        // ==================== Projects 管理 ====================
+        function addProject(title = '', url = '', description = '', image = '') {
+            const id = projectIdCounter++;
+            const itemData = { id, title, url, description, image };
+            projectsData.push(itemData);
+            renderProject(itemData);
+        }
+
+        function renderProject(item) {
+            const container = document.getElementById('projectsContainer');
+            const div = document.createElement('div');
+            div.id = `project-${item.id}`;
+            div.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr 2fr 1fr auto; gap: 10px; margin-bottom: 15px; padding: 15px; background: #f9fafb; border-radius: 8px;';
+
+            div.innerHTML = `
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">标题</label>
+                    <input type="text" value="${item.title}" onchange="updateProject(${item.id}, 'title', this.value)" placeholder="Project Name">
+                </div>
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">链接</label>
+                    <input type="text" value="${item.url}" onchange="updateProject(${item.id}, 'url', this.value)" placeholder="https://project.com">
+                </div>
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">描述</label>
+                    <input type="text" value="${item.description}" onchange="updateProject(${item.id}, 'description', this.value)" placeholder="项目描述">
+                </div>
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">图片 (可选)</label>
+                    <input type="text" value="${item.image}" onchange="updateProject(${item.id}, 'image', this.value)" placeholder="./img/project.png">
+                </div>
+                <div style="display: flex; align-items: flex-end;">
+                    <button type="button" class="btn btn-danger" onclick="removeProject(${item.id})" style="padding: 8px 12px;">删除</button>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function updateProject(id, field, value) {
+            const item = projectsData.find(p => p.id === id);
+            if (item) item[field] = value;
+        }
+
+        function removeProject(id) {
+            projectsData = projectsData.filter(p => p.id !== id);
+            document.getElementById(`project-${id}`)?.remove();
+        }
+
+        function renderAllProjects() {
+            const container = document.getElementById('projectsContainer');
+            container.innerHTML = '';
+            projectsData.forEach(item => renderProject(item));
+        }
+
+        // ==================== Skills 管理 ====================
+        function addSkill(name = '', level = '', icon = '') {
+            const id = skillIdCounter++;
+            const itemData = { id, name, level, icon };
+            skillsData.push(itemData);
+            renderSkill(itemData);
+        }
+
+        function renderSkill(item) {
+            const container = document.getElementById('skillsContainer');
+            const div = document.createElement('div');
+            div.id = `skill-${item.id}`;
+            div.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 10px; margin-bottom: 15px; padding: 15px; background: #f9fafb; border-radius: 8px;';
+
+            div.innerHTML = `
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">技能名称</label>
+                    <input type="text" value="${item.name}" onchange="updateSkill(${item.id}, 'name', this.value)" placeholder="JavaScript">
+                </div>
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">熟练度</label>
+                    <input type="text" value="${item.level}" onchange="updateSkill(${item.id}, 'level', this.value)" placeholder="精通/熟悉/了解">
+                </div>
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">图标 (可选)</label>
+                    <input type="text" value="${item.icon}" onchange="updateSkill(${item.id}, 'icon', this.value)" placeholder="fa-js">
+                </div>
+                <div style="display: flex; align-items: flex-end;">
+                    <button type="button" class="btn btn-danger" onclick="removeSkill(${item.id})" style="padding: 8px 12px;">删除</button>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function updateSkill(id, field, value) {
+            const item = skillsData.find(s => s.id === id);
+            if (item) item[field] = value;
+        }
+
+        function removeSkill(id) {
+            skillsData = skillsData.filter(s => s.id !== id);
+            document.getElementById(`skill-${id}`)?.remove();
+        }
+
+        function renderAllSkills() {
+            const container = document.getElementById('skillsContainer');
+            container.innerHTML = '';
+            skillsData.forEach(item => renderSkill(item));
+        }
+
+        // ==================== Timeline 管理 ====================
+        function addTimeline(title = '', date = '') {
+            const id = timelineIdCounter++;
+            const itemData = { id, title, date };
+            timelineData.push(itemData);
+            renderTimeline(itemData);
+        }
+
+        function renderTimeline(item) {
+            const container = document.getElementById('timelineContainer');
+            const div = document.createElement('div');
+            div.id = `timeline-${item.id}`;
+            div.style.cssText = 'display: grid; grid-template-columns: 3fr 1fr auto; gap: 10px; margin-bottom: 15px; padding: 15px; background: #f9fafb; border-radius: 8px;';
+
+            div.innerHTML = `
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">事件标题</label>
+                    <input type="text" value="${item.title}" onchange="updateTimeline(${item.id}, 'title', this.value)" placeholder="Something happened">
+                </div>
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">日期</label>
+                    <input type="text" value="${item.date}" onchange="updateTimeline(${item.id}, 'date', this.value)" placeholder="2025">
+                </div>
+                <div style="display: flex; align-items: flex-end;">
+                    <button type="button" class="btn btn-danger" onclick="removeTimeline(${item.id})" style="padding: 8px 12px;">删除</button>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function updateTimeline(id, field, value) {
+            const item = timelineData.find(t => t.id === id);
+            if (item) item[field] = value;
+        }
+
+        function removeTimeline(id) {
+            timelineData = timelineData.filter(t => t.id !== id);
+            document.getElementById(`timeline-${id}`)?.remove();
+        }
+
+        function renderAllTimeline() {
+            const container = document.getElementById('timelineContainer');
+            container.innerHTML = '';
+            timelineData.forEach(item => renderTimeline(item));
+        }
+
+        // 切换前端配置模式
+        function toggleFrontendMode() {
+            const toggle = document.getElementById('frontendModeToggle');
+            const formMode = document.getElementById('frontendFormMode');
+            const codeMode = document.getElementById('frontendCodeMode');
+
+            if (toggle.checked) {
+                // 切换到代码模式
+                formMode.style.display = 'none';
+                codeMode.style.display = 'block';
+
+                // 如果是从表单切换到代码，生成代码
+                if (!frontendConfigRaw) {
+                    const configObj = getConfigFromForm();
+                    frontendConfigRaw = generateConfigCode(configObj);
+                }
+                document.getElementById('frontendConfigEditor').value = frontendConfigRaw;
+            } else {
+                // 切换到表单模式
+                formMode.style.display = 'block';
+                codeMode.style.display = 'none';
+
+                // 如果代码有改动，解析并填充表单
+                const editor = document.getElementById('frontendConfigEditor');
+                if (editor.value && editor.value !== '加载中...') {
+                    frontendConfigRaw = editor.value;
+                    parseConfigToForm(frontendConfigRaw);
+                }
+            }
+        }
+
+        // 加载前端配置
+        async function loadFrontendConfig() {
+            try {
+                const response = await fetch('/admin/api/config/frontend');
+                const data = await response.json();
+
+                if (data.success) {
+                    frontendConfigRaw = data.content;
+
+                    // 根据当前模式更新显示
+                    const toggle = document.getElementById('frontendModeToggle');
+                    if (toggle.checked) {
+                        // 代码模式
+                        document.getElementById('frontendConfigEditor').value = frontendConfigRaw;
+                    } else {
+                        // 表单模式
+                        parseConfigToForm(frontendConfigRaw);
+                    }
+                } else {
+                    showAlert('frontendAlert', 'danger', '加载失败: ' + data.message);
+                }
+            } catch (error) {
+                showAlert('frontendAlert', 'danger', '加载失败: ' + error.message);
+            }
+        }
+
+        // 解析配置代码并填充表单
+        function parseConfigToForm(code) {
+            try {
+                // 提取 CONFIG 对象
+                const configMatch = code.match(/const\s+CONFIG\s*=\s*({[\s\S]*?});/);
+                if (!configMatch) {
+                    console.error('无法解析配置文件');
+                    return;
+                }
+
+                // 使用 eval 解析配置对象（在受信任的后台环境中）
+                const configObj = eval('(' + configMatch[1] + ')');
+
+                // 填充表单字段
+                if (configObj.personal) {
+                    document.getElementById('personal_name').value = configObj.personal.name || '';
+                    document.getElementById('personal_title').value = configObj.personal.title || '';
+                    document.getElementById('personal_quote').value = configObj.personal.quote || '';
+                    document.getElementById('personal_location').value = configObj.personal.location || '';
+                    document.getElementById('personal_status').value = configObj.personal.status || '';
+                    document.getElementById('personal_avatar').value = configObj.personal.avatar || '';
+                    document.getElementById('personal_favicon').value = configObj.personal.favicon || '';
+                }
+
+                if (configObj.github) {
+                    document.getElementById('github_username').value = configObj.github.username || '';
+                    document.getElementById('github_calendarSource').value = configObj.github.calendarSource || 'auto';
+                    document.getElementById('github_calendarProxyEndpoint').value = configObj.github.calendarProxyEndpoint || '';
+                }
+
+                // 处理社交链接
+                if (configObj.social) {
+                    socialLinksData = [];
+                    socialLinkIdCounter = 0;
+
+                    // 将对象转换为数组格式
+                    Object.entries(configObj.social).forEach(([title, url]) => {
+                        // 检查是否是新格式（包含 icon）
+                        if (typeof url === 'object' && url.url) {
+                            socialLinksData.push({
+                                id: socialLinkIdCounter++,
+                                title: title,
+                                url: url.url,
+                                icon: url.icon || ''
+                            });
+                        } else {
+                            // 旧格式：直接是 URL 字符串
+                            socialLinksData.push({
+                                id: socialLinkIdCounter++,
+                                title: title,
+                                url: url,
+                                icon: ''
+                            });
+                        }
+                    });
+
+                    renderAllSocialLinks();
+                }
+
+                if (configObj.tags) {
+                    document.getElementById('tags_input').value = configObj.tags.join(', ');
+                }
+
+                // 网站、项目、技能、时间线管理已移至"栏目管理"Tab
+                // 这里仅加载数据但不渲染（容器已移除）
+                if (configObj.websites) {
+                    websitesData = [];
+                    websiteIdCounter = 0;
+                    configObj.websites.forEach(item => {
+                        websitesData.push({
+                            id: websiteIdCounter++,
+                            title: item.title || '',
+                            url: item.url || '',
+                            description: item.description || ''
+                        });
+                    });
+                    // renderAllWebsites(); // 已移至栏目管理
+                }
+
+                if (configObj.projects) {
+                    projectsData = [];
+                    projectIdCounter = 0;
+                    configObj.projects.forEach(item => {
+                        projectsData.push({
+                            id: projectIdCounter++,
+                            title: item.title || '',
+                            url: item.url || '',
+                            description: item.description || '',
+                            image: item.image || ''
+                        });
+                    });
+                    // renderAllProjects(); // 已移至栏目管理
+                }
+
+                if (configObj.skills) {
+                    skillsData = [];
+                    skillIdCounter = 0;
+                    configObj.skills.forEach(item => {
+                        skillsData.push({
+                            id: skillIdCounter++,
+                            name: item.name || '',
+                            level: item.level || '',
+                            icon: item.icon || ''
+                        });
+                    });
+                    // renderAllSkills(); // 已移至栏目管理
+                }
+
+                if (configObj.timeline) {
+                    timelineData = [];
+                    timelineIdCounter = 0;
+                    configObj.timeline.forEach(item => {
+                        timelineData.push({
+                            id: timelineIdCounter++,
+                            title: item.title || '',
+                            date: item.date || ''
+                        });
+                    });
+                    // renderAllTimeline(); // 已移至栏目管理
+                }
+
+                if (configObj.texts) {
+                    if (configObj.texts.githubStats) {
+                        document.getElementById('texts_githubStats_totalCommitsLabel').value = configObj.texts.githubStats.totalCommitsLabel || '';
+                        document.getElementById('texts_githubStats_totalCommitsText').value = configObj.texts.githubStats.totalCommitsText || '';
+                        document.getElementById('texts_githubStats_totalCommitsUnit').value = configObj.texts.githubStats.totalCommitsUnit || '';
+                    }
+                    if (configObj.texts.sectionTitles) {
+                        document.getElementById('texts_sectionTitles_welcome').value = configObj.texts.sectionTitles.welcome || '';
+                        document.getElementById('texts_sectionTitles_visitorIP').value = configObj.texts.sectionTitles.visitorIP || '';
+                    }
+                    if (configObj.texts.footer) {
+                        document.getElementById('texts_footer_authorUrl').value = configObj.texts.footer.authorUrl || '';
+                    }
+                }
+            } catch (error) {
+                console.error('解析配置失败:', error);
+                showAlert('frontendAlert', 'danger', '解析配置失败: ' + error.message);
+            }
+        }
+
+        // 从表单获取配置对象
+        function getConfigFromForm() {
+            // 构建社交链接对象
+            const socialObj = {};
+            socialLinksData.forEach(link => {
+                if (link.title && link.url) {
+                    // 如果有 icon，使用新格式
+                    if (link.icon) {
+                        socialObj[link.title] = {
+                            url: link.url,
+                            icon: link.icon
+                        };
+                    } else {
+                        // 没有 icon，使用简单格式
+                        socialObj[link.title] = link.url;
+                    }
+                }
+            });
+
+            const githubUsername = document.getElementById('github_username').value || "your-github";
+
+            return {
+                personal: {
+                    name: document.getElementById('personal_name').value || "Your Name",
+                    title: document.getElementById('personal_title').value || "Your Title",
+                    quote: document.getElementById('personal_quote').value || "Your motto",
+                    location: document.getElementById('personal_location').value || "Somewhere",
+                    status: document.getElementById('personal_status').value || "Coding",
+                    avatar: document.getElementById('personal_avatar').value || "./static/1.png",
+                    favicon: document.getElementById('personal_favicon').value || "./static/f2.png"
+                },
+                github: {
+                    username: githubUsername,
+                    profileUrl: `https://github.com/${githubUsername}`,
+                    calendarSource: document.getElementById('github_calendarSource').value || "auto",
+                    calendarProxyEndpoint: document.getElementById('github_calendarProxyEndpoint').value || "/api/github/contributions"
+                },
+                social: socialObj,
+                tags: document.getElementById('tags_input').value.split(',').map(t => t.trim()).filter(t => t),
+                timeline: timelineData.map(item => ({
+                    title: item.title,
+                    date: item.date
+                })),
+                websites: websitesData.map(item => ({
+                    title: item.title,
+                    url: item.url,
+                    description: item.description
+                })),
+                projects: projectsData.map(item => ({
+                    title: item.title,
+                    url: item.url,
+                    description: item.description,
+                    image: item.image
+                })),
+                skills: skillsData.map(item => ({
+                    name: item.name,
+                    level: item.level,
+                    icon: item.icon
+                })),
+                texts: {
+                    githubStats: {
+                        totalCommitsLabel: document.getElementById('texts_githubStats_totalCommitsLabel').value || "总计贡献：",
+                        totalCommitsText: document.getElementById('texts_githubStats_totalCommitsText').value || "过去一年共提交了",
+                        totalCommitsUnit: document.getElementById('texts_githubStats_totalCommitsUnit').value || "次代码",
+                        longestStreakLabel: "最长连续：",
+                        longestStreakText: "连续编程",
+                        longestStreakUnit: "天",
+                        mainLanguageLabel: "主要语言："
+                    },
+                    sectionTitles: {
+                        welcome: document.getElementById('texts_sectionTitles_welcome').value || "欢迎您",
+                        visitorIP: document.getElementById('texts_sectionTitles_visitorIP').value || "访客IP: ",
+                        websites: "我的站点",
+                        projects: "项目集",
+                        skills: "技能栈"
+                    },
+                    footer: {
+                        year: new Date().getFullYear().toString(),
+                        text: "Powered by",
+                        author: document.getElementById('personal_name').value || "Your Name",
+                        authorUrl: document.getElementById('texts_footer_authorUrl').value || "https://example.com"
+                    }
+                }
+            };
+        }
+
+        // 生成配置代码
+        function generateConfigCode(configObj) {
+            return `// Copy to config.js and edit your own info
+const CONFIG = ${JSON.stringify(configObj, null, 2)};
+`;
+        }
+
+        // 表单模式提交
+        document.getElementById('frontendVisualForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const configObj = getConfigFromForm();
+            const content = generateConfigCode(configObj);
+
+            try {
+                const response = await fetch('/admin/api/config/frontend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    frontendConfigRaw = content;
+                    showAlert('frontendAlert', 'success', '配置已保存！');
+                } else {
+                    showAlert('frontendAlert', 'danger', '保存失败: ' + data.message);
+                }
+            } catch (error) {
+                showAlert('frontendAlert', 'danger', '保存失败: ' + error.message);
+            }
+        });
+
+        // 代码模式提交
+        document.getElementById('frontendCodeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const content = document.getElementById('frontendConfigEditor').value;
+
+            try {
+                const response = await fetch('/admin/api/config/frontend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    frontendConfigRaw = content;
+                    showAlert('frontendAlert', 'success', '配置已保存！');
+                } else {
+                    showAlert('frontendAlert', 'danger', '保存失败: ' + data.message);
+                }
+            } catch (error) {
+                showAlert('frontendAlert', 'danger', '保存失败: ' + error.message);
+            }
+        });
+
+        // ==================== 后端配置 Tab ====================
+
+        // 切换 Cloudflare 配置显示
+        function toggleCloudflareConfig() {
+            const storageType = document.getElementById('VISIT_STORAGE').value;
+            const cloudflareSection = document.getElementById('cloudflareConfigSection');
+
+            if (storageType === 'cloudflare') {
+                cloudflareSection.style.display = 'block';
+            } else {
+                cloudflareSection.style.display = 'none';
+            }
+        }
+
+        async function loadEnvConfig() {
+            try {
+                const response = await fetch('/admin/api/config/env');
+                const data = await response.json();
+
+                if (data.success) {
+                    const envData = data.data;
+                    Object.keys(envData).forEach(key => {
+                        const input = document.getElementById(key);
+                        if (input) {
+                            input.value = envData[key] || '';
+                        }
+                    });
+
+                    // 根据存储方式显示/隐藏 Cloudflare 配置
+                    toggleCloudflareConfig();
+                } else {
+                    showAlert('backendAlert', 'danger', '加载失败: ' + data.message);
+                }
+            } catch (error) {
+                showAlert('backendAlert', 'danger', '加载失败: ' + error.message);
+            }
+        }
+
+        // 测试 GitHub Token
+        async function testGitHubToken() {
+            console.log('[Token Test] 开始测试 GitHub Token');
+
+            const tokenInput = document.getElementById('GITHUB_TOKEN');
+            const resultDiv = document.getElementById('tokenTestResult');
+            const testBtn = document.getElementById('testTokenBtn');
+
+            console.log('[Token Test] DOM元素:', {
+                tokenInput: !!tokenInput,
+                resultDiv: !!resultDiv,
+                testBtn: !!testBtn
+            });
+
+            const token = tokenInput.value.trim();
+            console.log('[Token Test] Token长度:', token.length);
+
+            if (!token) {
+                console.log('[Token Test] Token为空，显示警告');
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = '<div class="alert alert-warning" style="margin: 0;">请先输入 GitHub Token</div>';
+                return;
+            }
+
+            // 显示加载状态
+            testBtn.disabled = true;
+            testBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 测试中...';
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="alert alert-info" style="margin: 0;">正在测试 Token...</div>';
+            console.log('[Token Test] 已显示加载状态');
+
+            try {
+                // 首先检查Token权限
+                console.log('[Token Test] 正在检查Token权限...');
+                let scopes = [];
+                let tokenOwner = null;
+
+                let userOrgs = [];
+
+                try {
+                    const scopeCheckResponse = await fetch('https://api.github.com/user', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+
+                    if (scopeCheckResponse.ok) {
+                        const userData = await scopeCheckResponse.json();
+                        tokenOwner = userData.login;
+
+                        const scopeHeader = scopeCheckResponse.headers.get('X-OAuth-Scopes');
+                        scopes = scopeHeader ? scopeHeader.split(',').map(s => s.trim()).filter(s => s) : [];
+                        console.log('[Token Test] Token所有者:', tokenOwner);
+                        console.log('[Token Test] Token权限范围:', scopes);
+                    }
+
+                    // 检查用户所属的组织
+                    const orgsResponse = await fetch('https://api.github.com/user/orgs', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+
+                    if (orgsResponse.ok) {
+                        userOrgs = await orgsResponse.json();
+                        console.log('[Token Test] 用户所属组织:', userOrgs.map(o => o.login));
+                    }
+                } catch (e) {
+                    console.error('[Token Test] 无法检查Token权限:', e);
+                }
+
+                // 从前端配置读取 GitHub 用户名
+                let username = 'octocat';
+                try {
+                    console.log('[Token Test] 正在读取前端配置...');
+                    const configResponse = await fetch('/admin/api/config/frontend');
+                    const configData = await configResponse.json();
+                    if (configData.success) {
+                        const config = parseConfigContent(configData.content);
+                        username = config.github?.username || 'octocat';
+                        console.log('[Token Test] 从配置读取到用户名:', username);
+                    }
+                } catch (e) {
+                    console.error('[Token Test] 无法读取前端配置，使用默认用户名', e);
+                }
+
+                console.log('[Token Test] 最终使用的用户名:', username);
+
+                // 计算日期范围（过去一年）
+                const to = new Date();
+                const from = new Date(to);
+                from.setFullYear(from.getFullYear() - 1);
+
+                // 测试 Token - 调用 GitHub contributions API
+                const testUrl = `/api/github/contributions?login=${username}&from=${from.toISOString()}&to=${to.toISOString()}&_t=${Date.now()}`;
+                console.log('[Token Test] 测试URL:', testUrl);
+
+                const response = await fetch(testUrl, {
+                    headers: {
+                        'X-Test-Token': token  // 传递待测试的 token
+                    }
+                });
+
+                console.log('[Token Test] API响应状态:', response.status);
+                const data = await response.json();
+                console.log('[Token Test] API响应数据:', {
+                    total: data.total,
+                    daysCount: data.days?.length,
+                    error: data.error
+                });
+
+                if (!response.ok) {
+                    console.error('[Token Test] API返回错误:', data);
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                }
+
+                // 解析结果
+                const totalDays = data.days?.length || 0;
+                const totalContributions = data.total || 0;
+                const hasData = totalDays > 0;
+                const hasContributions = totalContributions > 0;
+
+                // 计算有贡献的天数
+                const contributionDays = data.days?.filter(d => d.count > 0).length || 0;
+
+                // 检查权限
+                const hasRepoScope = scopes.includes('repo');
+                const hasPublicRepoScope = scopes.includes('public_repo');
+                const hasReadUserScope = scopes.includes('read:user') || scopes.includes('user');
+                const isOwnAccount = tokenOwner && username && tokenOwner.toLowerCase() === username.toLowerCase();
+                const canAccessPrivate = hasRepoScope && isOwnAccount;
+
+                // 生成结果HTML
+                let resultHTML = '<div class="alert alert-success" style="margin: 0; padding: 16px;">';
+                resultHTML += '<h4 style="margin: 0 0 12px 0; font-size: 16px;"><i class="fas fa-check-circle"></i> Token 测试通过</h4>';
+                resultHTML += '<div style="background: rgba(0,0,0,0.05); padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.8;">';
+
+                resultHTML += `<div><strong>查询用户名：</strong>${username}</div>`;
+                if (tokenOwner) {
+                    resultHTML += `<div><strong>Token所有者：</strong>${tokenOwner} ${isOwnAccount ? '<span style="color: #28a745;">✓ 匹配</span>' : '<span style="color: #ffc107;">⚠ 不匹配</span>'}</div>`;
+                }
+                resultHTML += `<div><strong>数据天数：</strong>${totalDays} 天</div>`;
+                resultHTML += `<div><strong>总贡献数：</strong>${totalContributions}</div>`;
+                resultHTML += `<div><strong>有贡献的天数：</strong>${contributionDays} 天</div>`;
+
+                if (scopes.length > 0) {
+                    resultHTML += '<div style="margin-top: 8px;"><strong>Token权限：</strong><br/>';
+                    resultHTML += '<code style="font-size: 11px; background: rgba(0,0,0,0.1); padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 4px;">';
+                    resultHTML += scopes.join(', ');
+                    resultHTML += '</code></div>';
+                }
+
+                if (userOrgs.length > 0) {
+                    resultHTML += '<div style="margin-top: 8px;"><strong>所属组织：</strong><br/>';
+                    resultHTML += '<div style="font-size: 12px; margin-top: 4px;">';
+                    userOrgs.forEach(org => {
+                        resultHTML += `<span style="background: rgba(0,0,0,0.05); padding: 3px 8px; border-radius: 4px; margin: 2px; display: inline-block;">${org.login}</span>`;
+                    });
+                    resultHTML += '</div>';
+                    resultHTML += '<div style="margin-top: 8px; padding: 8px; background: #e7f3ff; border-left: 3px solid #0366d6; font-size: 12px;">';
+                    resultHTML += '<strong>💡 提示：</strong>如果看不到组织贡献，请检查：<br/>';
+                    resultHTML += '1. <a href="https://github.com/settings/tokens" target="_blank">Token设置</a> → Organization access → 确认组织已授权<br/>';
+                    resultHTML += '2. 如果组织启用了SSO，需要点击 "Configure SSO" 授权';
+                    resultHTML += '</div>';
+                    resultHTML += '</div>';
+                }
+
+                if (!hasData) {
+                    resultHTML += '<div style="margin-top: 12px; padding: 8px; background: #fff3cd; border-left: 3px solid #ffc107; color: #856404;">';
+                    resultHTML += '<i class="fas fa-exclamation-triangle"></i> Token 有效，但未获取到数据';
+                    resultHTML += '</div>';
+                } else if (!hasContributions) {
+                    resultHTML += '<div style="margin-top: 12px; padding: 8px; background: #fff3cd; border-left: 3px solid #ffc107; color: #856404;">';
+                    resultHTML += '<i class="fas fa-exclamation-triangle"></i> <strong>所有贡献数为 0</strong><br/>';
+                    resultHTML += '<div style="margin-top: 8px; font-size: 12px;">可能的原因：</div>';
+                    resultHTML += '<ul style="margin: 4px 0 0 20px; padding: 0; font-size: 12px;">';
+                    resultHTML += '<li>该账号近一年无任何 GitHub 活动</li>';
+
+                    if (!hasRepoScope) {
+                        resultHTML += '<li><strong style="color: #dc3545;">缺少 <code>repo</code> 权限</strong> - 无法查看私有仓库贡献</li>';
+                    }
+                    if (!isOwnAccount) {
+                        resultHTML += '<li><strong style="color: #dc3545;">Token 所有者与查询用户不匹配</strong> - 无法查看私有贡献</li>';
+                    }
+                    if (!hasReadUserScope) {
+                        resultHTML += '<li>缺少 <code>read:user</code> 权限</li>';
+                    }
+
+                    resultHTML += '</ul>';
+
+                    if (!canAccessPrivate) {
+                        resultHTML += '<div style="margin-top: 8px; padding: 8px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; font-size: 12px;">';
+                        resultHTML += '<strong>⚠️ 无法获取私有贡献</strong><br/>';
+                        resultHTML += '要查看包含私有仓库的贡献，需要：<br/>';
+                        resultHTML += '1. Token 必须有 <code>repo</code> 权限（不是 public_repo）<br/>';
+                        resultHTML += '2. Token 必须属于查询的用户本人<br/>';
+                        resultHTML += '3. GitHub设置中勾选「Include private contributions on my profile」';
+                        resultHTML += '</div>';
+                    }
+                    resultHTML += '</div>';
+                } else {
+                    resultHTML += '<div style="margin-top: 12px; padding: 8px; background: #d4edda; border-left: 3px solid #28a745; color: #155724;">';
+                    resultHTML += '<i class="fas fa-check"></i> <strong>Token 工作正常</strong><br/>';
+                    resultHTML += `<div style="font-size: 12px; margin-top: 4px;">已获取到贡献数据${canAccessPrivate ? '（包含私有贡献）' : '（仅公开贡献）'}</div>`;
+                    resultHTML += '</div>';
+                }
+
+                // 显示示例数据
+                if (data.days && data.days.length > 0) {
+                    const recentDays = data.days.slice(-7);
+                    resultHTML += '<div style="margin-top: 12px; font-size: 12px;">';
+                    resultHTML += '<strong>最近7天数据样本：</strong>';
+                    resultHTML += '<div style="margin-top: 4px; font-family: monospace; background: rgba(0,0,0,0.1); padding: 8px; border-radius: 4px; overflow-x: auto;">';
+                    recentDays.forEach(day => {
+                        resultHTML += `<div>${day.date}: ${day.count} 次贡献</div>`;
+                    });
+                    resultHTML += '</div>';
+                    resultHTML += '</div>';
+                }
+
+                resultHTML += '</div>';
+                resultHTML += '</div>';
+
+                console.log('[Token Test] 测试成功，显示结果');
+                resultDiv.innerHTML = resultHTML;
+
+            } catch (error) {
+                console.error('[Token Test] 测试失败:', error);
+
+                // 显示错误
+                let errorHTML = '<div class="alert alert-danger" style="margin: 0; padding: 16px;">';
+                errorHTML += '<h4 style="margin: 0 0 12px 0; font-size: 16px;"><i class="fas fa-times-circle"></i> Token 测试失败</h4>';
+                errorHTML += '<div style="background: rgba(0,0,0,0.05); padding: 12px; border-radius: 8px; font-size: 13px;">';
+                errorHTML += `<div><strong>错误信息：</strong>${error.message}</div>`;
+
+                // 提供常见错误的解决方案
+                if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+                    errorHTML += '<div style="margin-top: 12px; padding: 8px; background: #f8d7da; border-left: 3px solid #dc3545;">';
+                    errorHTML += '<strong>可能的原因：</strong>';
+                    errorHTML += '<ul style="margin: 8px 0 0 20px; padding: 0;">';
+                    errorHTML += '<li>Token 格式错误</li>';
+                    errorHTML += '<li>Token 已过期或被撤销</li>';
+                    errorHTML += '<li>Token 没有必要的权限</li>';
+                    errorHTML += '</ul>';
+                    errorHTML += '</div>';
+                } else if (error.message.includes('403') || error.message.includes('Forbidden')) {
+                    errorHTML += '<div style="margin-top: 12px; padding: 8px; background: #f8d7da; border-left: 3px solid #dc3545;">';
+                    errorHTML += '<strong>权限不足：</strong>';
+                    errorHTML += '<ul style="margin: 8px 0 0 20px; padding: 0;">';
+                    errorHTML += '<li>Token 需要 <code>read:user</code> 权限</li>';
+                    errorHTML += '<li>Token 需要 <code>repo</code> 或 <code>public_repo</code> 权限</li>';
+                    errorHTML += '</ul>';
+                    errorHTML += '</div>';
+                } else if (error.message.includes('404')) {
+                    errorHTML += '<div style="margin-top: 12px; padding: 8px; background: #f8d7da; border-left: 3px solid #dc3545;">';
+                    errorHTML += '<strong>用户不存在：</strong> 请检查 GITHUB_USERNAME 配置';
+                    errorHTML += '</div>';
+                }
+
+                errorHTML += '</div>';
+                errorHTML += '</div>';
+
+                console.log('[Token Test] 显示错误信息');
+                resultDiv.innerHTML = errorHTML;
+            } finally {
+                // 恢复按钮状态
+                console.log('[Token Test] 恢复按钮状态');
+                testBtn.disabled = false;
+                testBtn.innerHTML = '<i class="fas fa-vial"></i> 测试 Token';
+            }
+        }
+
+        document.getElementById('envForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const envData = {};
+
+            for (const [key, value] of formData.entries()) {
+                if (value.trim()) {
+                    envData[key] = value;
+                }
+            }
+
+            try {
+                const response = await fetch('/admin/api/config/env', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(envData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('backendAlert', 'warning', '配置已保存！请重启服务器使配置生效。');
+                } else {
+                    showAlert('backendAlert', 'danger', '保存失败: ' + data.message);
+                }
+            } catch (error) {
+                showAlert('backendAlert', 'danger', '保存失败: ' + error.message);
+            }
+        });
+
+        // ==================== 用户设置 Tab ====================
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // 验证
+            if (newPassword.length < 6) {
+                showAlert('settingsAlert', 'danger', '新密码至少需要 6 个字符');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showAlert('settingsAlert', 'danger', '两次输入的密码不一致');
+                return;
+            }
+
+            try {
+                const response = await fetch('/admin/api/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('settingsAlert', 'success', '密码修改成功！');
+                    document.getElementById('passwordForm').reset();
+                } else {
+                    showAlert('settingsAlert', 'danger', '修改失败: ' + data.message);
+                }
+            } catch (error) {
+                showAlert('settingsAlert', 'danger', '修改失败: ' + error.message);
+            }
+        });
+
+        // ==================== 工具函数 ====================
+        function showAlert(elementId, type, message) {
+            const alert = document.getElementById(elementId);
+            alert.className = `alert alert-${type} show`;
+            alert.textContent = message;
+
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 5000);
+        }
+
+        // ==================== 栏目管理 ====================
+        let sectionsData = [];
+        let currentSection = null;
+        let currentTemplate = 'card-grid';
+
+        // 解析配置代码为对象（工具函数）
+        function parseConfigContent(code) {
+            try {
+                // 提取 CONFIG 对象
+                const configMatch = code.match(/const\s+CONFIG\s*=\s*({[\s\S]*?});/);
+                if (!configMatch) {
+                    console.error('无法解析配置文件');
+                    return {};
+                }
+
+                // 使用 eval 解析配置对象（在受信任的后台环境中）
+                const configObj = eval('(' + configMatch[1] + ')');
+                return configObj;
+            } catch (error) {
+                console.error('解析配置失败:', error);
+                return {};
+            }
+        }
+
+        // 全局变量存储当前查看的栏目
+        let currentSectionId = null;
+        let currentConfigData = null;
+        let currentEditingIndex = null; // 当前正在编辑的项目索引
+        let sectionConfigs = []; // 从 API 加载的栏目配置列表
+        let sectionConfigMap = {}; // 栏目配置映射（id -> config）
+        let currentEditingSectionId = null; // 当前正在编辑的栏目 ID
+
+        // 位置选项
+        const positionOptions = {
+            'content-below': '内容下方',
+            'ip-below': 'IP信息下方'
+        };
+
+        // 加载栏目管理（新版）
+        async function loadSectionManagement() {
+            // 显示栏目列表视图
+            document.getElementById('sectionsListView').style.display = 'block';
+            document.getElementById('sectionItemsView').style.display = 'none';
+
+            // 加载栏目列表
+            await loadSectionsList();
+        }
+
+        // 加载栏目列表
+        async function loadSectionsList() {
+            console.group('📥 [栏目管理] 加载栏目列表');
+
+            const container = document.getElementById('sectionsListContainer');
+
+            try {
+                container.innerHTML = '<div class="loading">加载中...</div>';
+
+                // 1. 从 API 加载栏目配置
+                console.log('📡 请求栏目配置...');
+                const sectionsResponse = await fetch('/admin/api/sections');
+                const sectionsData = await sectionsResponse.json();
+
+                if (!sectionsData.success) {
+                    throw new Error(sectionsData.message || '加载栏目配置失败');
+                }
+
+                sectionConfigs = sectionsData.sections || [];
+                console.log('✅ 栏目配置加载完成:', sectionConfigs.length, '个栏目');
+
+                // 构建 sectionConfigMap
+                sectionConfigMap = {};
+                sectionConfigs.forEach(section => {
+                    sectionConfigMap[section.id] = section;
+                });
+
+                // 2. 从前端配置加载数据
+                console.log('📡 请求前端配置数据...');
+                const response = await fetch('/admin/api/config/frontend');
+                console.log('📬 响应状态:', response.status, response.statusText);
+
+                const data = await response.json();
+                console.log('📦 响应数据:', {
+                    success: data.success,
+                    contentLength: data.content?.length,
+                    message: data.message
+                });
+
+                if (!data.success) {
+                    console.error('❌ 加载失败:', data.message);
+                    container.innerHTML = `<div class="empty" style="color: var(--danger);">加载失败: ${data.message}</div>`;
+                    console.groupEnd();
+                    return;
+                }
+
+                // 解析配置内容
+                console.log('🔄 解析配置内容...');
+                currentConfigData = parseConfigContent(data.content);
+                console.log('✅ 配置解析完成');
+
+                // 渲染栏目列表
+                console.log('🎨 渲染栏目列表...');
+                renderSectionsList();
+                console.log('✅ 栏目列表加载完成');
+                console.groupEnd();
+
+            } catch (error) {
+                console.error('💥 加载过程中发生错误:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+                container.innerHTML = `<div class="empty" style="color: var(--danger);">加载失败: ${error.message}</div>`;
+                console.groupEnd();
+            }
+        }
+
+        // 渲染栏目列表
+        function renderSectionsList() {
+            const container = document.getElementById('sectionsListContainer');
+
+            if (!currentConfigData || !sectionConfigs) {
+                container.innerHTML = '<div class="empty">无法加载配置数据</div>';
+                return;
+            }
+
+            // 从 sectionConfigs 构建列表，包含配置和数据
+            const sections = sectionConfigs.map(section => ({
+                ...section,
+                items: currentConfigData[section.field] || []
+            }));
+
+            if (sections.length === 0) {
+                container.innerHTML = '<div class="empty">还没有栏目，点击右上角"新建栏目"开始创建</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="data-table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">图标</th>
+                                <th>栏目名称</th>
+                                <th style="width: 120px;">显示位置</th>
+                                <th style="width: 80px;">状态</th>
+                                <th style="width: 80px;">项目数</th>
+                                <th style="width: 160px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${sections.map(section => `
+                                <tr style="${section.hidden ? 'opacity: 0.5;' : ''}">
+                                    <td style="text-align: center;">
+                                        <i class="fas ${section.icon}" style="font-size: 20px; color: var(--accent);"></i>
+                                    </td>
+                                    <td>
+                                        <strong>${section.title}</strong>
+                                        ${section.items.length === 0 ?
+                                            '<span style="background: #ff9f0a; color: white; padding: 2px 6px; border-radius: 8px; font-size: 11px; margin-left: 6px;">空</span>' :
+                                            ''
+                                        }
+                                        <br>
+                                        <small style="color: #666; font-family: monospace;">${section.id}</small>
+                                        ${section.hidden && section.items.length === 0 ?
+                                            '<br><small style="color: #999; font-size: 11px;">⚠️ 因无项目已自动隐藏</small>' :
+                                            ''
+                                        }
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <span style="color: #666; font-size: 13px;">
+                                            ${positionOptions[section.position] || section.position}
+                                        </span>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        ${section.hidden ?
+                                            '<span style="background: #ccc; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px;">隐藏</span>' :
+                                            '<span style="background: var(--success); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px;">显示</span>'
+                                        }
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <span style="background: ${section.items.length === 0 ? '#ccc' : 'var(--accent)'}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                                            ${section.items.length}
+                                        </span>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <button class="icon-btn" onclick="viewSectionItems('${section.id}')" title="管理项目">
+                                            <i class="fas fa-list"></i>
+                                        </button>
+                                        <button class="icon-btn" onclick="editSection('${section.id}')" title="编辑栏目">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="icon-btn" onclick="deleteSection('${section.id}')" title="删除栏目" style="color: var(--danger);">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // 查看栏目项目
+        function viewSectionItems(sectionId) {
+            currentSectionId = sectionId;
+            const section = sectionConfigMap[sectionId];
+
+            if (!section) {
+                alert('未知的栏目类型');
+                return;
+            }
+
+            // 显示项目视图，隐藏列表视图
+            document.getElementById('sectionsListView').style.display = 'none';
+            document.getElementById('sectionItemsView').style.display = 'block';
+
+            // 设置标题
+            document.getElementById('currentSectionTitle').innerHTML = `
+                <i class="fas ${section.icon}"></i> ${section.title}
+            `;
+
+            // 渲染项目列表
+            renderSectionItems(sectionId);
+        }
+
+        // 渲染栏目项目列表
+        function renderSectionItems(sectionId) {
+            const container = document.getElementById('sectionItemsContainer');
+            const section = sectionConfigMap[sectionId];
+            const items = currentConfigData[section.field] || [];
+
+            if (items.length === 0) {
+                container.innerHTML = '<div class="empty">暂无项目，点击右上角"添加项目"开始创建</div>';
+                return;
+            }
+
+            // 根据栏目类型渲染不同的表格
+            let tableHTML = '';
+
+            switch(sectionId) {
+                case 'websites':
+                case 'projects':
+                    tableHTML = `
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 120px;">ID</th>
+                                    <th style="width: 60px;">图标</th>
+                                    <th>标题</th>
+                                    <th>URL</th>
+                                    <th>描述</th>
+                                    <th style="width: 60px;">状态</th>
+                                    <th style="width: 120px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${items.map((item, index) => `
+                                    <tr style="${item.hidden ? 'opacity: 0.5;' : ''}">
+                                        <td style="font-family: monospace; font-size: 12px; color: #666;">
+                                            ${item.id || `item-${index}`}
+                                        </td>
+                                        <td style="text-align: center;">
+                                            ${item.icon ? `<i class="fas ${item.icon}" style="font-size: 16px; color: var(--accent);"></i>` : '-'}
+                                        </td>
+                                        <td><strong>${item.title || item.name || ''}</strong></td>
+                                        <td>
+                                            ${item.url ? `<a href="${item.url}" target="_blank" style="color: var(--accent); font-size: 12px;">${item.url.length > 40 ? item.url.substring(0, 40) + '...' : item.url}</a>` : '-'}
+                                        </td>
+                                        <td style="color: #666; font-size: 13px; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                            ${item.description || '-'}
+                                        </td>
+                                        <td style="text-align: center;">
+                                            ${item.hidden ? '<span style="color: #999; font-size: 12px;">隐藏</span>' : '<span style="color: var(--success); font-size: 12px;">显示</span>'}
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <div style="display: flex; gap: 4px; justify-content: center;">
+                                                <button class="icon-btn" onclick="editSectionItem(${index})" title="编辑">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="icon-btn" onclick="moveItemUp(${index})" title="上移" ${index === 0 ? 'disabled' : ''}>
+                                                    <i class="fas fa-arrow-up"></i>
+                                                </button>
+                                                <button class="icon-btn" onclick="moveItemDown(${index})" title="下移" ${index === items.length - 1 ? 'disabled' : ''}>
+                                                    <i class="fas fa-arrow-down"></i>
+                                                </button>
+                                                <button class="icon-btn" onclick="deleteSectionItem(${index})" title="删除" style="color: var(--danger);">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                    break;
+
+                case 'skills':
+                    tableHTML = `
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 120px;">ID</th>
+                                    <th style="width: 60px;">图标</th>
+                                    <th>名称</th>
+                                    <th style="width: 100px;">等级</th>
+                                    <th style="width: 60px;">状态</th>
+                                    <th style="width: 120px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${items.map((item, index) => `
+                                    <tr style="${item.hidden ? 'opacity: 0.5;' : ''}">
+                                        <td style="font-family: monospace; font-size: 12px; color: #666;">
+                                            ${item.id || `skill-${index}`}
+                                        </td>
+                                        <td style="text-align: center;">
+                                            ${item.icon ? `<i class="fas ${item.icon}" style="font-size: 16px; color: var(--accent);"></i>` : '-'}
+                                        </td>
+                                        <td><strong>${item.name || ''}</strong></td>
+                                        <td style="text-align: center;">
+                                            <span style="color: var(--accent); font-weight: 600;">${item.level || 0}/5</span>
+                                        </td>
+                                        <td style="text-align: center;">
+                                            ${item.hidden ? '<span style="color: #999; font-size: 12px;">隐藏</span>' : '<span style="color: var(--success); font-size: 12px;">显示</span>'}
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <div style="display: flex; gap: 4px; justify-content: center;">
+                                                <button class="icon-btn" onclick="editSectionItem(${index})" title="编辑">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="icon-btn" onclick="moveItemUp(${index})" title="上移" ${index === 0 ? 'disabled' : ''}>
+                                                    <i class="fas fa-arrow-up"></i>
+                                                </button>
+                                                <button class="icon-btn" onclick="moveItemDown(${index})" title="下移" ${index === items.length - 1 ? 'disabled' : ''}>
+                                                    <i class="fas fa-arrow-down"></i>
+                                                </button>
+                                                <button class="icon-btn" onclick="deleteSectionItem(${index})" title="删除" style="color: var(--danger);">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                    break;
+
+                case 'timeline':
+                    tableHTML = `
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 120px;">ID</th>
+                                    <th style="width: 120px;">日期</th>
+                                    <th>标题</th>
+                                    <th>描述</th>
+                                    <th style="width: 60px;">状态</th>
+                                    <th style="width: 120px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${items.map((item, index) => `
+                                    <tr style="${item.hidden ? 'opacity: 0.5;' : ''}">
+                                        <td style="font-family: monospace; font-size: 12px; color: #666;">
+                                            ${item.id || `event-${index}`}
+                                        </td>
+                                        <td style="color: var(--accent); font-weight: 500;">${item.date || '-'}</td>
+                                        <td><strong>${item.title || ''}</strong></td>
+                                        <td style="color: #666; font-size: 13px; max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                            ${item.description || '-'}
+                                        </td>
+                                        <td style="text-align: center;">
+                                            ${item.hidden ? '<span style="color: #999; font-size: 12px;">隐藏</span>' : '<span style="color: var(--success); font-size: 12px;">显示</span>'}
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <div style="display: flex; gap: 4px; justify-content: center;">
+                                                <button class="icon-btn" onclick="editSectionItem(${index})" title="编辑">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="icon-btn" onclick="moveItemUp(${index})" title="上移" ${index === 0 ? 'disabled' : ''}>
+                                                    <i class="fas fa-arrow-up"></i>
+                                                </button>
+                                                <button class="icon-btn" onclick="moveItemDown(${index})" title="下移" ${index === items.length - 1 ? 'disabled' : ''}>
+                                                    <i class="fas fa-arrow-down"></i>
+                                                </button>
+                                                <button class="icon-btn" onclick="deleteSectionItem(${index})" title="删除" style="color: var(--danger);">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                    break;
+            }
+
+            container.innerHTML = `<div class="data-table-wrapper">${tableHTML}</div>`;
+        }
+
+        // 返回栏目列表
+        function backToSectionsList() {
+            currentSectionId = null;
+            document.getElementById('sectionsListView').style.display = 'block';
+            document.getElementById('sectionItemsView').style.display = 'none';
+        }
+
+        // 移动项目（上移）
+        async function moveItemUp(index) {
+            console.log('⬆️ [项目移动] 上移项目, 索引:', index);
+
+            if (index <= 0) {
+                console.warn('⚠️ 已经是第一个项目，无法上移');
+                return;
+            }
+
+            const section = sectionConfigMap[currentSectionId];
+            const items = currentConfigData[section.field];
+
+            console.log('📋 移动前:', {
+                position: index,
+                item: items[index],
+                上方项目: items[index - 1]
+            });
+
+            // 交换位置
+            [items[index], items[index - 1]] = [items[index - 1], items[index]];
+
+            console.log('📋 移动后:', {
+                position: index - 1,
+                item: items[index - 1],
+                下方项目: items[index]
+            });
+
+            // 保存并刷新
+            await saveSectionData();
+            renderSectionItems(currentSectionId);
+        }
+
+        // 移动项目（下移）
+        async function moveItemDown(index) {
+            console.log('⬇️ [项目移动] 下移项目, 索引:', index);
+
+            const section = sectionConfigMap[currentSectionId];
+            const items = currentConfigData[section.field];
+
+            if (index >= items.length - 1) {
+                console.warn('⚠️ 已经是最后一个项目，无法下移');
+                return;
+            }
+
+            console.log('📋 移动前:', {
+                position: index,
+                item: items[index],
+                下方项目: items[index + 1]
+            });
+
+            // 交换位置
+            [items[index], items[index + 1]] = [items[index + 1], items[index]];
+
+            console.log('📋 移动后:', {
+                position: index + 1,
+                item: items[index + 1],
+                上方项目: items[index]
+            });
+
+            // 保存并刷新
+            await saveSectionData();
+            renderSectionItems(currentSectionId);
+        }
+
+        // 编辑栏目项目
+        function editSectionItem(index) {
+            currentEditingIndex = index;
+            const section = sectionConfigMap[currentSectionId];
+            const item = currentConfigData[section.field][index];
+
+            // 打开编辑弹窗
+            showItemEditModal(item);
+        }
+
+        // 删除栏目项目
+        async function deleteSectionItem(index) {
+            console.log('🗑️ [项目删除] 准备删除项目, 索引:', index);
+
+            const section = sectionConfigMap[currentSectionId];
+            const item = currentConfigData[section.field][index];
+            const itemName = item.title || item.name || `项目 ${index + 1}`;
+
+            console.log('📋 待删除项目:', {
+                index: index,
+                name: itemName,
+                data: item
+            });
+
+            if (!confirm(`确定要删除 "${itemName}" 吗？`)) {
+                console.log('❌ 用户取消删除');
+                return;
+            }
+
+            console.log('✅ 用户确认删除');
+
+            const beforeLength = currentConfigData[section.field].length;
+            console.log('📊 删除前数组长度:', beforeLength);
+
+            // 从数组中删除
+            const deletedItem = currentConfigData[section.field].splice(index, 1);
+
+            console.log('📊 删除后:', {
+                数组长度: currentConfigData[section.field].length,
+                删除的项目: deletedItem[0],
+                剩余项目: currentConfigData[section.field]
+            });
+
+            // 保存并刷新
+            await saveSectionData();
+            renderSectionItems(currentSectionId);
+
+            // 显示成功消息
+            showAlert('sectionsAlert', `已删除: ${itemName}`, 'success');
+
+            // 检查栏目是否为空，如果为空则提示隐藏
+            if (currentConfigData[section.field].length === 0) {
+                setTimeout(() => {
+                    if (confirm(`栏目 "${section.title}" 已经没有项目了，是否隐藏此栏目？\n\n您可以稍后在栏目列表中重新显示它。`)) {
+                        autoHideEmptySection(currentSectionId);
+                    }
+                }, 500); // 延迟显示，避免与删除确认对话框冲突
+            }
+        }
+
+        // 自动隐藏空栏目
+        async function autoHideEmptySection(sectionId) {
+            const section = sectionConfigMap[sectionId];
+
+            try {
+                const response = await fetch(`/admin/api/sections/${sectionId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...section, hidden: true })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('sectionsAlert', `栏目 "${section.title}" 已隐藏`, 'success');
+                    // 更新本地配置
+                    section.hidden = true;
+                    sectionConfigMap[sectionId].hidden = true;
+
+                    // 返回栏目列表
+                    setTimeout(() => {
+                        backToSectionsList();
+                    }, 1000);
+                }
+            } catch (error) {
+                console.error('隐藏栏目失败:', error);
+            }
+        }
+
+        // 保存栏目数据到后端
+        async function saveSectionData() {
+            console.group('💾 [栏目管理] 开始保存数据');
+
+            try {
+                // 日志：当前栏目和数据快照
+                const section = sectionConfigMap[currentSectionId];
+                console.log('📂 当前栏目:', {
+                    id: currentSectionId,
+                    name: section?.title,
+                    field: section?.field
+                });
+
+                console.log('📊 数据快照:', {
+                    itemsCount: currentConfigData[section?.field]?.length || 0,
+                    items: currentConfigData[section?.field]
+                });
+
+                // 生成配置内容
+                console.log('🔄 正在生成配置文件内容...');
+                const content = generateConfigCode(currentConfigData);
+                console.log('✅ 配置内容已生成，长度:', content.length, '字符');
+
+                // 发送请求
+                console.log('📡 发送保存请求到后端...');
+                const requestBody = { content };
+                console.log('📤 请求体:', {
+                    contentLength: content.length,
+                    contentPreview: content.substring(0, 200) + '...'
+                });
+
+                const response = await fetch('/admin/api/config/frontend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                console.log('📬 收到响应:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    ok: response.ok
+                });
+
+                // 解析响应
+                const data = await response.json();
+                console.log('📦 响应数据:', data);
+
+                if (!data.success) {
+                    console.error('❌ 保存失败，服务器返回错误:', data);
+                    throw new Error(data.message || '保存失败');
+                }
+
+                console.log('✅ 保存成功！');
+                console.groupEnd();
+                return true;
+
+            } catch (error) {
+                console.error('💥 保存过程中发生错误:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+                console.groupEnd();
+
+                showAlert('sectionsAlert', `保存失败: ${error.message}`, 'danger');
+                return false;
+            }
+        }
+
+        // 显示新建栏目弹窗
+        function showCreateSectionModal() {
+            currentEditingSectionId = null; // 标记为新建
+            showSectionEditModal(null);
+        }
+
+        // 编辑栏目
+        function editSection(sectionId) {
+            console.log('🔧 [编辑栏目] 开始编辑:', sectionId);
+            console.log('📋 [编辑栏目] sectionConfigMap:', sectionConfigMap);
+
+            currentEditingSectionId = sectionId;
+            const section = sectionConfigMap[sectionId];
+
+            console.log('📦 [编辑栏目] 找到的栏目数据:', section);
+
+            if (!section) {
+                console.error('❌ [编辑栏目] 未找到栏目数据，sectionId:', sectionId);
+                showAlert('sectionsAlert', '未找到栏目数据', 'danger');
+                return;
+            }
+
+            showSectionEditModal(section);
+        }
+
+        // 删除栏目
+        async function deleteSection(sectionId) {
+            const section = sectionConfigMap[sectionId];
+
+            if (!confirm(`确定要删除栏目"${section.title}"吗？\n\n注意：这只会删除栏目配置，不会删除前端配置中的数据。`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/admin/api/sections/${sectionId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || '删除失败');
+                }
+
+                showAlert('sectionsAlert', `已删除栏目: ${section.title}`, 'success');
+
+                // 重新加载栏目列表
+                await loadSectionsList();
+            } catch (error) {
+                showAlert('sectionsAlert', `删除失败: ${error.message}`, 'danger');
+            }
+        }
+
+        // 显示栏目编辑弹窗
+        function showSectionEditModal(section) {
+            console.log('📝 [显示弹窗] 接收到的栏目数据:', section);
+
+            const modal = document.getElementById('sectionEditModal');
+            const title = document.getElementById('sectionEditModalTitle');
+            const form = document.getElementById('sectionEditForm');
+
+            // 设置标题
+            title.textContent = section ? '编辑栏目' : '新建栏目';
+
+            // 填充表单
+            if (section) {
+                console.log('✏️ [显示弹窗] 开始填充表单数据...');
+                console.log('📊 [显示弹窗] section.hidden 原始值:', section.hidden, '类型:', typeof section.hidden);
+
+                const hiddenCheckbox = document.getElementById('sectionHidden');
+
+                document.getElementById('sectionId').value = section.id;
+                document.getElementById('sectionId').disabled = true; // 编辑时不允许修改 ID
+                document.getElementById('sectionTitle').value = section.title;
+                document.getElementById('sectionIcon').value = section.icon;
+                document.getElementById('sectionField').value = section.field;
+                document.getElementById('sectionPosition').value = section.position;
+                document.getElementById('sectionTemplate').value = section.defaultTemplate || 'card-grid';
+
+                // 明确设置 hidden 状态
+                // 使用 setAttribute 和 property 两种方式确保设置成功
+                if (section.hidden === true) {
+                    hiddenCheckbox.checked = true;
+                    hiddenCheckbox.setAttribute('checked', 'checked');
+                } else {
+                    hiddenCheckbox.checked = false;
+                    hiddenCheckbox.removeAttribute('checked');
+                }
+                hiddenCheckbox.disabled = false; // 确保可以点击
+
+                console.log('🔘 [显示弹窗] Checkbox 设置后:', {
+                    checked: hiddenCheckbox.checked,
+                    disabled: hiddenCheckbox.disabled,
+                    原始值: section.hidden
+                });
+
+                console.log('✅ [显示弹窗] 表单数据填充完成:', {
+                    id: document.getElementById('sectionId').value,
+                    title: document.getElementById('sectionTitle').value,
+                    icon: document.getElementById('sectionIcon').value,
+                    field: document.getElementById('sectionField').value,
+                    position: document.getElementById('sectionPosition').value,
+                    template: document.getElementById('sectionTemplate').value,
+                    hidden: hiddenCheckbox.checked
+                });
+            } else {
+                // 新建时清空表单
+                form.reset();
+                document.getElementById('sectionId').disabled = false;
+                document.getElementById('sectionTemplate').value = 'card-grid';
+
+                // 新栏目默认隐藏（因为肯定是空的，添加项目后再显示）
+                const hiddenCheckbox = document.getElementById('sectionHidden');
+                hiddenCheckbox.checked = true;
+                hiddenCheckbox.disabled = false; // 确保可以点击
+            }
+
+            // 显示弹窗
+            modal.style.display = 'flex';
+
+            // 显示后立即检查表单值是否还在
+            setTimeout(() => {
+                const hiddenCheckboxAfter = document.getElementById('sectionHidden');
+
+                console.log('🔍 [显示弹窗] Modal 显示后检查表单值:', {
+                    id: document.getElementById('sectionId').value,
+                    title: document.getElementById('sectionTitle').value,
+                    icon: document.getElementById('sectionIcon').value,
+                    field: document.getElementById('sectionField').value,
+                    position: document.getElementById('sectionPosition').value,
+                    template: document.getElementById('sectionTemplate').value,
+                    hidden: hiddenCheckboxAfter.checked
+                });
+
+                console.log('🔘 [显示弹窗] Checkbox 详细状态:', {
+                    checked: hiddenCheckboxAfter.checked,
+                    disabled: hiddenCheckboxAfter.disabled,
+                    value: hiddenCheckboxAfter.value,
+                    type: hiddenCheckboxAfter.type,
+                    display: window.getComputedStyle(hiddenCheckboxAfter).display,
+                    visibility: window.getComputedStyle(hiddenCheckboxAfter).visibility,
+                    pointerEvents: window.getComputedStyle(hiddenCheckboxAfter).pointerEvents
+                });
+
+                // 如果是编辑模式，再次检查 section 对象
+                if (section) {
+                    console.log('🔍 [显示弹窗] 原始 section 对象:', section);
+                }
+            }, 50);
+
+            // 添加点击测试监听器和二次验证
+            setTimeout(() => {
+                const checkbox = document.getElementById('sectionHidden');
+                if (!checkbox) {
+                    console.error('❌ [显示弹窗] 无法找到 checkbox 元素！');
+                    return;
+                }
+
+                // 如果是编辑模式，二次验证并强制设置checkbox状态
+                if (section) {
+                    const expectedChecked = section.hidden === true;
+                    if (checkbox.checked !== expectedChecked) {
+                        console.warn('⚠️ [显示弹窗] Checkbox状态异常！重新设置...', {
+                            当前状态: checkbox.checked,
+                            期望状态: expectedChecked,
+                            原始值: section.hidden
+                        });
+
+                        checkbox.checked = expectedChecked;
+                        if (expectedChecked) {
+                            checkbox.setAttribute('checked', 'checked');
+                        } else {
+                            checkbox.removeAttribute('checked');
+                        }
+
+                        console.log('✅ [显示弹窗] Checkbox状态已修正为:', checkbox.checked);
+                    } else {
+                        console.log('✅ [显示弹窗] Checkbox状态正常:', checkbox.checked);
+                    }
+                }
+
+                // 添加点击监听器测试
+                checkbox.addEventListener('click', function(e) {
+                    console.log('🖱️ [Checkbox] 点击事件触发！', {
+                        checked_before: this.checked,
+                        will_be: !this.checked,
+                        event_target: e.target,
+                        current_target: e.currentTarget
+                    });
+                });
+
+                checkbox.addEventListener('change', function(e) {
+                    console.log('🔄 [Checkbox] Change 事件触发！', {
+                        checked: this.checked,
+                        event: e
+                    });
+                });
+
+                // 测试label点击
+                const label = checkbox.parentElement;
+                if (label && label.tagName === 'LABEL') {
+                    label.addEventListener('click', function(e) {
+                        console.log('🏷️ [Label] Label 被点击！', {
+                            target: e.target,
+                            checkbox_checked: checkbox.checked
+                        });
+                    });
+                }
+
+                console.log('✅ [显示弹窗] 已添加 checkbox 点击监听器');
+            }, 100);
+
+            // 如果是新建，显示提示
+            if (!section) {
+                setTimeout(() => {
+                    const hiddenCheckbox = document.getElementById('sectionHidden');
+                    const label = hiddenCheckbox ? hiddenCheckbox.parentElement : null;
+                    if (label && !label.querySelector('.new-section-tip')) {
+                        const tip = document.createElement('small');
+                        tip.className = 'new-section-tip';
+                        tip.style.cssText = 'display: block; color: #666; margin-top: 4px; font-size: 12px;';
+                        tip.textContent = '💡 新栏目默认隐藏，添加项目后再显示';
+                        label.appendChild(tip);
+                    }
+                }, 150);
+            }
+        }
+
+        // 关闭栏目编辑弹窗
+        function closeSectionEditModal() {
+            const modal = document.getElementById('sectionEditModal');
+            const form = document.getElementById('sectionEditForm');
+
+            // 隐藏modal
+            modal.style.display = 'none';
+
+            // 清理状态
+            currentEditingSectionId = null;
+
+            // 重置表单（清理遗留状态）
+            if (form) {
+                form.reset();
+            }
+
+            // 清除新建提示（如果有）
+            const tips = modal.querySelectorAll('.new-section-tip');
+            tips.forEach(tip => tip.remove());
+
+            console.log('🚪 [关闭弹窗] Modal已关闭并清理');
+        }
+
+        // 保存栏目配置
+        async function saveSectionEdit() {
+            const isEdit = currentEditingSectionId !== null;
+
+            const sectionData = {
+                id: document.getElementById('sectionId').value.trim(),
+                title: document.getElementById('sectionTitle').value.trim(),
+                icon: document.getElementById('sectionIcon').value.trim(),
+                field: document.getElementById('sectionField').value.trim(),
+                position: document.getElementById('sectionPosition').value,
+                defaultTemplate: document.getElementById('sectionTemplate').value,
+                hidden: document.getElementById('sectionHidden').checked,
+                itemFields: [] // 这里可以后续扩展为可配置的字段
+            };
+
+            // 验证必填字段
+            if (!sectionData.id || !sectionData.title || !sectionData.field) {
+                showAlert('sectionsAlert', '请填写所有必填字段', 'danger');
+                return;
+            }
+
+            try {
+                const url = isEdit ?
+                    `/admin/api/sections/${currentEditingSectionId}` :
+                    '/admin/api/sections';
+
+                const method = isEdit ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(sectionData)
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || '保存失败');
+                }
+
+                showAlert('sectionsAlert', isEdit ? '栏目已更新' : '栏目已创建', 'success');
+
+                // 关闭弹窗并重新加载列表
+                closeSectionEditModal();
+                await loadSectionsList();
+            } catch (error) {
+                showAlert('sectionsAlert', `保存失败: ${error.message}`, 'danger');
+            }
+        }
+
+        // 显示添加项目弹窗
+        function showAddItemModal() {
+            currentEditingIndex = null; // 标记为新建
+            showItemEditModal(null);
+        }
+
+        // 显示项目编辑弹窗
+        function showItemEditModal(item) {
+            const section = sectionConfigMap[currentSectionId];
+            const modal = document.getElementById('itemEditModal');
+            const title = document.getElementById('itemEditModalTitle');
+            const form = document.getElementById('itemEditForm');
+
+            // 设置标题
+            title.textContent = item ? '编辑项目' : '添加项目';
+
+            // 根据栏目类型生成表单字段
+            let formHTML = '';
+
+            switch(currentSectionId) {
+                case 'websites':
+                case 'projects':
+                    formHTML = `
+                        <div class="form-field">
+                            <label for="item-id">项目 ID *</label>
+                            <input type="text" id="item-id" value="${item?.id || ''}" required placeholder="my-project">
+                            <small>唯一标识，建议使用英文</small>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-title">标题 *</label>
+                            <input type="text" id="item-title" value="${item?.title || ''}" required placeholder="我的项目">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-url">URL</label>
+                            <input type="url" id="item-url" value="${item?.url || ''}" placeholder="https://example.com">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-description">描述</label>
+                            <textarea id="item-description" rows="3" placeholder="项目描述">${item?.description || ''}</textarea>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-icon">图标</label>
+                            <input type="text" id="item-icon" value="${item?.icon || ''}" placeholder="fa-globe">
+                            <small>Font Awesome 图标类名</small>
+                        </div>
+
+                        ${currentSectionId === 'projects' ? `
+                            <div class="form-field">
+                                <label for="item-tags">标签</label>
+                                <input type="text" id="item-tags" value="${item?.tags?.join(', ') || ''}" placeholder="Vue, TypeScript">
+                                <small>用逗号分隔多个标签</small>
+                            </div>
+                        ` : ''}
+
+                        <div class="form-field">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="item-hidden" class="simple-checkbox" ${item?.hidden ? 'checked' : ''}>
+                                <span class="checkbox-text">隐藏此项目</span>
+                            </label>
+                        </div>
+                    `;
+                    break;
+
+                case 'skills':
+                    formHTML = `
+                        <div class="form-field">
+                            <label for="item-id">技能 ID *</label>
+                            <input type="text" id="item-id" value="${item?.id || ''}" required placeholder="javascript">
+                            <small>唯一标识，建议使用英文</small>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-name">技能名称 *</label>
+                            <input type="text" id="item-name" value="${item?.name || ''}" required placeholder="JavaScript">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-icon">图标</label>
+                            <input type="text" id="item-icon" value="${item?.icon || ''}" placeholder="fa-js">
+                            <small>Font Awesome 图标类名</small>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-level">等级 (1-5)</label>
+                            <input type="number" id="item-level" value="${item?.level || 3}" min="1" max="5" required>
+                        </div>
+
+                        <div class="form-field">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="item-hidden" class="simple-checkbox" ${item?.hidden ? 'checked' : ''}>
+                                <span class="checkbox-text">隐藏此技能</span>
+                            </label>
+                        </div>
+                    `;
+                    break;
+
+                case 'timeline':
+                    formHTML = `
+                        <div class="form-field">
+                            <label for="item-id">事件 ID *</label>
+                            <input type="text" id="item-id" value="${item?.id || ''}" required placeholder="event-2024">
+                            <small>唯一标识，建议使用英文</small>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-date">日期 *</label>
+                            <input type="text" id="item-date" value="${item?.date || ''}" required placeholder="2024-01">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-title">标题 *</label>
+                            <input type="text" id="item-title" value="${item?.title || ''}" required placeholder="重要事件">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-description">描述</label>
+                            <textarea id="item-description" rows="3" placeholder="事件描述">${item?.description || ''}</textarea>
+                        </div>
+
+                        <div class="form-field">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="item-hidden" class="simple-checkbox" ${item?.hidden ? 'checked' : ''}>
+                                <span class="checkbox-text">隐藏此事件</span>
+                            </label>
+                        </div>
+                    `;
+                    break;
+            }
+
+            form.innerHTML = formHTML;
+            modal.style.display = 'flex';
+        }
+
+        // 关闭项目编辑弹窗
+        function closeItemEditModal() {
+            document.getElementById('itemEditModal').style.display = 'none';
+            currentEditingIndex = null;
+        }
+
+        // 保存项目编辑
+        async function saveItemEdit() {
+            console.group('✏️ [项目编辑] 开始保存');
+
+            try {
+                const section = sectionConfigMap[currentSectionId];
+                const form = document.getElementById('itemEditForm');
+                const isNewItem = currentEditingIndex === null;
+
+                console.log('📋 操作类型:', isNewItem ? '新建项目' : '编辑项目');
+                console.log('📂 当前栏目:', currentSectionId, '-', section?.title);
+                if (!isNewItem) {
+                    console.log('🔢 编辑索引:', currentEditingIndex);
+                }
+
+                // 收集表单数据
+                let newItem = {};
+
+                switch(currentSectionId) {
+                    case 'websites':
+                    case 'projects':
+                        newItem = {
+                            id: document.getElementById('item-id').value,
+                            title: document.getElementById('item-title').value,
+                            url: document.getElementById('item-url').value,
+                            description: document.getElementById('item-description').value,
+                            icon: document.getElementById('item-icon').value,
+                            hidden: document.getElementById('item-hidden').checked
+                        };
+
+                        if (currentSectionId === 'projects') {
+                            const tagsInput = document.getElementById('item-tags').value;
+                            newItem.tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
+                        }
+                        break;
+
+                    case 'skills':
+                        newItem = {
+                            id: document.getElementById('item-id').value,
+                            name: document.getElementById('item-name').value,
+                            icon: document.getElementById('item-icon').value,
+                            level: parseInt(document.getElementById('item-level').value),
+                            hidden: document.getElementById('item-hidden').checked
+                        };
+                        break;
+
+                    case 'timeline':
+                        newItem = {
+                            id: document.getElementById('item-id').value,
+                            date: document.getElementById('item-date').value,
+                            title: document.getElementById('item-title').value,
+                            description: document.getElementById('item-description').value,
+                            hidden: document.getElementById('item-hidden').checked
+                        };
+                        break;
+                }
+
+                console.log('📝 收集的表单数据（处理前）:', newItem);
+
+                // 移除空值
+                const beforeCleanKeys = Object.keys(newItem).length;
+                Object.keys(newItem).forEach(key => {
+                    if (newItem[key] === '' || newItem[key] === null || newItem[key] === undefined) {
+                        delete newItem[key];
+                    }
+                });
+                const afterCleanKeys = Object.keys(newItem).length;
+                console.log(`🧹 清理空值: ${beforeCleanKeys} 个字段 → ${afterCleanKeys} 个字段`);
+                console.log('📝 清理后的数据:', newItem);
+
+                // 添加或更新项目
+                const oldItemsLength = currentConfigData[section.field].length;
+                if (isNewItem) {
+                    // 新建
+                    console.log('➕ 添加新项目到数组末尾');
+                    currentConfigData[section.field].push(newItem);
+                } else {
+                    // 编辑
+                    const oldItem = currentConfigData[section.field][currentEditingIndex];
+                    console.log('🔄 更新现有项目:', {
+                        index: currentEditingIndex,
+                        oldItem: oldItem,
+                        newItem: newItem
+                    });
+                    currentConfigData[section.field][currentEditingIndex] = newItem;
+                }
+
+                console.log('📊 数组变化:', {
+                    操作前长度: oldItemsLength,
+                    操作后长度: currentConfigData[section.field].length,
+                    最终数据: currentConfigData[section.field]
+                });
+
+                // 保存并刷新
+                console.log('💾 调用 saveSectionData() 保存到后端...');
+                const success = await saveSectionData();
+
+                if (success) {
+                    console.log('✅ 项目保存成功');
+                    closeItemEditModal();
+                    renderSectionItems(currentSectionId);
+
+                    const action = isNewItem ? '添加' : '更新';
+                    showAlert('sectionsAlert', `${action}成功！`, 'success');
+                } else {
+                    console.warn('⚠️ saveSectionData() 返回 false，保存可能失败');
+                }
+
+                console.groupEnd();
+
+            } catch (error) {
+                console.error('💥 项目编辑保存失败:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+                console.groupEnd();
+                showAlert('sectionsAlert', `保存失败: ${error.message}`, 'danger');
+            }
+        }
+
+        // ==================== 页面初始化 ====================
+        window.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+
+            // 加载概览数据
+            loadStats();
+            refreshVisitStats();
+            refreshTheme();
+            refreshSystemInfo();
+        });
+    </script>
+</body>
+</html>

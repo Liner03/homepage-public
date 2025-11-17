@@ -8,5 +8,17 @@
 Thumbs.db
 .vscode/
 .idea/
-config.js
+/config.js
 CUSTOM_SECTION_README.md
+
+# Backend dependencies and data
+backend/node_modules/
+backend/data/*.json
+backend/data/*.db
+backend/data/*.db-shm
+backend/data/*.db-wal
+backend/package-lock.json
+backend/.env
+
+# Docker volumes
+docker-compose.override.yml

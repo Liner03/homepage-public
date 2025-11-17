@@ -552,10 +552,11 @@ async function fetchGitHubContributions(username, forceRefresh = false) {
         let events = [];
         try {
             const userResponse = await fetch(`https://api.github.com/users/${username}`);
-            if (userResponse.ok) userData = await userResponse.json();
-            else console.warn('用户API请求失败:', userResponse.status);
+            if (userResponse.ok) {
+                userData = await userResponse.json();
+            }
         } catch (e) {
-            console.warn('用户API请求异常:', e);
+            // 用户信息获取失败，使用空数据
         }
         try {
             const reposResponse = await fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=updated`);
@@ -576,19 +577,14 @@ async function fetchGitHubContributions(username, forceRefresh = false) {
         // 使用GitHub用户数据进行统计（可能是降级后的数据）
         const githubStats = calculateGitHubStats(userData, repos, events);
 
-        // 2) 渲染贡献日历：优先使用后端代理，失败再用 events 估算
-        const source = (CONFIG && CONFIG.github && CONFIG.github.calendarSource) || 'auto';
+        // 2) 渲染贡献日历：使用第三方API获取完整数据
         let calendarData = null;
-        if (source === 'proxy' || source === 'auto') {
-            try {
-                calendarData = await fetchCalendarViaProxy(username, forceRefresh);
-            } catch (e) {
-                if (source === 'proxy') throw e;
-                console.warn('proxy 获取失败，回退到 events 估算');
-            }
-        }
-        if (!calendarData) {
-            calendarData = buildDailyContribMap(events);
+
+        try {
+            calendarData = await fetchCalendarViaThirdParty(username, forceRefresh);
+        } catch (e) {
+            console.error('GitHub贡献日历加载失败，请检查网络连接或稍后重试');
+            throw e;
         }
 
         // 3) 基于贡献日历数据计算并渲染
@@ -605,6 +601,43 @@ async function fetchGitHubContributions(username, forceRefresh = false) {
 
         // 4) 添加刷新按钮功能
         addRefreshButton(username);
+
+// 通过后端代理获取第三方API数据（解决CORS问题）
+async function fetchCalendarViaThirdParty(login, forceRefresh = false) {
+    try {
+        // 通过后端代理调用第三方API，避免CORS问题
+        const proxyEndpoint = '/api/github/contributions-third-party';
+        const cacheBuster = forceRefresh ? Date.now() : Math.floor(Date.now() / (5 * 60 * 1000));
+        const finalUrl = `${proxyEndpoint}?login=${encodeURIComponent(login)}&_t=${cacheBuster}`;
+
+        const response = await fetch(finalUrl, {
+            cache: 'no-cache',
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Third-party proxy failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // 后端已经转换为标准格式，直接使用
+        const now = new Date();
+        const to = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+        const from = new Date(to);
+        from.setDate(from.getDate() - 365);
+
+        const map = new Map(data.days.map(d => [d.date, d.count]));
+
+        return { map, start: from, end: to, source: 'third-party', total: data.total };
+
+    } catch (error) {
+        throw error;
+    }
+}
 
 // 通过后端代理获取精确贡献日历（GraphQL）
 async function fetchCalendarViaProxy(login, forceRefresh = false) {
@@ -630,8 +663,17 @@ async function fetchCalendarViaProxy(login, forceRefresh = false) {
     }
     const finalUrl = `${url}&_t=${cacheBuster}`;
 
-    const r = await fetch(finalUrl);
-    if (!r.ok) throw new Error('proxy failed');
+    const r = await fetch(finalUrl, {
+        cache: 'no-cache',  // 强制禁用缓存
+        headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+        }
+    });
+    if (!r.ok) {
+        const errorText = await r.text();
+        throw new Error(`proxy failed: ${r.status} - ${errorText}`);
+    }
     const data = await r.json(); // { days:[{date,count}], total, colors }
     const map = new Map(data.days.map(d => [d.date, d.count]));
     return { map, start: from, end: to };
@@ -639,21 +681,15 @@ async function fetchCalendarViaProxy(login, forceRefresh = false) {
 
 // 添加刷新GitHub数据的按钮（低调设计）
 function addRefreshButton(username) {
-    console.log('addRefreshButton 被调用，用户名:', username);
-
     // 检查是否已经添加了刷新按钮
     if (document.getElementById('github-refresh-btn')) {
-        console.log('刷新按钮已存在，跳过添加');
         return;
     }
 
     const githubSection = document.querySelector('.github-stats') || document.querySelector('#github');
     if (!githubSection) {
-        console.log('未找到GitHub统计区域');
         return;
     }
-
-    console.log('找到GitHub统计区域，开始添加刷新按钮');
 
     // 创建一个小的刷新图标按钮
     const refreshBtn = document.createElement('button');
@@ -1128,7 +1164,10 @@ function renderContribCalendar(contrib) {
     const gridEl = document.getElementById('contrib-grid');
     const legendEl = document.getElementById('contrib-legend');
     const container = document.getElementById('contrib-calendar');
-    if (!(monthsEl && gridEl && legendEl && container)) return;
+
+    if (!(monthsEl && gridEl && legendEl && container)) {
+        return;
+    }
 
     monthsEl.innerHTML = '';
     gridEl.innerHTML = '';
@@ -1148,6 +1187,10 @@ function renderContribCalendar(contrib) {
 
     // 渲染格子（按列填充）
     let lastMonth = -1;
+    let renderedCount = 0;
+    let nonZeroCount = 0;
+    const sampleKeys = [];
+    const mapKeys = Array.from(map.keys()).slice(0, 5);
     for (let d = new Date(start); d <= alignedEnd; d.setDate(d.getDate() + 1)) {
         // 使用本地日期字符串，避免时区转换问题
         const year = d.getFullYear();
@@ -1161,6 +1204,13 @@ function renderContribCalendar(contrib) {
         cell.style.backgroundColor = levelColor(level);
         cell.title = `${key}: ${count} contributions`;
         gridEl.appendChild(cell);
+
+        // 收集调试信息
+        renderedCount++;
+        if (count > 0) nonZeroCount++;
+        if (sampleKeys.length < 5) {
+            sampleKeys.push({ key, count, level, color: levelColor(level) });
+        }
 
         // 月份标签：在“该月的第一周”显示（第一天所在列）
         if (d.getDate() === 1) {

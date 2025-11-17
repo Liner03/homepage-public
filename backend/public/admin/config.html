@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配置管理 - 管理后台</title>
+    <link rel="stylesheet" href="/admin/style.css">
+    <style>
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e1e8ed;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-field label {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-field input,
+        .form-field select {
+            padding: 10px 14px;
+            border: 2px solid #e1e8ed;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-field input:focus,
+        .form-field select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-field small {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .code-editor {
+            width: 100%;
+            min-height: 500px;
+            padding: 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .code-editor:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>⚙️ 配置管理</h1>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-secondary" onclick="location.href='/admin/dashboard'">返回首页</button>
+                <button class="logout-btn" onclick="logout()">退出登录</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="alertBox" class="alert"></div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('env')">后端配置 (.env)</button>
+                    <button class="tab" onclick="switchTab('frontend')">前端配置 (config.js)</button>
+                </div>
+
+                <!-- 后端配置 Tab -->
+                <div id="tab-env" class="tab-content active">
+                    <h3 style="margin-bottom: 20px;">后端环境变量配置</h3>
+                    <p style="color: #666; margin-bottom: 20px;">修改后需要重启服务器才能生效</p>
+
+                    <form id="envForm" class="form-grid">
+                        <div class="form-field">
+                            <label for="PORT">服务器端口</label>
+                            <input type="number" id="PORT" name="PORT" placeholder="3000">
+                            <small>默认：3000</small>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="NODE_ENV">运行环境</label>
+                            <select id="NODE_ENV" name="NODE_ENV">
+                                <option value="development">开发环境 (development)</option>
+                                <option value="production">生产环境 (production)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="GITHUB_TOKEN">GitHub Token</label>
+                            <input type="text" id="GITHUB_TOKEN" name="GITHUB_TOKEN" placeholder="ghp_xxxxx">
+                            <small>用于精确贡献日历，可选。获取地址：<a href="https://github.com/settings/tokens" target="_blank">https://github.com/settings/tokens</a></small>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="VISIT_STORAGE">访问统计存储方式</label>
+                            <select id="VISIT_STORAGE" name="VISIT_STORAGE">
+                                <option value="json">JSON 文件（默认）</option>
+                                <option value="sqlite">SQLite 数据库</option>
+                                <option value="cloudflare">Cloudflare KV</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="DATA_DIR">数据存储目录</label>
+                            <input type="text" id="DATA_DIR" name="DATA_DIR" placeholder="./data">
+                        </div>
+
+                        <hr style="margin: 20px 0;">
+
+                        <h4>管理后台账号</h4>
+
+                        <div class="form-field">
+                            <label for="ADMIN_USERNAME">管理员用户名</label>
+                            <input type="text" id="ADMIN_USERNAME" name="ADMIN_USERNAME" placeholder="admin">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="ADMIN_PASSWORD">管理员密码</label>
+                            <input type="password" id="ADMIN_PASSWORD" name="ADMIN_PASSWORD" placeholder="输入新密码">
+                            <small>⚠️ 修改密码后需要重新登录</small>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="SESSION_SECRET">Session 密钥</label>
+                            <input type="text" id="SESSION_SECRET" name="SESSION_SECRET" placeholder="随机字符串">
+                            <small>建议使用随机生成的长字符串</small>
+                        </div>
+
+                        <div class="action-bar">
+                            <button type="button" class="btn btn-secondary" onclick="loadEnvConfig()">重置</button>
+                            <button type="submit" class="btn btn-primary">保存配置</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 前端配置 Tab -->
+                <div id="tab-frontend" class="tab-content">
+                    <h3 style="margin-bottom: 20px;">前端配置文件 (config.js)</h3>
+                    <p style="color: #666; margin-bottom: 20px;">直接编辑前端配置文件，保存后立即生效（刷新页面）</p>
+
+                    <textarea id="frontendConfig" class="code-editor" placeholder="加载中..."></textarea>
+
+                    <div class="action-bar">
+                        <button type="button" class="btn btn-secondary" onclick="loadFrontendConfig()">重置</button>
+                        <button type="button" class="btn btn-primary" onclick="saveFrontendConfig()">保存配置</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 检查登录状态
+        async function checkAuth() {
+            try {
+                const response = await fetch('/admin/api/check');
+                if (!response.ok) {
+                    window.location.href = '/admin/login';
+                }
+            } catch (error) {
+                window.location.href = '/admin/login';
+            }
+        }
+
+        // 退出登录
+        async function logout() {
+            try {
+                await fetch('/admin/api/logout', { method: 'POST' });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            window.location.href = '/admin/login';
+        }
+
+        // 切换标签页
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+
+            if (tabName === 'frontend') {
+                loadFrontendConfig();
+            }
+        }
+
+        // 显示提示消息
+        function showAlert(message, type = 'success') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type} show`;
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 5000);
+        }
+
+        // 加载 .env 配置
+        async function loadEnvConfig() {
+            try {
+                const response = await fetch('/admin/api/config/env');
+                const data = await response.json();
+
+                if (data.success) {
+                    const envData = data.data;
+                    Object.keys(envData).forEach(key => {
+                        const input = document.getElementById(key);
+                        if (input) {
+                            input.value = envData[key] || '';
+                        }
+                    });
+                }
+            } catch (error) {
+                showAlert('加载配置失败: ' + error.message, 'danger');
+            }
+        }
+
+        // 保存 .env 配置
+        document.getElementById('envForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const envData = {};
+
+            for (let [key, value] of formData.entries()) {
+                envData[key] = value.trim();
+            }
+
+            try {
+                const response = await fetch('/admin/api/config/env', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(envData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert(result.message, 'warning');
+                } else {
+                    showAlert(result.message || '保存失败', 'danger');
+                }
+            } catch (error) {
+                showAlert('保存失败: ' + error.message, 'danger');
+            }
+        });
+
+        // 加载前端配置
+        async function loadFrontendConfig() {
+            try {
+                const response = await fetch('/admin/api/config/frontend');
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('frontendConfig').value = data.content;
+                } else {
+                    showAlert('配置文件不存在', 'danger');
+                }
+            } catch (error) {
+                showAlert('加载失败: ' + error.message, 'danger');
+            }
+        }
+
+        // 保存前端配置
+        async function saveFrontendConfig() {
+            const content = document.getElementById('frontendConfig').value;
+
+            if (!content.trim()) {
+                showAlert('配置内容不能为空', 'danger');
+                return;
+            }
+
+            try {
+                const response = await fetch('/admin/api/config/frontend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('配置已保存，刷新前端页面即可生效', 'success');
+                } else {
+                    showAlert(result.message || '保存失败', 'danger');
+                }
+            } catch (error) {
+                showAlert('保存失败: ' + error.message, 'danger');
+            }
+        }
+
+        // 页面加载时初始化
+        window.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+            loadEnvConfig();
+        });
+    </script>
+</body>
+</html>
