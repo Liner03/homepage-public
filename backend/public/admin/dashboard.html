@@ -498,10 +498,6 @@
                                 <input type="text" id="github_username" placeholder="your-github">
                             </div>
                             <div class="form-field">
-                                <label>GitHub 主页 URL</label>
-                                <input type="text" id="github_profileUrl" placeholder="https://github.com/your-github">
-                            </div>
-                            <div class="form-field">
                                 <label>日历数据源</label>
                                 <select id="github_calendarSource">
                                     <option value="auto">自动 (优先后端代理)</option>
@@ -612,14 +608,6 @@
                         </div>
 
                         <div class="form-field">
-                            <label for="NODE_ENV">运行环境</label>
-                            <select id="NODE_ENV" name="NODE_ENV">
-                                <option value="development">开发环境 (development)</option>
-                                <option value="production">生产环境 (production)</option>
-                            </select>
-                        </div>
-
-                        <div class="form-field">
                             <label for="GITHUB_TOKEN">GitHub Token</label>
                             <input type="text" id="GITHUB_TOKEN" name="GITHUB_TOKEN" placeholder="ghp_xxxxx">
                             <small>用于 GitHub 贡献日历。获取地址：<a href="https://github.com/settings/tokens" target="_blank">https://github.com/settings/tokens</a></small>
@@ -627,7 +615,7 @@
 
                         <div class="form-field">
                             <label for="VISIT_STORAGE">访问统计存储方式</label>
-                            <select id="VISIT_STORAGE" name="VISIT_STORAGE">
+                            <select id="VISIT_STORAGE" name="VISIT_STORAGE" onchange="toggleCloudflareConfig()">
                                 <option value="json">JSON 文件（默认）</option>
                                 <option value="sqlite">SQLite 数据库</option>
                                 <option value="cloudflare">Cloudflare KV</option>
@@ -637,11 +625,33 @@
                         <div class="form-field">
                             <label for="DATA_DIR">数据存储目录</label>
                             <input type="text" id="DATA_DIR" name="DATA_DIR" placeholder="./data">
+                            <small>仅 JSON 和 SQLite 存储使用</small>
+                        </div>
+
+                        <!-- Cloudflare KV 配置（条件显示） -->
+                        <div id="cloudflareConfigSection" style="display: none;">
+                            <hr>
+                            <h4>☁️ Cloudflare KV 配置</h4>
+
+                            <div class="form-field">
+                                <label for="CF_ACCOUNT_ID">Cloudflare Account ID</label>
+                                <input type="text" id="CF_ACCOUNT_ID" name="CF_ACCOUNT_ID">
+                            </div>
+
+                            <div class="form-field">
+                                <label for="CF_NAMESPACE_ID">Namespace ID</label>
+                                <input type="text" id="CF_NAMESPACE_ID" name="CF_NAMESPACE_ID">
+                            </div>
+
+                            <div class="form-field">
+                                <label for="CF_API_TOKEN">API Token</label>
+                                <input type="text" id="CF_API_TOKEN" name="CF_API_TOKEN">
+                            </div>
                         </div>
 
                         <hr>
 
-                        <h4>管理后台配置</h4>
+                        <h4>🔐 管理后台配置</h4>
 
                         <div class="form-field">
                             <label for="ADMIN_USERNAME">管理员用户名</label>
@@ -653,25 +663,6 @@
                             <label for="SESSION_SECRET">Session 密钥</label>
                             <input type="text" id="SESSION_SECRET" name="SESSION_SECRET" placeholder="随机字符串">
                             <small>用于加密 session，建议使用长随机字符串</small>
-                        </div>
-
-                        <hr>
-
-                        <h4>Cloudflare KV 配置（可选）</h4>
-
-                        <div class="form-field">
-                            <label for="CF_ACCOUNT_ID">Cloudflare Account ID</label>
-                            <input type="text" id="CF_ACCOUNT_ID" name="CF_ACCOUNT_ID">
-                        </div>
-
-                        <div class="form-field">
-                            <label for="CF_NAMESPACE_ID">Namespace ID</label>
-                            <input type="text" id="CF_NAMESPACE_ID" name="CF_NAMESPACE_ID">
-                        </div>
-
-                        <div class="form-field">
-                            <label for="CF_API_TOKEN">API Token</label>
-                            <input type="text" id="CF_API_TOKEN" name="CF_API_TOKEN">
                         </div>
 
                         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
@@ -1010,7 +1001,6 @@
 
                 if (configObj.github) {
                     document.getElementById('github_username').value = configObj.github.username || '';
-                    document.getElementById('github_profileUrl').value = configObj.github.profileUrl || '';
                     document.getElementById('github_calendarSource').value = configObj.github.calendarSource || 'auto';
                     document.getElementById('github_calendarProxyEndpoint').value = configObj.github.calendarProxyEndpoint || '';
                 }
@@ -1090,6 +1080,8 @@
                 }
             });
 
+            const githubUsername = document.getElementById('github_username').value || "your-github";
+
             return {
                 personal: {
                     name: document.getElementById('personal_name').value || "Your Name",
@@ -1101,8 +1093,8 @@
                     favicon: document.getElementById('personal_favicon').value || "./static/f2.png"
                 },
                 github: {
-                    username: document.getElementById('github_username').value || "your-github",
-                    profileUrl: document.getElementById('github_profileUrl').value || "https://github.com/your-github",
+                    username: githubUsername,
+                    profileUrl: `https://github.com/${githubUsername}`,
                     calendarSource: document.getElementById('github_calendarSource').value || "auto",
                     calendarProxyEndpoint: document.getElementById('github_calendarProxyEndpoint').value || "/api/github/contributions"
                 },
@@ -1199,6 +1191,19 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
         });
 
         // ==================== 后端配置 Tab ====================
+
+        // 切换 Cloudflare 配置显示
+        function toggleCloudflareConfig() {
+            const storageType = document.getElementById('VISIT_STORAGE').value;
+            const cloudflareSection = document.getElementById('cloudflareConfigSection');
+
+            if (storageType === 'cloudflare') {
+                cloudflareSection.style.display = 'block';
+            } else {
+                cloudflareSection.style.display = 'none';
+            }
+        }
+
         async function loadEnvConfig() {
             try {
                 const response = await fetch('/admin/api/config/env');
@@ -1212,6 +1217,9 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                             input.value = envData[key] || '';
                         }
                     });
+
+                    // 根据存储方式显示/隐藏 Cloudflare 配置
+                    toggleCloudflareConfig();
                 } else {
                     showAlert('backendAlert', 'danger', '加载失败: ' + data.message);
                 }
