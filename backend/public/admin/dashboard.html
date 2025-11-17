@@ -3359,6 +3359,24 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
             // 显示弹窗
             modal.style.display = 'flex';
 
+            // 显示后立即检查表单值是否还在
+            setTimeout(() => {
+                console.log('🔍 [显示弹窗] Modal 显示后检查表单值:', {
+                    id: document.getElementById('sectionId').value,
+                    title: document.getElementById('sectionTitle').value,
+                    icon: document.getElementById('sectionIcon').value,
+                    field: document.getElementById('sectionField').value,
+                    position: document.getElementById('sectionPosition').value,
+                    template: document.getElementById('sectionTemplate').value,
+                    hidden: document.getElementById('sectionHidden').checked
+                });
+
+                // 如果是编辑模式，再次检查 section 对象
+                if (section) {
+                    console.log('🔍 [显示弹窗] 原始 section 对象:', section);
+                }
+            }, 50);
+
             // 如果是新建，显示提示
             if (!section) {
                 setTimeout(() => {
