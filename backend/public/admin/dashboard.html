@@ -2568,27 +2568,56 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
         // 加载栏目列表
         async function loadSectionsList() {
+            console.group('📥 [栏目管理] 加载栏目列表');
+
             const container = document.getElementById('sectionsListContainer');
 
             try {
                 container.innerHTML = '<div class="loading">加载中...</div>';
 
                 // 从前端配置加载数据
+                console.log('📡 请求前端配置数据...');
                 const response = await fetch('/admin/api/config/frontend');
+                console.log('📬 响应状态:', response.status, response.statusText);
+
                 const data = await response.json();
+                console.log('📦 响应数据:', {
+                    success: data.success,
+                    contentLength: data.content?.length,
+                    message: data.message
+                });
 
                 if (!data.success) {
+                    console.error('❌ 加载失败:', data.message);
                     container.innerHTML = `<div class="empty" style="color: var(--danger);">加载失败: ${data.message}</div>`;
+                    console.groupEnd();
                     return;
                 }
 
+                // 解析配置内容
+                console.log('🔄 解析配置内容...');
                 currentConfigData = parseConfigContent(data.content);
+                console.log('✅ 配置解析完成:', {
+                    websites: currentConfigData.websites?.length || 0,
+                    projects: currentConfigData.projects?.length || 0,
+                    skills: currentConfigData.skills?.length || 0,
+                    timeline: currentConfigData.timeline?.length || 0
+                });
 
                 // 渲染栏目列表
+                console.log('🎨 渲染栏目列表...');
                 renderSectionsList();
+                console.log('✅ 栏目列表加载完成');
+                console.groupEnd();
 
             } catch (error) {
+                console.error('💥 加载过程中发生错误:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
                 container.innerHTML = `<div class="empty" style="color: var(--danger);">加载失败: ${error.message}</div>`;
+                console.groupEnd();
             }
         }
 
@@ -2864,13 +2893,30 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
         // 移动项目（上移）
         async function moveItemUp(index) {
-            if (index <= 0) return;
+            console.log('⬆️ [项目移动] 上移项目, 索引:', index);
+
+            if (index <= 0) {
+                console.warn('⚠️ 已经是第一个项目，无法上移');
+                return;
+            }
 
             const section = sectionConfigMap[currentSectionId];
             const items = currentConfigData[section.field];
 
+            console.log('📋 移动前:', {
+                position: index,
+                item: items[index],
+                上方项目: items[index - 1]
+            });
+
             // 交换位置
             [items[index], items[index - 1]] = [items[index - 1], items[index]];
+
+            console.log('📋 移动后:', {
+                position: index - 1,
+                item: items[index - 1],
+                下方项目: items[index]
+            });
 
             // 保存并刷新
             await saveSectionData();
@@ -2879,13 +2925,30 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
         // 移动项目（下移）
         async function moveItemDown(index) {
+            console.log('⬇️ [项目移动] 下移项目, 索引:', index);
+
             const section = sectionConfigMap[currentSectionId];
             const items = currentConfigData[section.field];
 
-            if (index >= items.length - 1) return;
+            if (index >= items.length - 1) {
+                console.warn('⚠️ 已经是最后一个项目，无法下移');
+                return;
+            }
+
+            console.log('📋 移动前:', {
+                position: index,
+                item: items[index],
+                下方项目: items[index + 1]
+            });
 
             // 交换位置
             [items[index], items[index + 1]] = [items[index + 1], items[index]];
+
+            console.log('📋 移动后:', {
+                position: index + 1,
+                item: items[index + 1],
+                上方项目: items[index]
+            });
 
             // 保存并刷新
             await saveSectionData();
@@ -2904,16 +2967,36 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
         // 删除栏目项目
         async function deleteSectionItem(index) {
+            console.log('🗑️ [项目删除] 准备删除项目, 索引:', index);
+
             const section = sectionConfigMap[currentSectionId];
             const item = currentConfigData[section.field][index];
             const itemName = item.title || item.name || `项目 ${index + 1}`;
 
+            console.log('📋 待删除项目:', {
+                index: index,
+                name: itemName,
+                data: item
+            });
+
             if (!confirm(`确定要删除 "${itemName}" 吗？`)) {
+                console.log('❌ 用户取消删除');
                 return;
             }
 
+            console.log('✅ 用户确认删除');
+
+            const beforeLength = currentConfigData[section.field].length;
+            console.log('📊 删除前数组长度:', beforeLength);
+
             // 从数组中删除
-            currentConfigData[section.field].splice(index, 1);
+            const deletedItem = currentConfigData[section.field].splice(index, 1);
+
+            console.log('📊 删除后:', {
+                数组长度: currentConfigData[section.field].length,
+                删除的项目: deletedItem[0],
+                剩余项目: currentConfigData[section.field]
+            });
 
             // 保存并刷新
             await saveSectionData();
@@ -2925,22 +3008,68 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
         // 保存栏目数据到后端
         async function saveSectionData() {
+            console.group('💾 [栏目管理] 开始保存数据');
+
             try {
+                // 日志：当前栏目和数据快照
+                const section = sectionConfigMap[currentSectionId];
+                console.log('📂 当前栏目:', {
+                    id: currentSectionId,
+                    name: section?.title,
+                    field: section?.field
+                });
+
+                console.log('📊 数据快照:', {
+                    itemsCount: currentConfigData[section?.field]?.length || 0,
+                    items: currentConfigData[section?.field]
+                });
+
+                // 生成配置内容
+                console.log('🔄 正在生成配置文件内容...');
                 const content = generateConfigContent(currentConfigData);
+                console.log('✅ 配置内容已生成，长度:', content.length, '字符');
+
+                // 发送请求
+                console.log('📡 发送保存请求到后端...');
+                const requestBody = { content };
+                console.log('📤 请求体:', {
+                    contentLength: content.length,
+                    contentPreview: content.substring(0, 200) + '...'
+                });
 
                 const response = await fetch('/admin/api/config/frontend', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content })
+                    body: JSON.stringify(requestBody)
                 });
 
+                console.log('📬 收到响应:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    ok: response.ok
+                });
+
+                // 解析响应
                 const data = await response.json();
+                console.log('📦 响应数据:', data);
+
                 if (!data.success) {
+                    console.error('❌ 保存失败，服务器返回错误:', data);
                     throw new Error(data.message || '保存失败');
                 }
 
+                console.log('✅ 保存成功！');
+                console.groupEnd();
                 return true;
+
             } catch (error) {
+                console.error('💥 保存过程中发生错误:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+                console.groupEnd();
+
                 showAlert('sectionsAlert', `保存失败: ${error.message}`, 'danger');
                 return false;
             }
@@ -3096,75 +3225,122 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
         // 保存项目编辑
         async function saveItemEdit() {
-            const section = sectionConfigMap[currentSectionId];
-            const form = document.getElementById('itemEditForm');
+            console.group('✏️ [项目编辑] 开始保存');
 
-            // 收集表单数据
-            let newItem = {};
+            try {
+                const section = sectionConfigMap[currentSectionId];
+                const form = document.getElementById('itemEditForm');
+                const isNewItem = currentEditingIndex === null;
 
-            switch(currentSectionId) {
-                case 'websites':
-                case 'projects':
-                    newItem = {
-                        id: document.getElementById('item-id').value,
-                        title: document.getElementById('item-title').value,
-                        url: document.getElementById('item-url').value,
-                        description: document.getElementById('item-description').value,
-                        icon: document.getElementById('item-icon').value,
-                        hidden: document.getElementById('item-hidden').checked
-                    };
-
-                    if (currentSectionId === 'projects') {
-                        const tagsInput = document.getElementById('item-tags').value;
-                        newItem.tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
-                    }
-                    break;
-
-                case 'skills':
-                    newItem = {
-                        id: document.getElementById('item-id').value,
-                        name: document.getElementById('item-name').value,
-                        icon: document.getElementById('item-icon').value,
-                        level: parseInt(document.getElementById('item-level').value),
-                        hidden: document.getElementById('item-hidden').checked
-                    };
-                    break;
-
-                case 'timeline':
-                    newItem = {
-                        id: document.getElementById('item-id').value,
-                        date: document.getElementById('item-date').value,
-                        title: document.getElementById('item-title').value,
-                        description: document.getElementById('item-description').value,
-                        hidden: document.getElementById('item-hidden').checked
-                    };
-                    break;
-            }
-
-            // 移除空值
-            Object.keys(newItem).forEach(key => {
-                if (newItem[key] === '' || newItem[key] === null || newItem[key] === undefined) {
-                    delete newItem[key];
+                console.log('📋 操作类型:', isNewItem ? '新建项目' : '编辑项目');
+                console.log('📂 当前栏目:', currentSectionId, '-', section?.title);
+                if (!isNewItem) {
+                    console.log('🔢 编辑索引:', currentEditingIndex);
                 }
-            });
 
-            // 添加或更新项目
-            if (currentEditingIndex === null) {
-                // 新建
-                currentConfigData[section.field].push(newItem);
-            } else {
-                // 编辑
-                currentConfigData[section.field][currentEditingIndex] = newItem;
-            }
+                // 收集表单数据
+                let newItem = {};
 
-            // 保存并刷新
-            const success = await saveSectionData();
-            if (success) {
-                closeItemEditModal();
-                renderSectionItems(currentSectionId);
+                switch(currentSectionId) {
+                    case 'websites':
+                    case 'projects':
+                        newItem = {
+                            id: document.getElementById('item-id').value,
+                            title: document.getElementById('item-title').value,
+                            url: document.getElementById('item-url').value,
+                            description: document.getElementById('item-description').value,
+                            icon: document.getElementById('item-icon').value,
+                            hidden: document.getElementById('item-hidden').checked
+                        };
 
-                const action = currentEditingIndex === null ? '添加' : '更新';
-                showAlert('sectionsAlert', `${action}成功！`, 'success');
+                        if (currentSectionId === 'projects') {
+                            const tagsInput = document.getElementById('item-tags').value;
+                            newItem.tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
+                        }
+                        break;
+
+                    case 'skills':
+                        newItem = {
+                            id: document.getElementById('item-id').value,
+                            name: document.getElementById('item-name').value,
+                            icon: document.getElementById('item-icon').value,
+                            level: parseInt(document.getElementById('item-level').value),
+                            hidden: document.getElementById('item-hidden').checked
+                        };
+                        break;
+
+                    case 'timeline':
+                        newItem = {
+                            id: document.getElementById('item-id').value,
+                            date: document.getElementById('item-date').value,
+                            title: document.getElementById('item-title').value,
+                            description: document.getElementById('item-description').value,
+                            hidden: document.getElementById('item-hidden').checked
+                        };
+                        break;
+                }
+
+                console.log('📝 收集的表单数据（处理前）:', newItem);
+
+                // 移除空值
+                const beforeCleanKeys = Object.keys(newItem).length;
+                Object.keys(newItem).forEach(key => {
+                    if (newItem[key] === '' || newItem[key] === null || newItem[key] === undefined) {
+                        delete newItem[key];
+                    }
+                });
+                const afterCleanKeys = Object.keys(newItem).length;
+                console.log(`🧹 清理空值: ${beforeCleanKeys} 个字段 → ${afterCleanKeys} 个字段`);
+                console.log('📝 清理后的数据:', newItem);
+
+                // 添加或更新项目
+                const oldItemsLength = currentConfigData[section.field].length;
+                if (isNewItem) {
+                    // 新建
+                    console.log('➕ 添加新项目到数组末尾');
+                    currentConfigData[section.field].push(newItem);
+                } else {
+                    // 编辑
+                    const oldItem = currentConfigData[section.field][currentEditingIndex];
+                    console.log('🔄 更新现有项目:', {
+                        index: currentEditingIndex,
+                        oldItem: oldItem,
+                        newItem: newItem
+                    });
+                    currentConfigData[section.field][currentEditingIndex] = newItem;
+                }
+
+                console.log('📊 数组变化:', {
+                    操作前长度: oldItemsLength,
+                    操作后长度: currentConfigData[section.field].length,
+                    最终数据: currentConfigData[section.field]
+                });
+
+                // 保存并刷新
+                console.log('💾 调用 saveSectionData() 保存到后端...');
+                const success = await saveSectionData();
+
+                if (success) {
+                    console.log('✅ 项目保存成功');
+                    closeItemEditModal();
+                    renderSectionItems(currentSectionId);
+
+                    const action = isNewItem ? '添加' : '更新';
+                    showAlert('sectionsAlert', `${action}成功！`, 'success');
+                } else {
+                    console.warn('⚠️ saveSectionData() 返回 false，保存可能失败');
+                }
+
+                console.groupEnd();
+
+            } catch (error) {
+                console.error('💥 项目编辑保存失败:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+                console.groupEnd();
+                showAlert('sectionsAlert', `保存失败: ${error.message}`, 'danger');
             }
         }
 
