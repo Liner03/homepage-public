@@ -1239,6 +1239,105 @@
             </div>
         </div>
 
+        <!-- 栏目编辑弹窗 -->
+        <div id="sectionEditModal" class="modal">
+            <div class="modal-content" style="max-width: 700px;">
+                <div class="modal-header">
+                    <h2 id="sectionEditModalTitle">编辑栏目</h2>
+                    <button class="icon-btn" onclick="closeSectionEditModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="sectionEditForm" class="form-grid">
+                        <div class="form-group">
+                            <label for="sectionId">
+                                栏目 ID <span style="color: var(--danger);">*</span>
+                                <small style="color: #666; font-weight: normal;">
+                                    (英文小写，如: websites, projects)
+                                </small>
+                            </label>
+                            <input type="text" id="sectionId" class="form-control" required
+                                   pattern="[a-z0-9_]+" placeholder="例如: mylinks">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sectionTitle">
+                                栏目标题 <span style="color: var(--danger);">*</span>
+                            </label>
+                            <input type="text" id="sectionTitle" class="form-control" required
+                                   placeholder="例如: 我的链接">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sectionIcon">
+                                图标 <span style="color: var(--danger);">*</span>
+                                <small style="color: #666; font-weight: normal;">
+                                    (Font Awesome 图标类名，如: fa-link)
+                                </small>
+                            </label>
+                            <input type="text" id="sectionIcon" class="form-control" required
+                                   placeholder="例如: fa-link">
+                            <small style="color: #666;">
+                                查找图标：
+                                <a href="https://fontawesome.com/icons" target="_blank" style="color: var(--accent);">
+                                    Font Awesome 图标库
+                                </a>
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sectionField">
+                                配置字段名 <span style="color: var(--danger);">*</span>
+                                <small style="color: #666; font-weight: normal;">
+                                    (对应 config.js 中的字段)
+                                </small>
+                            </label>
+                            <input type="text" id="sectionField" class="form-control" required
+                                   pattern="[a-zA-Z0-9_]+" placeholder="例如: mylinks">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sectionPosition">
+                                显示位置 <span style="color: var(--danger);">*</span>
+                            </label>
+                            <select id="sectionPosition" class="form-control" required>
+                                <option value="content-below">内容下方</option>
+                                <option value="ip-below">IP信息下方</option>
+                                <option value="sidebar">侧边栏</option>
+                                <option value="footer">页脚</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sectionTemplate">
+                                默认模板
+                            </label>
+                            <select id="sectionTemplate" class="form-control">
+                                <option value="card-grid">卡片网格</option>
+                                <option value="icon-wall">图标墙</option>
+                                <option value="list">列表</option>
+                                <option value="timeline">时间线</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" id="sectionHidden" style="width: auto; margin-right: 8px;">
+                                <span>隐藏此栏目（不在前端显示）</span>
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeSectionEditModal()">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveSectionEdit()">
+                        <i class="fas fa-save"></i> 保存
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- 用户设置 Tab -->
         <div id="tab-settings" class="tab-pane">
             <div id="settingsAlert" class="alert"></div>
@@ -2511,42 +2610,9 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
         let currentSectionId = null;
         let currentConfigData = null;
         let currentEditingIndex = null; // 当前正在编辑的项目索引
-
-        // 栏目配置映射
-        const sectionConfigMap = {
-            websites: {
-                title: '我的站点',
-                icon: 'fa-globe',
-                field: 'websites',
-                position: 'content-below', // 内容下方
-                defaultTemplate: 'card-grid',
-                itemFields: ['id', 'title', 'url', 'description', 'icon', 'hidden']
-            },
-            projects: {
-                title: '项目集',
-                icon: 'fa-code',
-                field: 'projects',
-                position: 'content-below',
-                defaultTemplate: 'card-grid',
-                itemFields: ['id', 'title', 'url', 'description', 'icon', 'tags', 'hidden']
-            },
-            skills: {
-                title: '技能栈',
-                icon: 'fa-star',
-                field: 'skills',
-                position: 'content-below',
-                defaultTemplate: 'icon-wall',
-                itemFields: ['id', 'name', 'icon', 'level', 'hidden']
-            },
-            timeline: {
-                title: '时间线',
-                icon: 'fa-history',
-                field: 'timeline',
-                position: 'content-below',
-                defaultTemplate: 'list',
-                itemFields: ['id', 'date', 'title', 'description', 'hidden']
-            }
-        };
+        let sectionConfigs = []; // 从 API 加载的栏目配置列表
+        let sectionConfigMap = {}; // 栏目配置映射（id -> config）
+        let currentEditingSectionId = null; // 当前正在编辑的栏目 ID
 
         // 位置选项
         const positionOptions = {
@@ -2575,7 +2641,25 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
             try {
                 container.innerHTML = '<div class="loading">加载中...</div>';
 
-                // 从前端配置加载数据
+                // 1. 从 API 加载栏目配置
+                console.log('📡 请求栏目配置...');
+                const sectionsResponse = await fetch('/admin/api/sections');
+                const sectionsData = await sectionsResponse.json();
+
+                if (!sectionsData.success) {
+                    throw new Error(sectionsData.message || '加载栏目配置失败');
+                }
+
+                sectionConfigs = sectionsData.sections || [];
+                console.log('✅ 栏目配置加载完成:', sectionConfigs.length, '个栏目');
+
+                // 构建 sectionConfigMap
+                sectionConfigMap = {};
+                sectionConfigs.forEach(section => {
+                    sectionConfigMap[section.id] = section;
+                });
+
+                // 2. 从前端配置加载数据
                 console.log('📡 请求前端配置数据...');
                 const response = await fetch('/admin/api/config/frontend');
                 console.log('📬 响应状态:', response.status, response.statusText);
@@ -2597,12 +2681,7 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                 // 解析配置内容
                 console.log('🔄 解析配置内容...');
                 currentConfigData = parseConfigContent(data.content);
-                console.log('✅ 配置解析完成:', {
-                    websites: currentConfigData.websites?.length || 0,
-                    projects: currentConfigData.projects?.length || 0,
-                    skills: currentConfigData.skills?.length || 0,
-                    timeline: currentConfigData.timeline?.length || 0
-                });
+                console.log('✅ 配置解析完成');
 
                 // 渲染栏目列表
                 console.log('🎨 渲染栏目列表...');
@@ -2625,17 +2704,21 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
         function renderSectionsList() {
             const container = document.getElementById('sectionsListContainer');
 
-            if (!currentConfigData) {
+            if (!currentConfigData || !sectionConfigs) {
                 container.innerHTML = '<div class="empty">无法加载配置数据</div>';
                 return;
             }
 
-            const sections = [
-                { id: 'websites', ...sectionConfigMap.websites, items: currentConfigData.websites || [] },
-                { id: 'projects', ...sectionConfigMap.projects, items: currentConfigData.projects || [] },
-                { id: 'skills', ...sectionConfigMap.skills, items: currentConfigData.skills || [] },
-                { id: 'timeline', ...sectionConfigMap.timeline, items: currentConfigData.timeline || [] }
-            ];
+            // 从 sectionConfigs 构建列表，包含配置和数据
+            const sections = sectionConfigs.map(section => ({
+                ...section,
+                items: currentConfigData[section.field] || []
+            }));
+
+            if (sections.length === 0) {
+                container.innerHTML = '<div class="empty">还没有栏目，点击右上角"新建栏目"开始创建</div>';
+                return;
+            }
 
             container.innerHTML = `
                 <div class="data-table-wrapper">
@@ -2644,14 +2727,15 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                             <tr>
                                 <th style="width: 60px;">图标</th>
                                 <th>栏目名称</th>
-                                <th style="width: 140px;">显示位置</th>
-                                <th style="width: 100px;">项目数</th>
-                                <th style="width: 100px;">操作</th>
+                                <th style="width: 120px;">显示位置</th>
+                                <th style="width: 80px;">状态</th>
+                                <th style="width: 80px;">项目数</th>
+                                <th style="width: 160px;">操作</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${sections.map(section => `
-                                <tr>
+                                <tr style="${section.hidden ? 'opacity: 0.5;' : ''}">
                                     <td style="text-align: center;">
                                         <i class="fas ${section.icon}" style="font-size: 20px; color: var(--accent);"></i>
                                     </td>
@@ -2666,13 +2750,25 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                                         </span>
                                     </td>
                                     <td style="text-align: center;">
+                                        ${section.hidden ?
+                                            '<span style="background: #ccc; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px;">隐藏</span>' :
+                                            '<span style="background: var(--success); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px;">显示</span>'
+                                        }
+                                    </td>
+                                    <td style="text-align: center;">
                                         <span style="background: var(--accent); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
                                             ${section.items.length}
                                         </span>
                                     </td>
                                     <td style="text-align: center;">
                                         <button class="icon-btn" onclick="viewSectionItems('${section.id}')" title="管理项目">
+                                            <i class="fas fa-list"></i>
+                                        </button>
+                                        <button class="icon-btn" onclick="editSection('${section.id}')" title="编辑栏目">
                                             <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="icon-btn" onclick="deleteSection('${section.id}')" title="删除栏目" style="color: var(--danger);">
+                                            <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
                                 </tr>
@@ -3077,7 +3173,130 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
         // 显示新建栏目弹窗
         function showCreateSectionModal() {
-            alert('新建自定义栏目功能开发中\n\n当前系统支持以下4个默认栏目：\n• 我的站点 (websites)\n• 项目集 (projects)\n• 技能栈 (skills)\n• 时间线 (timeline)\n\n如需添加自定义栏目，请使用「前端配置」Tab 的代码编辑模式进行高级配置');
+            currentEditingSectionId = null; // 标记为新建
+            showSectionEditModal(null);
+        }
+
+        // 编辑栏目
+        function editSection(sectionId) {
+            currentEditingSectionId = sectionId;
+            const section = sectionConfigMap[sectionId];
+            showSectionEditModal(section);
+        }
+
+        // 删除栏目
+        async function deleteSection(sectionId) {
+            const section = sectionConfigMap[sectionId];
+
+            if (!confirm(`确定要删除栏目"${section.title}"吗？\n\n注意：这只会删除栏目配置，不会删除前端配置中的数据。`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/admin/api/sections/${sectionId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || '删除失败');
+                }
+
+                showAlert('sectionsAlert', `已删除栏目: ${section.title}`, 'success');
+
+                // 重新加载栏目列表
+                await loadSectionsList();
+            } catch (error) {
+                showAlert('sectionsAlert', `删除失败: ${error.message}`, 'danger');
+            }
+        }
+
+        // 显示栏目编辑弹窗
+        function showSectionEditModal(section) {
+            const modal = document.getElementById('sectionEditModal');
+            const title = document.getElementById('sectionEditModalTitle');
+            const form = document.getElementById('sectionEditForm');
+
+            // 设置标题
+            title.textContent = section ? '编辑栏目' : '新建栏目';
+
+            // 填充表单
+            if (section) {
+                document.getElementById('sectionId').value = section.id;
+                document.getElementById('sectionId').disabled = true; // 编辑时不允许修改 ID
+                document.getElementById('sectionTitle').value = section.title;
+                document.getElementById('sectionIcon').value = section.icon;
+                document.getElementById('sectionField').value = section.field;
+                document.getElementById('sectionPosition').value = section.position;
+                document.getElementById('sectionTemplate').value = section.defaultTemplate || 'card-grid';
+                document.getElementById('sectionHidden').checked = section.hidden || false;
+            } else {
+                // 新建时清空表单
+                form.reset();
+                document.getElementById('sectionId').disabled = false;
+                document.getElementById('sectionTemplate').value = 'card-grid';
+                document.getElementById('sectionHidden').checked = false;
+            }
+
+            // 显示弹窗
+            modal.style.display = 'flex';
+        }
+
+        // 关闭栏目编辑弹窗
+        function closeSectionEditModal() {
+            document.getElementById('sectionEditModal').style.display = 'none';
+            currentEditingSectionId = null;
+        }
+
+        // 保存栏目配置
+        async function saveSectionEdit() {
+            const isEdit = currentEditingSectionId !== null;
+
+            const sectionData = {
+                id: document.getElementById('sectionId').value.trim(),
+                title: document.getElementById('sectionTitle').value.trim(),
+                icon: document.getElementById('sectionIcon').value.trim(),
+                field: document.getElementById('sectionField').value.trim(),
+                position: document.getElementById('sectionPosition').value,
+                defaultTemplate: document.getElementById('sectionTemplate').value,
+                hidden: document.getElementById('sectionHidden').checked,
+                itemFields: [] // 这里可以后续扩展为可配置的字段
+            };
+
+            // 验证必填字段
+            if (!sectionData.id || !sectionData.title || !sectionData.field) {
+                showAlert('sectionsAlert', '请填写所有必填字段', 'danger');
+                return;
+            }
+
+            try {
+                const url = isEdit ?
+                    `/admin/api/sections/${currentEditingSectionId}` :
+                    '/admin/api/sections';
+
+                const method = isEdit ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(sectionData)
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || '保存失败');
+                }
+
+                showAlert('sectionsAlert', isEdit ? '栏目已更新' : '栏目已创建', 'success');
+
+                // 关闭弹窗并重新加载列表
+                closeSectionEditModal();
+                await loadSectionsList();
+            } catch (error) {
+                showAlert('sectionsAlert', `保存失败: ${error.message}`, 'danger');
+            }
         }
 
         // 显示添加项目弹窗

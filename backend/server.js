@@ -353,6 +353,94 @@ app.get('/health', (req, res) => {
   });
 });
 
+// 初始化默认栏目配置
+function initDefaultSections() {
+  const ConfigManager = require('./utils/config-manager');
+  const configManager = new ConfigManager(path.join(__dirname, '..'));
+
+  try {
+    const sections = configManager.getSections();
+
+    // 如果还没有栏目配置，初始化默认栏目
+    if (!sections || sections.length === 0) {
+      const defaultSections = [
+        {
+          id: 'websites',
+          title: '我的站点',
+          icon: 'fa-globe',
+          field: 'websites',
+          position: 'content-below',
+          defaultTemplate: 'card-grid',
+          hidden: false,
+          itemFields: [
+            { name: 'id', label: 'ID', type: 'text', required: true },
+            { name: 'title', label: '标题', type: 'text', required: true },
+            { name: 'url', label: '链接', type: 'url', required: true },
+            { name: 'description', label: '描述', type: 'textarea', required: false },
+            { name: 'icon', label: '图标', type: 'text', required: false },
+            { name: 'hidden', label: '隐藏', type: 'checkbox', required: false }
+          ]
+        },
+        {
+          id: 'projects',
+          title: '项目集',
+          icon: 'fa-code',
+          field: 'projects',
+          position: 'content-below',
+          defaultTemplate: 'card-grid',
+          hidden: false,
+          itemFields: [
+            { name: 'id', label: 'ID', type: 'text', required: true },
+            { name: 'title', label: '标题', type: 'text', required: true },
+            { name: 'url', label: '链接', type: 'url', required: true },
+            { name: 'description', label: '描述', type: 'textarea', required: false },
+            { name: 'icon', label: '图标', type: 'text', required: false },
+            { name: 'tags', label: '标签', type: 'tags', required: false },
+            { name: 'hidden', label: '隐藏', type: 'checkbox', required: false }
+          ]
+        },
+        {
+          id: 'skills',
+          title: '技能栈',
+          icon: 'fa-star',
+          field: 'skills',
+          position: 'content-below',
+          defaultTemplate: 'icon-wall',
+          hidden: false,
+          itemFields: [
+            { name: 'id', label: 'ID', type: 'text', required: true },
+            { name: 'name', label: '名称', type: 'text', required: true },
+            { name: 'icon', label: '图标', type: 'text', required: false },
+            { name: 'level', label: '熟练度', type: 'number', required: false },
+            { name: 'hidden', label: '隐藏', type: 'checkbox', required: false }
+          ]
+        },
+        {
+          id: 'timeline',
+          title: '时间线',
+          icon: 'fa-history',
+          field: 'timeline',
+          position: 'content-below',
+          defaultTemplate: 'list',
+          hidden: false,
+          itemFields: [
+            { name: 'id', label: 'ID', type: 'text', required: true },
+            { name: 'date', label: '日期', type: 'text', required: true },
+            { name: 'title', label: '标题', type: 'text', required: true },
+            { name: 'description', label: '描述', type: 'textarea', required: false },
+            { name: 'hidden', label: '隐藏', type: 'checkbox', required: false }
+          ]
+        }
+      ];
+
+      configManager.saveSections(defaultSections);
+      console.log('✅ 已初始化默认栏目配置');
+    }
+  } catch (error) {
+    console.error('❌ 初始化栏目配置失败:', error);
+  }
+}
+
 // 启动服务器
 const server = app.listen(config.port, () => {
   console.log('');
@@ -362,6 +450,9 @@ const server = app.listen(config.port, () => {
   console.log(`💾 数据目录: ${config.dataDir}`);
   console.log('');
   console.log('按 Ctrl+C 停止服务器');
+
+  // 初始化栏目配置
+  initDefaultSections();
 });
 
 // 优雅关闭
