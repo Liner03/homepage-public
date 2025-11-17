@@ -582,11 +582,27 @@ async function fetchGitHubContributions(username, forceRefresh = false) {
         // 使用GitHub用户数据进行统计（可能是降级后的数据）
         const githubStats = calculateGitHubStats(userData, repos, events);
 
-        // 2) 渲染贡献日历：优先使用后端代理，失败再用 events 估算
+        // 2) 渲染贡献日历：三级回退策略
+        // 优先级：第三方API (完整数据) > 后端代理 (公开数据) > Events估算
         const source = (CONFIG && CONFIG.github && CONFIG.github.calendarSource) || 'auto';
         console.log('📅 [GitHub Debug] 日历数据源配置:', source);
         let calendarData = null;
-        if (source === 'proxy' || source === 'auto') {
+
+        // 策略1：优先尝试第三方API（可能包含组织私有贡献）
+        if (source === 'third-party' || source === 'auto') {
+            try {
+                console.log('🌐 [GitHub Debug] 尝试第三方API获取完整日历数据...');
+                calendarData = await fetchCalendarViaThirdParty(username, forceRefresh);
+                console.log('✅ [GitHub Debug] 第三方API获取成功, 数据量:', calendarData.map.size, '总贡献:', calendarData.total);
+            } catch (e) {
+                console.warn('❌ [GitHub Debug] 第三方API失败:', e.message);
+                if (source === 'third-party') throw e;
+                console.warn('⚠️ [GitHub Debug] 回退到后端代理...');
+            }
+        }
+
+        // 策略2：回退到后端GraphQL代理（仅公开贡献）
+        if (!calendarData && (source === 'proxy' || source === 'auto')) {
             try {
                 console.log('🌐 [GitHub Debug] 尝试通过后端代理获取日历数据...');
                 calendarData = await fetchCalendarViaProxy(username, forceRefresh);
@@ -597,6 +613,8 @@ async function fetchGitHubContributions(username, forceRefresh = false) {
                 console.warn('⚠️ [GitHub Debug] proxy 获取失败，回退到 events 估算');
             }
         }
+
+        // 策略3：最终回退到Events估算
         if (!calendarData) {
             console.log('📊 [GitHub Debug] 使用 events 构建日历数据, events 数量:', events.length);
             calendarData = buildDailyContribMap(events);
@@ -626,6 +644,77 @@ async function fetchGitHubContributions(username, forceRefresh = false) {
 
         // 4) 添加刷新按钮功能
         addRefreshButton(username);
+
+// 通过第三方API获取完整贡献日历（包含私有仓库）
+async function fetchCalendarViaThirdParty(login, forceRefresh = false) {
+    console.log('🌐 [Third-Party API] 尝试使用第三方API获取完整贡献数据...');
+
+    try {
+        // 使用第三方API: https://github.com/rschristian/github-contribution-calendar-api
+        const apiUrl = `https://gh-calendar.rschristian.dev/user/${encodeURIComponent(login)}`;
+        const cacheBuster = forceRefresh ? Date.now() : Math.floor(Date.now() / (5 * 60 * 1000));
+        const finalUrl = `${apiUrl}?_t=${cacheBuster}`;
+
+        console.log('🔗 [Third-Party API] 请求URL:', finalUrl);
+
+        const response = await fetch(finalUrl, {
+            cache: 'no-cache',
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Third-party API failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('📦 [Third-Party API] 原始响应数据:', {
+            total: data.total,
+            weeksCount: data.contributions?.length,
+            sampleWeek: data.contributions?.[0]
+        });
+
+        // 转换数据格式为我们系统使用的格式
+        const now = new Date();
+        const to = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+        const from = new Date(to);
+        from.setDate(from.getDate() - 365);
+
+        const map = new Map();
+        let totalCount = 0;
+
+        // 第三方API返回格式: { contributions: DateItem[][], total: number }
+        // DateItem: { date: string, count: number, intensity: number }
+        if (data.contributions && Array.isArray(data.contributions)) {
+            for (const week of data.contributions) {
+                if (Array.isArray(week)) {
+                    for (const day of week) {
+                        if (day && day.date) {
+                            map.set(day.date, day.count || 0);
+                            totalCount += day.count || 0;
+                        }
+                    }
+                }
+            }
+        }
+
+        console.log('✅ [Third-Party API] 数据转换完成:', {
+            daysCount: map.size,
+            totalContributions: totalCount,
+            apiTotal: data.total,
+            前5天: Array.from(map.entries()).slice(0, 5),
+            后5天: Array.from(map.entries()).slice(-5)
+        });
+
+        return { map, start: from, end: to, source: 'third-party', total: totalCount };
+
+    } catch (error) {
+        console.warn('⚠️ [Third-Party API] 第三方API失败:', error.message);
+        throw error; // 抛出错误以便回退到其他方案
+    }
+}
 
 // 通过后端代理获取精确贡献日历（GraphQL）
 async function fetchCalendarViaProxy(login, forceRefresh = false) {
