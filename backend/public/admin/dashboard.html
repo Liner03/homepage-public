@@ -2186,403 +2186,290 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
             }
         }
 
+        // 全局变量存储当前查看的栏目
+        let currentSectionId = null;
+        let currentConfigData = null;
+
+        // 栏目配置映射
+        const sectionConfigMap = {
+            websites: { title: '我的站点', icon: 'fa-globe', field: 'websites' },
+            projects: { title: '项目集', icon: 'fa-code', field: 'projects' },
+            skills: { title: '技能栈', icon: 'fa-star', field: 'skills' },
+            timeline: { title: '时间线', icon: 'fa-history', field: 'timeline' }
+        };
+
         // 加载栏目管理（新版）
         async function loadSectionManagement() {
-            // 默认加载第一个子tab的内容
-            loadSectionContent('websites');
+            // 显示栏目列表视图
+            document.getElementById('sectionsListView').style.display = 'block';
+            document.getElementById('sectionItemsView').style.display = 'none';
+
+            // 加载栏目列表
+            await loadSectionsList();
         }
 
-        // 加载指定栏目的内容
-        async function loadSectionContent(sectionName) {
+        // 加载栏目列表
+        async function loadSectionsList() {
+            const container = document.getElementById('sectionsListContainer');
+
             try {
+                container.innerHTML = '<div class="loading">加载中...</div>';
+
                 // 从前端配置加载数据
                 const response = await fetch('/admin/api/config/frontend');
                 const data = await response.json();
 
                 if (!data.success) {
-                    showSectionsAlert('danger', '加载失败: ' + data.message);
+                    container.innerHTML = `<div class="empty" style="color: var(--danger);">加载失败: ${data.message}</div>`;
                     return;
                 }
 
-                const config = parseConfigContent(data.content);
+                currentConfigData = parseConfigContent(data.content);
 
-                // 根据栏目类型渲染不同的管理界面
-                switch(sectionName) {
-                    case 'websites':
-                        renderWebsitesManagement(config.websites || []);
-                        break;
-                    case 'projects':
-                        renderProjectsManagement(config.projects || []);
-                        break;
-                    case 'skills':
-                        renderSkillsManagement(config.skills || []);
-                        break;
-                    case 'timeline':
-                        renderTimelineManagement(config.timeline || []);
-                        break;
-                }
+                // 渲染栏目列表
+                renderSectionsList();
+
             } catch (error) {
-                showSectionsAlert('danger', '加载失败: ' + error.message);
+                container.innerHTML = `<div class="empty" style="color: var(--danger);">加载失败: ${error.message}</div>`;
             }
         }
-
-        // 渲染站点管理列表
-        function renderWebsitesManagement(websites) {
-            const container = document.getElementById('websitesManagement');
-            if (!websites || websites.length === 0) {
-                container.innerHTML = '<div class="empty">暂无站点，点击"添加站点"开始创建</div>';
-                return;
-            }
-
-            container.innerHTML = `<div class="data-table-wrapper">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>顺序</th>
-                            <th>标题</th>
-                            <th>URL</th>
-                            <th>描述</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${websites.map((site, index) => `
-                            <tr>
-                                <td>${index + 1}</td>
-                                <td>${site.title || site.name || ''}</td>
-                                <td><a href="${site.url}" target="_blank" style="color: var(--accent);">${site.url}</a></td>
-                                <td>${site.description || ''}</td>
-                                <td>
-                                    <button class="icon-btn" onclick="alert('编辑功能开发中')" title="编辑">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="icon-btn" onclick="alert('删除功能开发中')" title="删除" style="color: var(--danger);">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>`;
-        }
-
-        // 渲染项目管理列表
-        function renderProjectsManagement(projects) {
-            const container = document.getElementById('projectsManagement');
-            if (!projects || projects.length === 0) {
-                container.innerHTML = '<div class="empty">暂无项目，点击"添加项目"开始创建</div>';
-                return;
-            }
-
-            container.innerHTML = `<div class="data-table-wrapper">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>顺序</th>
-                            <th>标题</th>
-                            <th>URL</th>
-                            <th>描述</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${projects.map((project, index) => `
-                            <tr>
-                                <td>${index + 1}</td>
-                                <td>${project.title || project.name || ''}</td>
-                                <td><a href="${project.url}" target="_blank" style="color: var(--accent);">${project.url}</a></td>
-                                <td>${project.description || ''}</td>
-                                <td>
-                                    <button class="icon-btn" onclick="alert('编辑功能开发中')" title="编辑">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="icon-btn" onclick="alert('删除功能开发中')" title="删除" style="color: var(--danger);">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>`;
-        }
-
-        // 渲染技能管理列表
-        function renderSkillsManagement(skills) {
-            const container = document.getElementById('skillsManagement');
-            if (!skills || skills.length === 0) {
-                container.innerHTML = '<div class="empty">暂无技能，点击"添加技能"开始创建</div>';
-                return;
-            }
-
-            container.innerHTML = `<div class="data-table-wrapper">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>顺序</th>
-                            <th>名称</th>
-                            <th>等级</th>
-                            <th>图标</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${skills.map((skill, index) => `
-                            <tr>
-                                <td>${index + 1}</td>
-                                <td>${skill.name || ''}</td>
-                                <td>${skill.level || 0}/5</td>
-                                <td>${skill.icon || ''}</td>
-                                <td>
-                                    <button class="icon-btn" onclick="alert('编辑功能开发中')" title="编辑">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="icon-btn" onclick="alert('删除功能开发中')" title="删除" style="color: var(--danger);">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>`;
-        }
-
-        // 渲染时间线管理列表
-        function renderTimelineManagement(timeline) {
-            const container = document.getElementById('timelineManagement');
-            if (!timeline || timeline.length === 0) {
-                container.innerHTML = '<div class="empty">暂无事件，点击"添加事件"开始创建</div>';
-                return;
-            }
-
-            container.innerHTML = `<div class="data-table-wrapper">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>顺序</th>
-                            <th>日期</th>
-                            <th>标题</th>
-                            <th>描述</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${timeline.map((event, index) => `
-                            <tr>
-                                <td>${index + 1}</td>
-                                <td>${event.date || ''}</td>
-                                <td>${event.title || ''}</td>
-                                <td>${event.description || ''}</td>
-                                <td>
-                                    <button class="icon-btn" onclick="alert('编辑功能开发中')" title="编辑">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="icon-btn" onclick="alert('删除功能开发中')" title="删除" style="color: var(--danger);">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>`;
-        }
-
-        // 添加栏目功能的占位函数
-        function addWebsiteInSection() { alert('添加站点功能开发中，请暂时使用"前端配置"Tab进行管理'); }
-        function addProjectInSection() { alert('添加项目功能开发中，请暂时使用"前端配置"Tab进行管理'); }
-        function addSkillInSection() { alert('添加技能功能开发中，请暂时使用"前端配置"Tab进行管理'); }
-        function addTimelineInSection() { alert('添加事件功能开发中，请暂时使用"前端配置"Tab进行管理'); }
 
         // 渲染栏目列表
         function renderSectionsList() {
-            const container = document.getElementById('sectionsContainer');
+            const container = document.getElementById('sectionsListContainer');
 
-            if (!sectionsData || sectionsData.length === 0) {
-                container.innerHTML = '<div class="empty">暂无栏目，点击"新建栏目"开始创建</div>';
+            if (!currentConfigData) {
+                container.innerHTML = '<div class="empty">无法加载配置数据</div>';
                 return;
             }
 
-            container.innerHTML = sectionsData.map(section => `
-                <div class="section-item">
-                    <div class="section-item-header">
-                        <div class="section-item-title">
-                            <i class="fas ${section.icon || 'fa-cube'}"></i>
-                            <span>${section.title}</span>
-                            ${section.enabled ? '<span class="badge badge-success">已启用</span>' : '<span class="badge badge-secondary">已禁用</span>'}
-                        </div>
-                        <div class="section-item-actions">
-                            <button class="icon-btn" onclick="editSection('${section.id}')" title="编辑">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="icon-btn" onclick="deleteSection('${section.id}')" title="删除" style="color: var(--danger);">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div style="font-size: 13px; color: var(--text-secondary);">
-                        ID: ${section.id} | 模板: ${section.template || 'card-grid'} | 内容项: ${section.items?.length || 0}
-                    </div>
+            const sections = [
+                { id: 'websites', ...sectionConfigMap.websites, items: currentConfigData.websites || [] },
+                { id: 'projects', ...sectionConfigMap.projects, items: currentConfigData.projects || [] },
+                { id: 'skills', ...sectionConfigMap.skills, items: currentConfigData.skills || [] },
+                { id: 'timeline', ...sectionConfigMap.timeline, items: currentConfigData.timeline || [] }
+            ];
+
+            container.innerHTML = `
+                <div class="data-table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">图标</th>
+                                <th>栏目名称</th>
+                                <th style="width: 120px;">项目数</th>
+                                <th style="width: 120px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${sections.map(section => `
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <i class="fas ${section.icon}" style="font-size: 20px; color: var(--accent);"></i>
+                                    </td>
+                                    <td>
+                                        <strong>${section.title}</strong>
+                                        <br>
+                                        <small style="color: #666;">${section.id}</small>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <span style="background: var(--accent); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                                            ${section.items.length}
+                                        </span>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <button class="btn btn-sm btn-primary" onclick="viewSectionItems('${section.id}')">
+                                            <i class="fas fa-edit"></i> 管理项目
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
                 </div>
-            `).join('');
+            `;
         }
 
-        // 显示栏目编辑弹窗
-        function showSectionModal(sectionId = null) {
-            const modal = document.getElementById('sectionModal');
-            const form = document.getElementById('sectionForm');
-            form.reset();
+        // 查看栏目项目
+        function viewSectionItems(sectionId) {
+            currentSectionId = sectionId;
+            const section = sectionConfigMap[sectionId];
 
-            if (sectionId) {
-                // 编辑模式
-                currentSection = sectionsData.find(s => s.id === sectionId);
-                document.getElementById('modalTitle').textContent = '编辑栏目';
-                document.getElementById('sectionId').value = currentSection.id;
-                document.getElementById('sectionId').disabled = true;
-                document.getElementById('sectionTitle').value = currentSection.title;
-                document.getElementById('sectionIcon').value = currentSection.icon || '';
-                document.getElementById('sectionEnabled').checked = currentSection.enabled !== false;
-                document.getElementById('sectionTemplate').value = currentSection.customHTML || '';
-
-                // 设置模板
-                currentTemplate = currentSection.template || 'card-grid';
-                selectTemplate(currentTemplate);
-
-                // 加载内容项
-                // TODO: 实现内容项加载
-            } else {
-                // 新建模式
-                currentSection = null;
-                document.getElementById('modalTitle').textContent = '新建栏目';
-                document.getElementById('sectionId').disabled = false;
-                currentTemplate = 'card-grid';
-                selectTemplate('card-grid');
-            }
-
-            modal.classList.add('show');
-        }
-
-        // 关闭弹窗
-        function closeSectionModal() {
-            document.getElementById('sectionModal').classList.remove('show');
-            currentSection = null;
-        }
-
-        // 选择模板
-        function selectTemplate(templateName) {
-            currentTemplate = templateName;
-
-            // 更新模板卡片选中状态
-            document.querySelectorAll('.template-card').forEach(card => {
-                card.classList.remove('selected');
-                if (card.dataset.template === templateName) {
-                    card.classList.add('selected');
-                }
-            });
-
-            // 更新模板 HTML 编辑器
-            const templateField = document.getElementById('templateHTMLField');
-            const templateEditor = document.getElementById('sectionTemplate');
-
-            if (templateName === 'custom') {
-                templateField.style.display = 'flex';
-            } else {
-                templateField.style.display = 'none';
-                // 加载预设模板
-                const templates = {
-                    'card-grid': '<div class="site-card">\\n  <div class="site-icon"><i class="fas {{icon}}"></i></div>\\n  <div class="site-info">\\n    <h3>{{title}}</h3>\\n    <p>{{description}}</p>\\n  </div>\\n</div>',
-                    'icon-wall': '<div class="skill-icon" title="{{name}} - {{level}}">\\n  <i class="fas {{icon}}"></i>\\n</div>',
-                    'list': '<div class="timeline-item">\\n  <div class="timeline-date">{{date}}</div>\\n  <div class="timeline-content">{{title}}</div>\\n</div>'
-                };
-                templateEditor.value = templates[templateName] || '';
-            }
-        }
-
-        // 添加内容项
-        function addSectionItem() {
-            // TODO: 实现动态内容项管理
-            showSectionsAlert('info', '内容项管理功能开发中...');
-        }
-
-        // 编辑栏目
-        function editSection(sectionId) {
-            showSectionModal(sectionId);
-        }
-
-        // 删除栏目
-        async function deleteSection(sectionId) {
-            if (!confirm('确定要删除这个栏目吗？')) return;
-
-            try {
-                const response = await fetch(`/admin/api/sections/${sectionId}`, {
-                    method: 'DELETE'
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showSectionsAlert('success', '删除成功！');
-                    loadSections();
-                } else {
-                    showSectionsAlert('danger', '删除失败: ' + data.message);
-                }
-            } catch (error) {
-                showSectionsAlert('danger', '删除失败: ' + error.message);
-            }
-        }
-
-        // 保存栏目
-        async function saveSectionmodal() {
-            const id = document.getElementById('sectionId').value.trim();
-            const title = document.getElementById('sectionTitle').value.trim();
-            const icon = document.getElementById('sectionIcon').value.trim();
-            const enabled = document.getElementById('sectionEnabled').checked;
-            const customHTML = document.getElementById('sectionTemplate').value;
-
-            if (!id || !title) {
-                showSectionsAlert('warning', '请填写栏目 ID 和标题');
+            if (!section) {
+                alert('未知的栏目类型');
                 return;
             }
 
-            const sectionData = {
-                id,
-                title,
-                icon,
-                enabled,
-                template: currentTemplate,
-                customHTML: currentTemplate === 'custom' ? customHTML : '',
-                items: [] // TODO: 添加内容项数据
-            };
+            // 显示项目视图，隐藏列表视图
+            document.getElementById('sectionsListView').style.display = 'none';
+            document.getElementById('sectionItemsView').style.display = 'block';
 
-            try {
-                const method = currentSection ? 'PUT' : 'POST';
-                const url = currentSection ? `/admin/api/sections/${id}` : '/admin/api/sections';
+            // 设置标题
+            document.getElementById('currentSectionTitle').innerHTML = `
+                <i class="fas ${section.icon}"></i> ${section.title}
+            `;
 
-                const response = await fetch(url, {
-                    method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(sectionData)
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showSectionsAlert('success', currentSection ? '更新成功！' : '创建成功！');
-                    closeSectionModal();
-                    loadSections();
-                } else {
-                    showSectionsAlert('danger', '保存失败: ' + data.message);
-                }
-            } catch (error) {
-                showSectionsAlert('danger', '保存失败: ' + error.message);
-            }
+            // 渲染项目列表
+            renderSectionItems(sectionId);
         }
 
-        // 显示栏目管理提示
-        function showSectionsAlert(type, message) {
-            showAlert('sectionsAlert', type, message);
+        // 渲染栏目项目列表
+        function renderSectionItems(sectionId) {
+            const container = document.getElementById('sectionItemsContainer');
+            const section = sectionConfigMap[sectionId];
+            const items = currentConfigData[section.field] || [];
+
+            if (items.length === 0) {
+                container.innerHTML = '<div class="empty">暂无项目，点击右上角"添加项目"开始创建</div>';
+                return;
+            }
+
+            // 根据栏目类型渲染不同的表格
+            let tableHTML = '';
+
+            switch(sectionId) {
+                case 'websites':
+                case 'projects':
+                    tableHTML = `
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">顺序</th>
+                                    <th>标题</th>
+                                    <th>URL</th>
+                                    <th>描述</th>
+                                    <th style="width: 120px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${items.map((item, index) => `
+                                    <tr>
+                                        <td style="text-align: center;">${index + 1}</td>
+                                        <td><strong>${item.title || item.name || ''}</strong></td>
+                                        <td><a href="${item.url || '#'}" target="_blank" style="color: var(--accent);">${item.url || ''}</a></td>
+                                        <td style="color: #666; font-size: 13px;">${item.description || ''}</td>
+                                        <td style="text-align: center;">
+                                            <button class="icon-btn" onclick="editSectionItem(${index})" title="编辑">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="icon-btn" onclick="deleteSectionItem(${index})" title="删除" style="color: var(--danger);">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                    break;
+
+                case 'skills':
+                    tableHTML = `
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">顺序</th>
+                                    <th>名称</th>
+                                    <th style="width: 120px;">等级</th>
+                                    <th>图标</th>
+                                    <th style="width: 120px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${items.map((item, index) => `
+                                    <tr>
+                                        <td style="text-align: center;">${index + 1}</td>
+                                        <td><strong>${item.name || ''}</strong></td>
+                                        <td style="text-align: center;">
+                                            <span style="color: var(--accent);">${item.level || 0}/5</span>
+                                        </td>
+                                        <td>${item.icon || ''}</td>
+                                        <td style="text-align: center;">
+                                            <button class="icon-btn" onclick="editSectionItem(${index})" title="编辑">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="icon-btn" onclick="deleteSectionItem(${index})" title="删除" style="color: var(--danger);">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                    break;
+
+                case 'timeline':
+                    tableHTML = `
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">顺序</th>
+                                    <th style="width: 120px;">日期</th>
+                                    <th>标题</th>
+                                    <th>描述</th>
+                                    <th style="width: 120px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${items.map((item, index) => `
+                                    <tr>
+                                        <td style="text-align: center;">${index + 1}</td>
+                                        <td>${item.date || ''}</td>
+                                        <td><strong>${item.title || ''}</strong></td>
+                                        <td style="color: #666; font-size: 13px;">${item.description || ''}</td>
+                                        <td style="text-align: center;">
+                                            <button class="icon-btn" onclick="editSectionItem(${index})" title="编辑">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="icon-btn" onclick="deleteSectionItem(${index})" title="删除" style="color: var(--danger);">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                    break;
+            }
+
+            container.innerHTML = `<div class="data-table-wrapper">${tableHTML}</div>`;
+        }
+
+        // 返回栏目列表
+        function backToSectionsList() {
+            currentSectionId = null;
+            document.getElementById('sectionsListView').style.display = 'block';
+            document.getElementById('sectionItemsView').style.display = 'none';
+        }
+
+        // 编辑栏目项目
+        function editSectionItem(index) {
+            alert(`编辑功能开发中 - 索引: ${index}\n\n当前请使用「前端配置」Tab 的代码编辑模式进行高级编辑`);
+        }
+
+        // 删除栏目项目
+        function deleteSectionItem(index) {
+            if (!confirm('确定要删除这个项目吗？')) {
+                return;
+            }
+            alert(`删除功能开发中 - 索引: ${index}\n\n当前请使用「前端配置」Tab 的代码编辑模式进行高级编辑`);
+        }
+
+        // 显示新建栏目弹窗
+        function showCreateSectionModal() {
+            alert('新建自定义栏目功能开发中\n\n当前系统支持以下4个默认栏目：\n• 我的站点 (websites)\n• 项目集 (projects)\n• 技能栈 (skills)\n• 时间线 (timeline)\n\n如需添加自定义栏目，请使用「前端配置」Tab 的代码编辑模式进行高级配置');
+        }
+
+        // 显示添加项目弹窗
+        function showAddItemModal() {
+            alert(`添加项目功能开发中\n\n当前请使用「前端配置」Tab 的可视化表单或代码编辑模式添加项目`);
+        }
+
+        // 关闭栏目弹窗
+        function closeSectionModal() {
+            document.getElementById('sectionModal').style.display = 'none';
         }
 
         // ==================== 页面初始化 ====================
