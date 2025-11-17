@@ -338,6 +338,26 @@ app.delete('/api/theme', (req, res) => {
   }
 });
 
+// 7. 栏目配置 - GET（公开API，前端使用）
+app.get('/api/sections', (req, res) => {
+  try {
+    const ConfigManager = require('./utils/config-manager');
+    const configManager = new ConfigManager(path.join(__dirname, '..'));
+    const sections = configManager.getSections();
+
+    res.json({
+      success: true,
+      sections: sections || []
+    });
+  } catch (error) {
+    console.error('获取栏目配置失败:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 // OPTIONS 预检请求处理
 app.options('*', cors(config.cors));
 
