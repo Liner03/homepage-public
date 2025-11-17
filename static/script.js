@@ -1176,10 +1176,6 @@ function renderContribCalendar(contrib) {
     gridEl.innerHTML = '';
     legendEl.innerHTML = '';
 
-    // 确保容器可见（初始状态是 display:none）
-    container.style.display = '';
-    console.log('✅ [GitHub Debug] 日历容器已设置为可见');
-
     const { map } = contrib;
     console.log('📊 [GitHub Debug] 贡献数据 map 大小:', map.size);
     console.log('📊 [GitHub Debug] 贡献数据前5条:', Array.from(map.entries()).slice(0, 5));
@@ -1196,6 +1192,10 @@ function renderContribCalendar(contrib) {
 
     // 渲染格子（按列填充）
     let lastMonth = -1;
+    let renderedCount = 0;
+    let nonZeroCount = 0;
+    const sampleKeys = [];
+    const mapKeys = Array.from(map.keys()).slice(0, 5);
     for (let d = new Date(start); d <= alignedEnd; d.setDate(d.getDate() + 1)) {
         // 使用本地日期字符串，避免时区转换问题
         const year = d.getFullYear();
@@ -1209,6 +1209,13 @@ function renderContribCalendar(contrib) {
         cell.style.backgroundColor = levelColor(level);
         cell.title = `${key}: ${count} contributions`;
         gridEl.appendChild(cell);
+
+        // 收集调试信息
+        renderedCount++;
+        if (count > 0) nonZeroCount++;
+        if (sampleKeys.length < 5) {
+            sampleKeys.push({ key, count, level, color: levelColor(level) });
+        }
 
         // 月份标签：在“该月的第一周”显示（第一天所在列）
         if (d.getDate() === 1) {
@@ -1240,6 +1247,17 @@ function renderContribCalendar(contrib) {
     legendEl.innerHTML = `少`
         + legend.map(i => `<span class="legend-swatch" style="background:${levelColor(i)}"></span>`).join('')
         + `多`;
+
+    console.log('✅ [GitHub Debug] 日历渲染完成！', {
+        渲染的格子数: gridEl.childElementCount,
+        非零格子数: nonZeroCount,
+        月份标签数: monthsEl.childElementCount,
+        图例HTML长度: legendEl.innerHTML.length,
+        容器display: container.style.display,
+        容器computed_display: window.getComputedStyle(container).display,
+        前5个Map键: mapKeys,
+        前5个渲染键: sampleKeys
+    });
 
     // 添加移动端滚动提示
     addScrollHintForMobile();

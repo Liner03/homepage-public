@@ -167,6 +167,52 @@
             display: none; /* 简化设计，不显示下划线 */
         }
 
+        /* ========== 栏目子导航 ========== */
+        .section-sub-nav {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .section-sub-tab {
+            padding: 10px 20px;
+            background: var(--card-bg);
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .section-sub-tab:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .section-sub-tab.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            box-shadow: var(--shadow-md);
+        }
+
+        .section-sub-pane {
+            display: none;
+        }
+
+        .section-sub-pane.active {
+            display: block;
+        }
+
         .tab-pane {
             display: none;
         }
@@ -258,14 +304,20 @@
             padding: 36px;
         }
 
-        /* 表单底部按钮区域 */
+        /* 表单操作按钮 - 粘性定位在顶部 */
         .form-actions {
+            position: sticky;
+            top: 0;
+            z-index: 100;
             display: flex;
             justify-content: flex-end;
             gap: 12px;
-            padding-top: 24px;
-            margin-top: 32px;
-            border-top: 1px solid var(--border-color);
+            padding: 16px 20px;
+            margin: -36px -36px 24px -36px;  /* 负边距使其贴合card边缘 */
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 1px 0 var(--border-color);
         }
 
         /* ========== 表格 ========== */
@@ -796,6 +848,12 @@
                     <div id="frontendFormMode" style="display: block;">
                         <p style="color: #666; margin-bottom: 20px;">通过可视化表单编辑前端配置</p>
                         <form id="frontendVisualForm" class="form-grid">
+                            <!-- 操作按钮 - 粘性定位在顶部 -->
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="loadFrontendConfig()">重置</button>
+                                <button type="submit" class="btn btn-primary">保存配置</button>
+                            </div>
+
                             <h4>👤 个人信息</h4>
                             <div class="form-field">
                                 <label>姓名</label>
@@ -928,11 +986,6 @@
                             <div id="timelineContainer">
                                 <!-- 时间线列表将动态插入这里 -->
                             </div>
-
-                            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                                <button type="button" class="btn btn-secondary" onclick="loadFrontendConfig()">重置</button>
-                                <button type="submit" class="btn btn-primary">保存配置</button>
-                            </div>
                         </form>
                     </div>
 
@@ -940,11 +993,13 @@
                     <div id="frontendCodeMode" style="display: none;">
                         <p style="color: #666; margin-bottom: 20px;">直接编辑 config.js 代码</p>
                         <form id="frontendCodeForm">
-                            <textarea id="frontendConfigEditor" class="code-editor" placeholder="加载中..."></textarea>
-                            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                            <!-- 操作按钮 - 粘性定位在顶部 -->
+                            <div class="form-actions">
                                 <button type="button" class="btn btn-secondary" onclick="loadFrontendConfig()">重置</button>
                                 <button type="submit" class="btn btn-primary">保存配置</button>
                             </div>
+
+                            <textarea id="frontendConfigEditor" class="code-editor" placeholder="加载中..."></textarea>
                         </form>
                     </div>
                 </div>
@@ -963,6 +1018,12 @@
                     <p style="color: #666; margin-bottom: 20px;">修改后需要重启服务器才能生效</p>
 
                     <form id="envForm" class="form-grid">
+                        <!-- 操作按钮 - 粘性定位在顶部 -->
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="loadEnvConfig()">重置</button>
+                            <button type="submit" class="btn btn-primary">保存配置</button>
+                        </div>
+
                         <div class="form-field">
                             <label for="PORT">服务器端口</label>
                             <input type="number" id="PORT" name="PORT" placeholder="3000">
@@ -1026,11 +1087,6 @@
                             <input type="text" id="SESSION_SECRET" name="SESSION_SECRET" placeholder="随机字符串">
                             <small>用于加密 session，建议使用长随机字符串</small>
                         </div>
-
-                        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                            <button type="button" class="btn btn-secondary" onclick="loadEnvConfig()">重置</button>
-                            <button type="submit" class="btn btn-primary">保存配置</button>
-                        </div>
                     </form>
                 </div>
             </div>
@@ -1040,17 +1096,86 @@
         <div id="tab-sections" class="tab-pane">
             <div id="sectionsAlert" class="alert"></div>
 
-            <!-- 栏目列表 -->
-            <div class="card">
-                <div class="card-header">
-                    <h2><i class="fas fa-th-large"></i> 动态栏目</h2>
-                    <button class="btn btn-primary" onclick="showSectionModal()">
-                        <i class="fas fa-plus"></i> 新建栏目
-                    </button>
+            <!-- 栏目子导航 -->
+            <div class="section-sub-nav">
+                <button class="section-sub-tab active" onclick="switchSectionTab('websites')">
+                    <i class="fas fa-globe"></i> 我的站点
+                </button>
+                <button class="section-sub-tab" onclick="switchSectionTab('projects')">
+                    <i class="fas fa-code"></i> 项目集
+                </button>
+                <button class="section-sub-tab" onclick="switchSectionTab('skills')">
+                    <i class="fas fa-tools"></i> 技能栈
+                </button>
+                <button class="section-sub-tab" onclick="switchSectionTab('timeline')">
+                    <i class="fas fa-clock"></i> 时间线
+                </button>
+            </div>
+
+            <!-- 我的站点管理 -->
+            <div id="section-websites" class="section-sub-pane active">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>🌐 我的站点</h2>
+                        <button class="btn btn-primary" onclick="addWebsiteInSection()">
+                            <i class="fas fa-plus"></i> 添加站点
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="websitesManagement">
+                            <div class="loading">加载中...</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div id="sectionsContainer">
-                        <div class="loading">加载中...</div>
+            </div>
+
+            <!-- 项目集管理 -->
+            <div id="section-projects" class="section-sub-pane">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>💼 项目集</h2>
+                        <button class="btn btn-primary" onclick="addProjectInSection()">
+                            <i class="fas fa-plus"></i> 添加项目
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="projectsManagement">
+                            <div class="loading">加载中...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 技能栈管理 -->
+            <div id="section-skills" class="section-sub-pane">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>🛠️ 技能栈</h2>
+                        <button class="btn btn-primary" onclick="addSkillInSection()">
+                            <i class="fas fa-plus"></i> 添加技能
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="skillsManagement">
+                            <div class="loading">加载中...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 时间线管理 -->
+            <div id="section-timeline" class="section-sub-pane">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>📅 时间线</h2>
+                        <button class="btn btn-primary" onclick="addTimelineInSection()">
+                            <i class="fas fa-plus"></i> 添加事件
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="timelineManagement">
+                            <div class="loading">加载中...</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1166,6 +1291,12 @@
                 </div>
                 <div class="card-body">
                     <form id="passwordForm" class="form-grid" style="max-width: 500px;">
+                        <!-- 操作按钮 - 粘性定位在顶部 -->
+                        <div class="form-actions" style="margin: -36px -36px 24px 0;">
+                            <button type="reset" class="btn btn-secondary">重置</button>
+                            <button type="submit" class="btn btn-primary">修改密码</button>
+                        </div>
+
                         <div class="form-field">
                             <label for="currentPassword">当前密码</label>
                             <input type="password" id="currentPassword" name="currentPassword" required>
@@ -1180,11 +1311,6 @@
                         <div class="form-field">
                             <label for="confirmPassword">确认新密码</label>
                             <input type="password" id="confirmPassword" name="confirmPassword" required>
-                        </div>
-
-                        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                            <button type="reset" class="btn btn-secondary">重置</button>
-                            <button type="submit" class="btn btn-primary">修改密码</button>
                         </div>
                     </form>
                 </div>
@@ -1213,8 +1339,26 @@
             } else if (tabName === 'backend') {
                 loadEnvConfig();
             } else if (tabName === 'sections') {
-                loadSections();
+                loadSectionManagement();
             }
+        }
+
+        // 栏目子Tab切换
+        function switchSectionTab(sectionName) {
+            // 隐藏所有子tab面板
+            document.querySelectorAll('.section-sub-pane').forEach(pane => {
+                pane.classList.remove('active');
+            });
+            document.querySelectorAll('.section-sub-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // 显示选中的子tab
+            document.getElementById(`section-${sectionName}`).classList.add('active');
+            event.target.classList.add('active');
+
+            // 加载对应数据
+            loadSectionContent(sectionName);
         }
 
         // ==================== 认证相关 ====================
@@ -2078,22 +2222,215 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
         let currentSection = null;
         let currentTemplate = 'card-grid';
 
-        // 加载栏目列表
-        async function loadSections() {
+        // 加载栏目管理（新版）
+        async function loadSectionManagement() {
+            // 默认加载第一个子tab的内容
+            loadSectionContent('websites');
+        }
+
+        // 加载指定栏目的内容
+        async function loadSectionContent(sectionName) {
             try {
-                const response = await fetch('/admin/api/sections');
+                // 从前端配置加载数据
+                const response = await fetch('/admin/api/frontend-config');
                 const data = await response.json();
 
-                if (data.success) {
-                    sectionsData = data.sections || [];
-                    renderSectionsList();
-                } else {
+                if (!data.success) {
                     showSectionsAlert('danger', '加载失败: ' + data.message);
+                    return;
+                }
+
+                const config = parseConfigContent(data.content);
+
+                // 根据栏目类型渲染不同的管理界面
+                switch(sectionName) {
+                    case 'websites':
+                        renderWebsitesManagement(config.websites || []);
+                        break;
+                    case 'projects':
+                        renderProjectsManagement(config.projects || []);
+                        break;
+                    case 'skills':
+                        renderSkillsManagement(config.skills || []);
+                        break;
+                    case 'timeline':
+                        renderTimelineManagement(config.timeline || []);
+                        break;
                 }
             } catch (error) {
                 showSectionsAlert('danger', '加载失败: ' + error.message);
             }
         }
+
+        // 渲染站点管理列表
+        function renderWebsitesManagement(websites) {
+            const container = document.getElementById('websitesManagement');
+            if (!websites || websites.length === 0) {
+                container.innerHTML = '<div class="empty">暂无站点，点击"添加站点"开始创建</div>';
+                return;
+            }
+
+            container.innerHTML = `<div class="data-table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>顺序</th>
+                            <th>标题</th>
+                            <th>URL</th>
+                            <th>描述</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${websites.map((site, index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${site.title || site.name || ''}</td>
+                                <td><a href="${site.url}" target="_blank" style="color: var(--accent);">${site.url}</a></td>
+                                <td>${site.description || ''}</td>
+                                <td>
+                                    <button class="icon-btn" onclick="alert('编辑功能开发中')" title="编辑">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="icon-btn" onclick="alert('删除功能开发中')" title="删除" style="color: var(--danger);">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+        }
+
+        // 渲染项目管理列表
+        function renderProjectsManagement(projects) {
+            const container = document.getElementById('projectsManagement');
+            if (!projects || projects.length === 0) {
+                container.innerHTML = '<div class="empty">暂无项目，点击"添加项目"开始创建</div>';
+                return;
+            }
+
+            container.innerHTML = `<div class="data-table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>顺序</th>
+                            <th>标题</th>
+                            <th>URL</th>
+                            <th>描述</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${projects.map((project, index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${project.title || project.name || ''}</td>
+                                <td><a href="${project.url}" target="_blank" style="color: var(--accent);">${project.url}</a></td>
+                                <td>${project.description || ''}</td>
+                                <td>
+                                    <button class="icon-btn" onclick="alert('编辑功能开发中')" title="编辑">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="icon-btn" onclick="alert('删除功能开发中')" title="删除" style="color: var(--danger);">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+        }
+
+        // 渲染技能管理列表
+        function renderSkillsManagement(skills) {
+            const container = document.getElementById('skillsManagement');
+            if (!skills || skills.length === 0) {
+                container.innerHTML = '<div class="empty">暂无技能，点击"添加技能"开始创建</div>';
+                return;
+            }
+
+            container.innerHTML = `<div class="data-table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>顺序</th>
+                            <th>名称</th>
+                            <th>等级</th>
+                            <th>图标</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${skills.map((skill, index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${skill.name || ''}</td>
+                                <td>${skill.level || 0}/5</td>
+                                <td>${skill.icon || ''}</td>
+                                <td>
+                                    <button class="icon-btn" onclick="alert('编辑功能开发中')" title="编辑">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="icon-btn" onclick="alert('删除功能开发中')" title="删除" style="color: var(--danger);">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+        }
+
+        // 渲染时间线管理列表
+        function renderTimelineManagement(timeline) {
+            const container = document.getElementById('timelineManagement');
+            if (!timeline || timeline.length === 0) {
+                container.innerHTML = '<div class="empty">暂无事件，点击"添加事件"开始创建</div>';
+                return;
+            }
+
+            container.innerHTML = `<div class="data-table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>顺序</th>
+                            <th>日期</th>
+                            <th>标题</th>
+                            <th>描述</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${timeline.map((event, index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${event.date || ''}</td>
+                                <td>${event.title || ''}</td>
+                                <td>${event.description || ''}</td>
+                                <td>
+                                    <button class="icon-btn" onclick="alert('编辑功能开发中')" title="编辑">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="icon-btn" onclick="alert('删除功能开发中')" title="删除" style="color: var(--danger);">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+        }
+
+        // 添加栏目功能的占位函数
+        function addWebsiteInSection() { alert('添加站点功能开发中，请暂时使用"前端配置"Tab进行管理'); }
+        function addProjectInSection() { alert('添加项目功能开发中，请暂时使用"前端配置"Tab进行管理'); }
+        function addSkillInSection() { alert('添加技能功能开发中，请暂时使用"前端配置"Tab进行管理'); }
+        function addTimelineInSection() { alert('添加事件功能开发中，请暂时使用"前端配置"Tab进行管理'); }
 
         // 渲染栏目列表
         function renderSectionsList() {
