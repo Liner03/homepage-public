@@ -3228,6 +3228,9 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
             // 填充表单
             if (section) {
                 console.log('✏️ [显示弹窗] 开始填充表单数据...');
+                console.log('📊 [显示弹窗] section.hidden 原始值:', section.hidden, '类型:', typeof section.hidden);
+
+                const hiddenCheckbox = document.getElementById('sectionHidden');
 
                 document.getElementById('sectionId').value = section.id;
                 document.getElementById('sectionId').disabled = true; // 编辑时不允许修改 ID
@@ -3236,7 +3239,16 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                 document.getElementById('sectionField').value = section.field;
                 document.getElementById('sectionPosition').value = section.position;
                 document.getElementById('sectionTemplate').value = section.defaultTemplate || 'card-grid';
-                document.getElementById('sectionHidden').checked = section.hidden || false;
+
+                // 明确设置 hidden 状态
+                hiddenCheckbox.checked = section.hidden === true;
+                hiddenCheckbox.disabled = false; // 确保可以点击
+
+                console.log('🔘 [显示弹窗] Checkbox 设置后:', {
+                    checked: hiddenCheckbox.checked,
+                    disabled: hiddenCheckbox.disabled,
+                    原始值: section.hidden
+                });
 
                 console.log('✅ [显示弹窗] 表单数据填充完成:', {
                     id: document.getElementById('sectionId').value,
@@ -3245,15 +3257,18 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                     field: document.getElementById('sectionField').value,
                     position: document.getElementById('sectionPosition').value,
                     template: document.getElementById('sectionTemplate').value,
-                    hidden: document.getElementById('sectionHidden').checked
+                    hidden: hiddenCheckbox.checked
                 });
             } else {
                 // 新建时清空表单
                 form.reset();
                 document.getElementById('sectionId').disabled = false;
                 document.getElementById('sectionTemplate').value = 'card-grid';
+
                 // 新栏目默认隐藏（因为肯定是空的，添加项目后再显示）
-                document.getElementById('sectionHidden').checked = true;
+                const hiddenCheckbox = document.getElementById('sectionHidden');
+                hiddenCheckbox.checked = true;
+                hiddenCheckbox.disabled = false; // 确保可以点击
             }
 
             // 显示弹窗
@@ -3261,6 +3276,8 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
             // 显示后立即检查表单值是否还在
             setTimeout(() => {
+                const hiddenCheckboxAfter = document.getElementById('sectionHidden');
+
                 console.log('🔍 [显示弹窗] Modal 显示后检查表单值:', {
                     id: document.getElementById('sectionId').value,
                     title: document.getElementById('sectionTitle').value,
@@ -3268,7 +3285,17 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                     field: document.getElementById('sectionField').value,
                     position: document.getElementById('sectionPosition').value,
                     template: document.getElementById('sectionTemplate').value,
-                    hidden: document.getElementById('sectionHidden').checked
+                    hidden: hiddenCheckboxAfter.checked
+                });
+
+                console.log('🔘 [显示弹窗] Checkbox 详细状态:', {
+                    checked: hiddenCheckboxAfter.checked,
+                    disabled: hiddenCheckboxAfter.disabled,
+                    value: hiddenCheckboxAfter.value,
+                    type: hiddenCheckboxAfter.type,
+                    display: window.getComputedStyle(hiddenCheckboxAfter).display,
+                    visibility: window.getComputedStyle(hiddenCheckboxAfter).visibility,
+                    pointerEvents: window.getComputedStyle(hiddenCheckboxAfter).pointerEvents
                 });
 
                 // 如果是编辑模式，再次检查 section 对象
