@@ -19,10 +19,33 @@
 - 📊 **GitHub 统计** - 自动获取并显示真实的 GitHub 贡献数据
 - 🌍 **访客信息** - 显示访客 IP 地址和地理位置
 - ⚙️ **配置驱动** - 所有内容通过配置文件统一管理
-- 🧭 **访问统计** - 展示今日/累计访问次数（默认本地存储，Cloudflare KV 可选持久化）
+- 🧭 **访问统计** - 展示今日/累计访问次数（支持本地存储、独立后端或 Cloudflare KV）
 - 🔧 **模块化设计** - 第三个标签页支持多种类型：日记统计、项目展示、自定义内容，或完全禁用
 - 🎯 **个性化** - 支持自定义标签、项目、技能展示
 - 🌈 **背景调色盘** - 圆形HSL调色盘，支持实时背景颜色个性化定制（连续点击主题按钮4次开启）
+- 🚀 **独立后端** - 新增 Node.js 后端支持，无需 Cloudflare，可自由部署（详见下方）
+
+## 🎯 部署方式选择
+
+本项目支持三种部署方式，根据你的需求选择：
+
+### 方式一：纯静态部署（最简单）
+- ✅ **适合场景**：个人主页、简单展示
+- ✅ **优点**：零成本、部署简单、访问快速
+- ⚠️ **限制**：访问统计等功能仅在浏览器本地存储，不跨设备同步
+- 📦 **平台**：GitHub Pages、Vercel、Netlify 等
+
+### 方式二：独立后端部署（推荐✨）
+- ✅ **适合场景**：需要真实访问统计、跨设备数据同步
+- ✅ **优点**：完全自主控制、支持多种存储方式（JSON/SQLite/Cloudflare KV）
+- ✅ **特点**：轻量级 Node.js 后端，一键启动
+- 📦 **平台**：任何支持 Node.js 的服务器、VPS、云主机
+
+### 方式三：Cloudflare Pages + Functions
+- ✅ **适合场景**：全球 CDN 加速 + 免费后端
+- ✅ **优点**：全球分布、高可用、免费额度充足
+- ℹ️ **说明**：项目已内置 Functions 代码（`functions/` 目录）
+- 📦 **平台**：Cloudflare Pages
 
 ## 🌈 背景调色盘功能
 
@@ -94,7 +117,40 @@ const CUSTOM_SECTION_CONFIG = {
 
 ## 🚀 快速开始
 
-### 本地测试
+### 选项一：独立 Node.js 后端（推荐⭐）
+
+```bash
+# 克隆项目
+git clone https://github.com/zduu/homepage-public.git
+cd homepage-public
+
+# 进入后端目录
+cd backend
+
+# 安装依赖
+npm install
+
+# 复制并配置环境变量
+cp .env.example .env
+# 编辑 .env 文件，设置 GITHUB_TOKEN（可选）和存储方式
+
+# 启动后端服务
+npm start
+
+# 访问 http://localhost:3000
+```
+
+**配置访问统计存储方式：**
+编辑 `backend/.env` 文件：
+```bash
+# 选择存储方式: json（默认） | sqlite | cloudflare
+VISIT_STORAGE=json
+
+# GitHub Token（可选，用于精确贡献日历）
+GITHUB_TOKEN=your_github_token_here
+```
+
+### 选项二：Python 本地服务器（简单测试）
 
 ```bash
 # 克隆项目
@@ -102,7 +158,7 @@ git clone https://github.com/zduu/homepage-public.git
 cd homepage-public
 
 # 启动本地服务器（含可选 GraphQL 代理，端口 8002）
-# 可选：设置 GitHub Token 以启用“精确贡献日历”
+# 可选：设置 GitHub Token 以启用"精确贡献日历"
 # Windows PowerShell
 #setx GITHUB_TOKEN "ghp_your_token"   # 永久；或使用当前会话：
 $env:GITHUB_TOKEN="ghp_your_token"
@@ -116,6 +172,10 @@ npx http-server -p 8000
 
 - 使用 `python start.py` 时，访问 `http://localhost:8002`
 - 使用内置/Node 静态服务器时，访问 `http://localhost:8000`
+
+### 选项三：纯静态部署（最简单）
+
+直接将项目文件部署到任何静态托管平台（GitHub Pages、Vercel、Netlify 等），访问统计等功能将使用浏览器本地存储。
 
 ### 环境变量与配置示例
 - `.env.example`：环境变量示例（复制为 `.env`，不会被提交到 Git）
@@ -298,6 +358,92 @@ texts: {
 - **项目图标**：推荐 [Icons8](https://icons8.com/) 或 [Iconify](https://iconify.design/)
 
 ## 🚀 部署指南
+
+### 独立后端部署（推荐✨）
+
+适合需要完整功能（访问统计、主题同步等）且希望自主控制的用户。
+
+#### 1. VPS / 云主机部署
+
+```bash
+# 在服务器上克隆项目
+git clone https://github.com/zduu/homepage-public.git
+cd homepage-public/backend
+
+# 安装依赖
+npm install --production
+
+# 配置环境变量
+cp .env.example .env
+nano .env  # 编辑配置
+
+# 使用 PM2 启动（推荐）
+npm install -g pm2
+pm2 start server.js --name homepage-backend
+pm2 save
+pm2 startup  # 设置开机自启
+
+# 或使用 systemd（详见 backend/README.md）
+```
+
+**配置要点：**
+```bash
+# backend/.env
+PORT=3000
+VISIT_STORAGE=sqlite          # 生产环境推荐使用 sqlite
+GITHUB_TOKEN=your_token_here  # 可选
+```
+
+**Nginx 反向代理配置：**
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    # 前端静态文件
+    location / {
+        root /path/to/homepage-public;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # API 代理到后端
+    location /api/ {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+
+#### 2. 访问统计存储方式对比
+
+| 存储方式 | 适用场景 | 性能 | 配置难度 |
+|---------|---------|------|---------|
+| **JSON** | 个人站点、低流量 | ⭐⭐⭐ | ✅ 极简 |
+| **SQLite** | 中等流量、生产环境 | ⭐⭐⭐⭐⭐ | ✅ 简单 |
+| **Cloudflare KV** | 全球分布、高可用 | ⭐⭐⭐⭐ | ⚠️ 需要账号 |
+
+**推荐配置：**
+- 个人主页（< 1000 PV/天）：`VISIT_STORAGE=json`
+- 生产环境（> 1000 PV/天）：`VISIT_STORAGE=sqlite`
+- 已有 Cloudflare：`VISIT_STORAGE=cloudflare`
+
+#### 3. 数据持久化
+
+数据保存在 `backend/data/` 目录：
+```
+backend/data/
+├── data.json          # 主题、签到数据
+├── visit-stats.json   # 访问统计（JSON 模式）
+└── visit-stats.db     # 访问统计（SQLite 模式）
+```
+
+**备份数据：**
+```bash
+# 定期备份 data 目录
+tar -czf backup-$(date +%Y%m%d).tar.gz backend/data/
+```
 
 ### Cloudflare Pages 部署
 

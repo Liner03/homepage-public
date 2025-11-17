@@ -1,0 +1,329 @@
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const config = require('./config');
+const DataStorage = require('./storage/data-storage');
+
+// 根据配置选择访问统计存储适配器
+let visitStorage;
+const visitStorageType = config.visitStorage.toLowerCase();
+
+console.log(`📊 访问统计存储方式: ${visitStorageType}`);
+
+switch (visitStorageType) {
+  case 'sqlite':
+    const SqliteAdapter = require('./storage/sqlite-adapter');
+    visitStorage = new SqliteAdapter(config.dataDir);
+    console.log('✅ SQLite 存储已初始化');
+    break;
+
+  case 'cloudflare':
+    const CloudflareAdapter = require('./storage/cloudflare-adapter');
+    visitStorage = new CloudflareAdapter(config.cloudflare);
+    console.log('✅ Cloudflare KV 存储已初始化');
+    break;
+
+  case 'json':
+  default:
+    const JsonAdapter = require('./storage/json-adapter');
+    visitStorage = new JsonAdapter(config.dataDir);
+    console.log('✅ JSON 文件存储已初始化');
+    break;
+}
+
+// 通用数据存储（主题、签到）
+const dataStorage = new DataStorage(config.dataDir);
+
+const app = express();
+
+// 中间件
+app.use(cors(config.cors));
+app.use(express.json());
+
+// 静态文件服务（提供前端页面）
+app.use(express.static(path.join(__dirname, '..')));
+
+// 获取客户端 IP
+function getClientIP(req) {
+  return req.headers['x-forwarded-for']?.split(',')[0].trim() ||
+         req.headers['x-real-ip'] ||
+         req.connection.remoteAddress ||
+         'unknown';
+}
+
+// ==================== API 路由 ====================
+
+// 1. GitHub 贡献日历代理
+app.get('/api/github/contributions', async (req, res) => {
+  const { login, from, to } = req.query;
+
+  if (!login || !from || !to) {
+    return res.status(400).json({ error: 'missing params' });
+  }
+
+  if (!config.githubToken) {
+    return res.status(500).json({ error: 'missing GITHUB_TOKEN env' });
+  }
+
+  const query = `
+    query($login: String!, $from: DateTime!, $to: DateTime!) {
+      user(login: $login) {
+        contributionsCollection(from: $from, to: $to) {
+          contributionCalendar {
+            totalContributions
+            colors
+            weeks { contributionDays { date contributionCount color weekday } }
+          }
+        }
+      }
+      rateLimit { remaining resetAt cost }
+    }
+  `;
+
+  try {
+    const response = await fetch('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.githubToken}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'homepage-backend'
+      },
+      body: JSON.stringify({
+        query,
+        variables: { login, from, to }
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.errors) {
+      return res.status(502).json({ error: data.errors });
+    }
+
+    const calendar = data.data.user.contributionsCollection.contributionCalendar;
+
+    // 标准化输出
+    const days = [];
+    for (const week of calendar.weeks || []) {
+      for (const day of week.contributionDays || []) {
+        days.push({
+          date: day.date,
+          count: day.contributionCount || day.contributionsCount,
+          color: day.color,
+          weekday: day.weekday
+        });
+      }
+    }
+
+    res.json({
+      days,
+      total: calendar.totalContributions || 0,
+      colors: calendar.colors || []
+    });
+
+  } catch (error) {
+    console.error('GitHub API 请求失败:', error);
+    res.status(500).json({ error: 'proxy_error', detail: error.message });
+  }
+});
+
+// 2. 访问统计 - GET（查询）
+app.get('/api/daily-visit', async (req, res) => {
+  const date = req.query.date || new Date().toISOString().slice(0, 10);
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({ error: 'bad_date', message: '日期格式错误，应为YYYY-MM-DD' });
+  }
+
+  try {
+    const stats = await visitStorage.getVisitStats(date);
+    res.json(stats);
+  } catch (error) {
+    console.error('查询访问统计失败:', error);
+    res.status(500).json({ error: 'query_failed', message: error.message });
+  }
+});
+
+// 3. 访问统计 - POST（记录）
+app.post('/api/daily-visit', async (req, res) => {
+  const { date, timestamp } = req.body;
+
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({ error: 'bad_date', message: '日期格式错误，应为YYYY-MM-DD' });
+  }
+
+  const clientIP = getClientIP(req);
+  const ts = timestamp || Date.now();
+
+  try {
+    const result = await visitStorage.recordVisit(date, clientIP, ts);
+    res.json({
+      ...result,
+      message: result.isNewVisit ? '新访问记录已保存' : '今日已记录此IP访问'
+    });
+  } catch (error) {
+    console.error('记录访问失败:', error);
+    res.status(500).json({ error: 'record_failed', message: error.message });
+  }
+});
+
+// 4. 签到 - GET（查询）
+app.get('/api/checkin', (req, res) => {
+  const { uid } = req.query;
+
+  if (!uid) {
+    return res.status(400).json({ error: 'missing uid' });
+  }
+
+  try {
+    const data = dataStorage.getCheckinData(uid);
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('查询签到失败:', error);
+    res.status(500).json({ error: 'server error', detail: error.message });
+  }
+});
+
+// 5. 签到 - POST（保存）
+app.post('/api/checkin', (req, res) => {
+  const { uid } = req.query;
+  const { day } = req.body;
+
+  if (!uid) {
+    return res.status(400).json({ error: 'missing uid' });
+  }
+
+  if (!day || !/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+    return res.status(400).json({ error: 'bad day', message: '日期格式错误，应为YYYY-MM-DD' });
+  }
+
+  try {
+    const result = dataStorage.saveCheckin(uid, day);
+    res.json(result);
+  } catch (error) {
+    console.error('保存签到失败:', error);
+    res.status(500).json({ error: 'server error', detail: error.message });
+  }
+});
+
+// 6. 主题 - GET（查询）
+app.get('/api/theme', (req, res) => {
+  try {
+    const theme = dataStorage.getTheme();
+
+    if (theme) {
+      res.json({
+        success: true,
+        data: theme,
+        message: '获取全局主题色成功'
+      });
+    } else {
+      res.json({
+        success: true,
+        data: null,
+        message: '暂无全局主题色设置'
+      });
+    }
+  } catch (error) {
+    console.error('获取主题失败:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 7. 主题 - POST（保存）
+app.post('/api/theme', (req, res) => {
+  const { r, g, b, angle, saturation, lightness } = req.body;
+
+  // 验证颜色数据
+  if (typeof r !== 'number' || typeof g !== 'number' || typeof b !== 'number' ||
+      r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
+    return res.status(400).json({
+      success: false,
+      message: 'RGB颜色值格式错误'
+    });
+  }
+
+  try {
+    const themeColor = {
+      r, g, b,
+      angle: angle || 0,
+      saturation: saturation || 100,
+      lightness: lightness || 50,
+      userAgent: req.headers['user-agent'] || 'unknown'
+    };
+
+    dataStorage.saveTheme(themeColor);
+
+    res.json({
+      success: true,
+      data: themeColor,
+      message: '全局主题色设置成功'
+    });
+  } catch (error) {
+    console.error('保存主题失败:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 8. 主题 - DELETE（删除）
+app.delete('/api/theme', (req, res) => {
+  try {
+    dataStorage.deleteTheme();
+    res.json({
+      success: true,
+      message: '全局主题色已重置为默认'
+    });
+  } catch (error) {
+    console.error('删除主题失败:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// OPTIONS 预检请求处理
+app.options('*', cors(config.cors));
+
+// 健康检查
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    storage: {
+      visit: visitStorageType,
+      data: 'json'
+    },
+    timestamp: new Date().toISOString()
+  });
+});
+
+// 启动服务器
+const server = app.listen(config.port, () => {
+  console.log('');
+  console.log('🚀 个人主页后端服务已启动');
+  console.log(`📍 访问地址: http://localhost:${config.port}`);
+  console.log(`📊 访问统计: ${visitStorageType} 存储`);
+  console.log(`💾 数据目录: ${config.dataDir}`);
+  console.log('');
+  console.log('按 Ctrl+C 停止服务器');
+});
+
+// 优雅关闭
+process.on('SIGTERM', () => {
+  console.log('收到 SIGTERM 信号，正在关闭服务器...');
+  server.close(() => {
+    console.log('服务器已关闭');
+    if (visitStorage.close) {
+      visitStorage.close();
+    }
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('\n收到中断信号，正在关闭服务器...');
+  server.close(() => {
+    console.log('服务器已关闭');
+    if (visitStorage.close) {
+      visitStorage.close();
+    }
+    process.exit(0);
+  });
+});

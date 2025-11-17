@@ -1,0 +1,2 @@
+# This directory stores backend data files
+# Data files are excluded in .gitignore but this keeps the directory in git
