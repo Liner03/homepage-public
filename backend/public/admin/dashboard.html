@@ -1164,106 +1164,6 @@
             </div>
         </div>
 
-        <!-- 栏目编辑弹窗 -->
-        <div id="sectionModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 id="modalTitle">新建栏目</h2>
-                    <button class="icon-btn" onclick="closeSectionModal()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="sectionForm" class="form-grid">
-                        <!-- 基本信息 -->
-                        <div class="form-field">
-                            <label for="sectionId">栏目 ID</label>
-                            <input type="text" id="sectionId" name="id" required placeholder="websites">
-                            <small>唯一标识，建议使用英文，创建后不可修改</small>
-                        </div>
-
-                        <div class="form-field">
-                            <label for="sectionTitle">栏目标题</label>
-                            <input type="text" id="sectionTitle" name="title" required placeholder="我的站点">
-                        </div>
-
-                        <div class="form-field">
-                            <label for="sectionIcon">图标</label>
-                            <input type="text" id="sectionIcon" name="icon" placeholder="fa-globe">
-                            <small>Font Awesome 图标类名，如：fa-globe、fa-code、fa-heart</small>
-                        </div>
-
-                        <div class="form-field">
-                            <label>
-                                <input type="checkbox" id="sectionEnabled" name="enabled" checked>
-                                启用此栏目
-                            </label>
-                        </div>
-
-                        <hr>
-
-                        <!-- 模板选择 -->
-                        <div class="form-field">
-                            <label>显示模板</label>
-                            <div class="template-selector" id="templateSelector">
-                                <div class="template-card selected" data-template="card-grid" onclick="selectTemplate('card-grid')">
-                                    <i class="fas fa-th-large fa-2x" style="color: var(--accent); margin-bottom: 12px;"></i>
-                                    <h4>卡片网格</h4>
-                                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">适合展示站点、项目</p>
-                                </div>
-                                <div class="template-card" data-template="icon-wall" onclick="selectTemplate('icon-wall')">
-                                    <i class="fas fa-icons fa-2x" style="color: var(--accent); margin-bottom: 12px;"></i>
-                                    <h4>图标墙</h4>
-                                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">适合展示技能、工具</p>
-                                </div>
-                                <div class="template-card" data-template="list" onclick="selectTemplate('list')">
-                                    <i class="fas fa-list fa-2x" style="color: var(--accent); margin-bottom: 12px;"></i>
-                                    <h4>列表</h4>
-                                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">适合展示时间线、日志</p>
-                                </div>
-                                <div class="template-card" data-template="custom" onclick="selectTemplate('custom')">
-                                    <i class="fas fa-code fa-2x" style="color: var(--accent); margin-bottom: 12px;"></i>
-                                    <h4>自定义 HTML</h4>
-                                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">完全自定义</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <hr>
-
-                        <!-- HTML 模板编辑 -->
-                        <div class="form-field" id="templateHTMLField">
-                            <label for="sectionTemplate">HTML 模板</label>
-                            <textarea class="code-editor" id="sectionTemplate" name="template" rows="15" placeholder="<div class=&quot;item&quot;>&#10;  <h3>{{title}}</h3>&#10;  <p>{{description}}</p>&#10;  <a href=&quot;{{url}}&quot;>访问</a>&#10;</div>"></textarea>
-                            <small>
-                                可用魔法参数：<code>{{title}}</code>, <code>{{url}}</code>, <code>{{description}}</code>, <code>{{image}}</code>, <code>{{icon}}</code>, <code>{{name}}</code>, <code>{{level}}</code>, <code>{{date}}</code>
-                            </small>
-                        </div>
-
-                        <hr>
-
-                        <!-- 内容项管理 -->
-                        <div class="form-field">
-                            <label>内容项
-                                <button type="button" class="btn btn-secondary" onclick="addSectionItem()" style="margin-left: 12px; padding: 6px 12px; font-size: 12px;">
-                                    <i class="fas fa-plus"></i> 添加项目
-                                </button>
-                            </label>
-                            <div id="sectionItemsContainer" style="margin-top: 16px;">
-                                <!-- 动态添加的内容项 -->
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeSectionModal()">取消</button>
-                    <button type="button" class="btn btn-primary" onclick="saveSectionmodal()">
-                        <i class="fas fa-save"></i> 保存
-                    </button>
-                </div>
-            </div>
-        </div>
-
         <!-- 项目编辑弹窗 -->
         <div id="itemEditModal" class="modal">
             <div class="modal-content" style="max-width: 700px;">
@@ -3711,11 +3611,6 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                 console.groupEnd();
                 showAlert('sectionsAlert', `保存失败: ${error.message}`, 'danger');
             }
-        }
-
-        // 关闭栏目弹窗
-        function closeSectionModal() {
-            document.getElementById('sectionModal').style.display = 'none';
         }
 
         // ==================== 页面初始化 ====================
