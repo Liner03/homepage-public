@@ -190,6 +190,94 @@ app.get('/api/github/contributions', async (req, res) => {
   }
 });
 
+// 1.2 GitHub 贡献日历 - 第三方API代理（解决CORS问题）
+app.get('/api/github/contributions-third-party', async (req, res) => {
+  const { login } = req.query;
+
+  if (!login) {
+    return res.status(400).json({ error: 'missing_login' });
+  }
+
+  try {
+    console.log('[Third-Party Proxy] 代理请求第三方API，用户:', login);
+
+    // 调用第三方API
+    const apiUrl = `https://gh-calendar.rschristian.dev/user/${encodeURIComponent(login)}`;
+    const response = await fetch(apiUrl, {
+      headers: {
+        'User-Agent': 'homepage-backend'
+      }
+    });
+
+    console.log('[Third-Party Proxy] API响应状态:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[Third-Party Proxy] API返回错误:', response.status, errorText);
+      return res.status(response.status).json({
+        error: 'third_party_api_failed',
+        status: response.status,
+        detail: errorText
+      });
+    }
+
+    const data = await response.json();
+
+    console.log('[Third-Party Proxy] 数据统计:', {
+      total: data.total,
+      weeksCount: data.contributions?.length,
+      sampleWeek: data.contributions?.[0]?.slice(0, 2)
+    });
+
+    // 转换为我们系统的格式
+    const days = [];
+    let totalContributions = 0;
+
+    if (data.contributions && Array.isArray(data.contributions)) {
+      for (const week of data.contributions) {
+        if (Array.isArray(week)) {
+          for (const day of week) {
+            if (day && day.date) {
+              days.push({
+                date: day.date,
+                count: day.count || 0,
+                color: getColorByIntensity(day.intensity || 0),
+                weekday: new Date(day.date).getDay()
+              });
+              totalContributions += day.count || 0;
+            }
+          }
+        }
+      }
+    }
+
+    console.log('[Third-Party Proxy] 转换完成:', {
+      daysCount: days.length,
+      totalContributions,
+      前5天: days.slice(0, 5).map(d => `${d.date}(${d.count})`),
+      后5天: days.slice(-5).map(d => `${d.date}(${d.count})`)
+    });
+
+    // 返回与GraphQL API相同的格式
+    res.json({
+      days,
+      total: totalContributions,
+      colors: ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
+      source: 'third-party'
+    });
+
+  } catch (error) {
+    console.error('[Third-Party Proxy] 请求失败:', error);
+    res.status(500).json({ error: 'proxy_error', detail: error.message });
+  }
+});
+
+// 根据强度值获取颜色
+function getColorByIntensity(intensity) {
+  const colors = ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'];
+  return colors[Math.min(intensity, 4)] || colors[0];
+}
+
 // 2. 访问统计 - GET（查询）
 app.get('/api/daily-visit', async (req, res) => {
   const date = req.query.date || new Date().toISOString().slice(0, 10);

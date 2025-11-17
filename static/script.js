@@ -645,17 +645,17 @@ async function fetchGitHubContributions(username, forceRefresh = false) {
         // 4) 添加刷新按钮功能
         addRefreshButton(username);
 
-// 通过第三方API获取完整贡献日历（包含私有仓库）
+// 通过后端代理获取第三方API数据（解决CORS问题）
 async function fetchCalendarViaThirdParty(login, forceRefresh = false) {
-    console.log('🌐 [Third-Party API] 尝试使用第三方API获取完整贡献数据...');
+    console.log('🌐 [Third-Party Proxy] 尝试通过后端代理获取完整贡献数据...');
 
     try {
-        // 使用第三方API: https://github.com/rschristian/github-contribution-calendar-api
-        const apiUrl = `https://gh-calendar.rschristian.dev/user/${encodeURIComponent(login)}`;
+        // 通过后端代理调用第三方API，避免CORS问题
+        const proxyEndpoint = '/api/github/contributions-third-party';
         const cacheBuster = forceRefresh ? Date.now() : Math.floor(Date.now() / (5 * 60 * 1000));
-        const finalUrl = `${apiUrl}?_t=${cacheBuster}`;
+        const finalUrl = `${proxyEndpoint}?login=${encodeURIComponent(login)}&_t=${cacheBuster}`;
 
-        console.log('🔗 [Third-Party API] 请求URL:', finalUrl);
+        console.log('🔗 [Third-Party Proxy] 请求URL:', finalUrl);
 
         const response = await fetch(finalUrl, {
             cache: 'no-cache',
@@ -666,52 +666,39 @@ async function fetchCalendarViaThirdParty(login, forceRefresh = false) {
         });
 
         if (!response.ok) {
-            throw new Error(`Third-party API failed: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            console.error('❌ [Third-Party Proxy] 代理请求失败:', response.status, errorData);
+            throw new Error(`Third-party proxy failed: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('📦 [Third-Party API] 原始响应数据:', {
+        console.log('📦 [Third-Party Proxy] 代理返回数据:', {
             total: data.total,
-            weeksCount: data.contributions?.length,
-            sampleWeek: data.contributions?.[0]
+            daysCount: data.days?.length,
+            source: data.source,
+            前5天: data.days?.slice(0, 5).map(d => ({date: d.date, count: d.count})),
+            后5天: data.days?.slice(-5).map(d => ({date: d.date, count: d.count}))
         });
 
-        // 转换数据格式为我们系统使用的格式
+        // 后端已经转换为标准格式，直接使用
         const now = new Date();
         const to = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
         const from = new Date(to);
         from.setDate(from.getDate() - 365);
 
-        const map = new Map();
-        let totalCount = 0;
+        const map = new Map(data.days.map(d => [d.date, d.count]));
 
-        // 第三方API返回格式: { contributions: DateItem[][], total: number }
-        // DateItem: { date: string, count: number, intensity: number }
-        if (data.contributions && Array.isArray(data.contributions)) {
-            for (const week of data.contributions) {
-                if (Array.isArray(week)) {
-                    for (const day of week) {
-                        if (day && day.date) {
-                            map.set(day.date, day.count || 0);
-                            totalCount += day.count || 0;
-                        }
-                    }
-                }
-            }
-        }
-
-        console.log('✅ [Third-Party API] 数据转换完成:', {
+        console.log('✅ [Third-Party Proxy] 数据处理完成:', {
             daysCount: map.size,
-            totalContributions: totalCount,
-            apiTotal: data.total,
-            前5天: Array.from(map.entries()).slice(0, 5),
-            后5天: Array.from(map.entries()).slice(-5)
+            totalContributions: data.total,
+            前5个键: Array.from(map.keys()).slice(0, 5),
+            后5个键: Array.from(map.keys()).slice(-5)
         });
 
-        return { map, start: from, end: to, source: 'third-party', total: totalCount };
+        return { map, start: from, end: to, source: 'third-party', total: data.total };
 
     } catch (error) {
-        console.warn('⚠️ [Third-Party API] 第三方API失败:', error.message);
+        console.warn('⚠️ [Third-Party Proxy] 代理失败:', error.message);
         throw error; // 抛出错误以便回退到其他方案
     }
 }
