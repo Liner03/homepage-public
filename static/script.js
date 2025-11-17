@@ -661,7 +661,13 @@ async function fetchCalendarViaProxy(login, forceRefresh = false) {
     const finalUrl = `${url}&_t=${cacheBuster}`;
     console.log('📡 [GitHub Debug] 请求URL:', finalUrl);
 
-    const r = await fetch(finalUrl);
+    const r = await fetch(finalUrl, {
+        cache: 'no-cache',  // 强制禁用缓存
+        headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+        }
+    });
     console.log('📬 [GitHub Debug] 代理响应状态:', r.status, r.statusText);
     if (!r.ok) {
         const errorText = await r.text();
@@ -669,8 +675,16 @@ async function fetchCalendarViaProxy(login, forceRefresh = false) {
         throw new Error(`proxy failed: ${r.status} - ${errorText}`);
     }
     const data = await r.json(); // { days:[{date,count}], total, colors }
-    console.log('📦 [GitHub Debug] 代理返回数据:', { days: data.days?.length, total: data.total });
+    console.log('📦 [GitHub Debug] 代理返回数据:', {
+        days: data.days?.length,
+        total: data.total,
+        前5天: data.days?.slice(0, 5).map(d => ({date: d.date, count: d.count})),
+        后5天: data.days?.slice(-5).map(d => ({date: d.date, count: d.count}))
+    });
     const map = new Map(data.days.map(d => [d.date, d.count]));
+    console.log('🗺️ [GitHub Debug] Map创建完成，大小:', map.size,
+        'Map前5个键:', Array.from(map.keys()).slice(0, 5),
+        'Map后5个键:', Array.from(map.keys()).slice(-5));
     return { map, start: from, end: to };
 }
 
