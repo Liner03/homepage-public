@@ -3563,9 +3563,9 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                         ` : ''}
 
                         <div class="form-field">
-                            <label>
-                                <input type="checkbox" id="item-hidden" ${item?.hidden ? 'checked' : ''}>
-                                隐藏此项目
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="item-hidden" class="simple-checkbox" ${item?.hidden ? 'checked' : ''}>
+                                <span class="checkbox-text">隐藏此项目</span>
                             </label>
                         </div>
                     `;
@@ -3596,9 +3596,9 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                         </div>
 
                         <div class="form-field">
-                            <label>
-                                <input type="checkbox" id="item-hidden" ${item?.hidden ? 'checked' : ''}>
-                                隐藏此技能
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="item-hidden" class="simple-checkbox" ${item?.hidden ? 'checked' : ''}>
+                                <span class="checkbox-text">隐藏此技能</span>
                             </label>
                         </div>
                     `;
@@ -3628,9 +3628,9 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                         </div>
 
                         <div class="form-field">
-                            <label>
-                                <input type="checkbox" id="item-hidden" ${item?.hidden ? 'checked' : ''}>
-                                隐藏此事件
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="item-hidden" class="simple-checkbox" ${item?.hidden ? 'checked' : ''}>
+                                <span class="checkbox-text">隐藏此事件</span>
                             </label>
                         </div>
                     `;
