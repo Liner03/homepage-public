@@ -8,7 +8,7 @@
 Thumbs.db
 .vscode/
 .idea/
-config.js
+/config.js
 CUSTOM_SECTION_README.md
 
 # Backend dependencies and data
