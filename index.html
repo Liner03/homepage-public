@@ -260,11 +260,15 @@
 </body>
 <script>
 // 应用配置到页面
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    // 先加载栏目配置
+    await loadSectionsConfig();
+
+    // 然后应用 CONFIG
     if (typeof CONFIG !== 'undefined') {
         applyConfig();
     }
-    
+
     // 延迟初始化调色盘，确保其他脚本已加载
     setTimeout(() => {
         initCircularColorPalette();
@@ -996,6 +1000,34 @@ function initCircularColorPalette() {
     console.log('圆形七彩调色盘初始化完成');
 }
 
+// 全局变量存储栏目配置
+let sectionsConfig = null;
+
+// 加载栏目配置
+async function loadSectionsConfig() {
+    try {
+        const response = await fetch('/api/sections');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                sectionsConfig = data.sections || [];
+                console.log('✅ 已加载栏目配置:', sectionsConfig);
+                return sectionsConfig;
+            }
+        }
+    } catch (error) {
+        console.warn('⚠️ 无法加载栏目配置，使用默认显示:', error);
+    }
+    return null;
+}
+
+// 检查栏目是否隐藏
+function isSectionHidden(sectionId) {
+    if (!sectionsConfig) return false;
+    const section = sectionsConfig.find(s => s.id === sectionId);
+    return section ? section.hidden : false;
+}
+
 function applyConfig() {
     console.log('开始应用配置:', CONFIG);
     const { personal, github, social, tags, timeline, websites, projects, skills, texts } = CONFIG;
@@ -1243,11 +1275,24 @@ function updateTimeline(timeline) {
     const timelineContainer = document.querySelector('.timeline-section');
     if (!timelineContainer) return;
 
+    // 检查栏目是否隐藏
+    if (isSectionHidden('timeline')) {
+        timelineContainer.style.display = 'none';
+        console.log('✅ 栏目 "时间线" 已隐藏');
+        return;
+    }
+
+    // 显示栏目
+    timelineContainer.style.display = 'block';
+
     // 清空现有时间线
     timelineContainer.innerHTML = '';
 
+    // 过滤掉隐藏的事件
+    const visibleTimeline = timeline.filter(event => !event.hidden);
+
     // 添加配置的时间线事件
-    timeline.forEach(event => {
+    visibleTimeline.forEach(event => {
         const timelineItem = document.createElement('div');
         timelineItem.className = 'timeline-item';
 
@@ -1264,14 +1309,28 @@ function updateTimeline(timeline) {
 }
 
 function updateWebsites(websites) {
+    const websitesSection = document.querySelector('.sites-section');
     const websitesGrid = document.querySelector('.sites-grid');
     if (!websitesGrid) return;
+
+    // 检查栏目是否隐藏
+    if (isSectionHidden('websites')) {
+        if (websitesSection) websitesSection.style.display = 'none';
+        console.log('✅ 栏目 "我的站点" 已隐藏');
+        return;
+    }
+
+    // 显示栏目
+    if (websitesSection) websitesSection.style.display = 'block';
 
     // 清空现有网站
     websitesGrid.innerHTML = '';
 
+    // 过滤掉隐藏的项目
+    const visibleWebsites = websites.filter(site => !site.hidden);
+
     // 添加配置的网站
-    websites.forEach(site => {
+    visibleWebsites.forEach(site => {
         const siteLink = document.createElement('a');
         siteLink.href = site.url;
         siteLink.target = '_blank';
@@ -1294,14 +1353,28 @@ function updateWebsites(websites) {
 }
 
 function updateProjects(projects) {
+    const projectsSection = document.querySelector('.projects-section');
     const projectsGrid = document.querySelector('.projects-grid');
     if (!projectsGrid) return;
+
+    // 检查栏目是否隐藏
+    if (isSectionHidden('projects')) {
+        if (projectsSection) projectsSection.style.display = 'none';
+        console.log('✅ 栏目 "项目集" 已隐藏');
+        return;
+    }
+
+    // 显示栏目
+    if (projectsSection) projectsSection.style.display = 'block';
 
     // 清空现有项目
     projectsGrid.innerHTML = '';
 
+    // 过滤掉隐藏的项目
+    const visibleProjects = projects.filter(project => !project.hidden);
+
     // 添加配置的项目
-    projects.forEach(project => {
+    visibleProjects.forEach(project => {
         const projectLink = document.createElement('a');
         projectLink.href = project.url;
         projectLink.target = '_blank';
@@ -1324,14 +1397,28 @@ function updateProjects(projects) {
 }
 
 function updateSkills(skills) {
+    const skillsSection = document.querySelector('.skills-section:last-of-type'); // 最后一个 skills-section
     const skillsContainer = document.querySelector('.skills-icons');
     if (!skillsContainer) return;
+
+    // 检查栏目是否隐藏
+    if (isSectionHidden('skills')) {
+        if (skillsSection) skillsSection.style.display = 'none';
+        console.log('✅ 栏目 "技能栈" 已隐藏');
+        return;
+    }
+
+    // 显示栏目
+    if (skillsSection) skillsSection.style.display = 'block';
 
     // 清空现有技能
     skillsContainer.innerHTML = '';
 
+    // 过滤掉隐藏的技能
+    const visibleSkills = skills.filter(skill => !skill.hidden);
+
     // 添加配置的技能
-    skills.forEach(skill => {
+    visibleSkills.forEach(skill => {
         const skillIcon = document.createElement('div');
         skillIcon.className = 'skill-icon';
         skillIcon.title = `${skill.name}${skill.level ? ' - ' + skill.level : ''}`;
