@@ -119,37 +119,15 @@ app.get('/api/github/contributions', async (req, res) => {
 
     const data = await response.json();
 
-    // 调试日志：记录GitHub API响应
-    console.log('[GitHub Debug] API响应状态:', response.status);
     if (data.errors) {
-      console.error('[GitHub Debug] API返回错误:', JSON.stringify(data.errors, null, 2));
       return res.status(502).json({ error: data.errors });
     }
 
     if (!data.data || !data.data.user) {
-      console.error('[GitHub Debug] 无效的响应数据:', JSON.stringify(data, null, 2));
       return res.status(502).json({ error: 'invalid_response', detail: '未找到用户数据' });
     }
 
     const calendar = data.data.user.contributionsCollection.contributionCalendar;
-    console.log('[GitHub Debug] 日历数据统计:', {
-      totalContributions: calendar.totalContributions,
-      weeksCount: calendar.weeks?.length || 0,
-      firstWeekDays: calendar.weeks?.[0]?.contributionDays?.length || 0
-    });
-
-    // 调试：检查原始数据的第一天
-    if (calendar.weeks?.[0]?.contributionDays?.[0]) {
-      const firstDay = calendar.weeks[0].contributionDays[0];
-      console.log('[GitHub Debug] 第一天原始数据:', {
-        date: firstDay.date,
-        contributionCount: firstDay.contributionCount,
-        contributionsCount: firstDay.contributionsCount,
-        hasContributionCount: 'contributionCount' in firstDay,
-        hasContributionsCount: 'contributionsCount' in firstDay,
-        allKeys: Object.keys(firstDay)
-      });
-    }
 
     // 标准化输出
     const days = [];
@@ -163,19 +141,6 @@ app.get('/api/github/contributions', async (req, res) => {
           weekday: day.weekday
         });
       }
-    }
-
-    // 调试：检查前5天和后5天的数据
-    console.log('[GitHub Debug] 前5天数据样本:', days.slice(0, 5));
-    console.log('[GitHub Debug] 后5天数据样本:', days.slice(-5));
-    console.log('[GitHub Debug] 总天数:', days.length, '总贡献:', calendar.totalContributions);
-
-    // 调试：显示有贡献的日期
-    const daysWithContributions = days.filter(d => d.count > 0);
-    console.log('[GitHub Debug] 有贡献的天数:', daysWithContributions.length);
-    if (daysWithContributions.length > 0) {
-      console.log('[GitHub Debug] 前10个有贡献的日期:', daysWithContributions.slice(0, 10).map(d => `${d.date}(${d.count})`));
-      console.log('[GitHub Debug] 最大贡献数:', Math.max(...daysWithContributions.map(d => d.count)));
     }
 
     res.json({
@@ -199,8 +164,6 @@ app.get('/api/github/contributions-third-party', async (req, res) => {
   }
 
   try {
-    console.log('[Third-Party Proxy] 代理请求第三方API，用户:', login);
-
     // 调用第三方API
     const apiUrl = `https://gh-calendar.rschristian.dev/user/${encodeURIComponent(login)}`;
     const response = await fetch(apiUrl, {
@@ -209,11 +172,8 @@ app.get('/api/github/contributions-third-party', async (req, res) => {
       }
     });
 
-    console.log('[Third-Party Proxy] API响应状态:', response.status);
-
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('[Third-Party Proxy] API返回错误:', response.status, errorText);
       return res.status(response.status).json({
         error: 'third_party_api_failed',
         status: response.status,
@@ -222,12 +182,6 @@ app.get('/api/github/contributions-third-party', async (req, res) => {
     }
 
     const data = await response.json();
-
-    console.log('[Third-Party Proxy] 数据统计:', {
-      total: data.total,
-      weeksCount: data.contributions?.length,
-      sampleWeek: data.contributions?.[0]?.slice(0, 2)
-    });
 
     // 转换为我们系统的格式
     const days = [];
@@ -251,13 +205,6 @@ app.get('/api/github/contributions-third-party', async (req, res) => {
       }
     }
 
-    console.log('[Third-Party Proxy] 转换完成:', {
-      daysCount: days.length,
-      totalContributions,
-      前5天: days.slice(0, 5).map(d => `${d.date}(${d.count})`),
-      后5天: days.slice(-5).map(d => `${d.date}(${d.count})`)
-    });
-
     // 返回与GraphQL API相同的格式
     res.json({
       days,
@@ -267,7 +214,7 @@ app.get('/api/github/contributions-third-party', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('[Third-Party Proxy] 请求失败:', error);
+    console.error('第三方API代理请求失败:', error);
     res.status(500).json({ error: 'proxy_error', detail: error.message });
   }
 });

@@ -545,23 +545,18 @@ const GITHUB_USERNAME = window.GITHUB_USERNAME ||
 
 // 获取真实的GitHub统计数据（更健壮：REST失败不影响日历渲染）
 async function fetchGitHubContributions(username, forceRefresh = false) {
-    console.log('🔍 [GitHub Debug] 开始获取 GitHub 数据...', { username, forceRefresh });
     try {
         // 1) 尝试获取用户与仓库信息（失败则降级为空数据）
         let userData = {};
         let repos = [];
         let events = [];
         try {
-            console.log('📡 [GitHub Debug] 正在获取用户信息...');
             const userResponse = await fetch(`https://api.github.com/users/${username}`);
             if (userResponse.ok) {
                 userData = await userResponse.json();
-                console.log('✅ [GitHub Debug] 用户信息获取成功:', { name: userData.name, public_repos: userData.public_repos });
-            } else {
-                console.warn('⚠️ [GitHub Debug] 用户API请求失败:', userResponse.status);
             }
         } catch (e) {
-            console.warn('❌ [GitHub Debug] 用户API请求异常:', e);
+            // 用户信息获取失败，使用空数据
         }
         try {
             const reposResponse = await fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=updated`);
@@ -582,54 +577,18 @@ async function fetchGitHubContributions(username, forceRefresh = false) {
         // 使用GitHub用户数据进行统计（可能是降级后的数据）
         const githubStats = calculateGitHubStats(userData, repos, events);
 
-        // 2) 渲染贡献日历：三级回退策略
-        // 优先级：第三方API (完整数据) > 后端代理 (公开数据) > Events估算
-        const source = (CONFIG && CONFIG.github && CONFIG.github.calendarSource) || 'auto';
-        console.log('📅 [GitHub Debug] 日历数据源配置:', source);
+        // 2) 渲染贡献日历：使用第三方API获取完整数据
         let calendarData = null;
 
-        // 策略1：优先尝试第三方API（可能包含组织私有贡献）
-        if (source === 'third-party' || source === 'auto') {
-            try {
-                console.log('🌐 [GitHub Debug] 尝试第三方API获取完整日历数据...');
-                calendarData = await fetchCalendarViaThirdParty(username, forceRefresh);
-                console.log('✅ [GitHub Debug] 第三方API获取成功, 数据量:', calendarData.map.size, '总贡献:', calendarData.total);
-            } catch (e) {
-                console.warn('❌ [GitHub Debug] 第三方API失败:', e.message);
-                if (source === 'third-party') throw e;
-                console.warn('⚠️ [GitHub Debug] 回退到后端代理...');
-            }
-        }
-
-        // 策略2：回退到后端GraphQL代理（仅公开贡献）
-        if (!calendarData && (source === 'proxy' || source === 'auto')) {
-            try {
-                console.log('🌐 [GitHub Debug] 尝试通过后端代理获取日历数据...');
-                calendarData = await fetchCalendarViaProxy(username, forceRefresh);
-                console.log('✅ [GitHub Debug] 代理获取成功, 数据量:', calendarData.map.size);
-            } catch (e) {
-                console.warn('❌ [GitHub Debug] 代理获取失败:', e.message);
-                if (source === 'proxy') throw e;
-                console.warn('⚠️ [GitHub Debug] proxy 获取失败，回退到 events 估算');
-            }
-        }
-
-        // 策略3：最终回退到Events估算
-        if (!calendarData) {
-            console.log('📊 [GitHub Debug] 使用 events 构建日历数据, events 数量:', events.length);
-            calendarData = buildDailyContribMap(events);
-            console.log('✅ [GitHub Debug] Events 日历数据构建完成, 数据量:', calendarData.map.size);
+        try {
+            calendarData = await fetchCalendarViaThirdParty(username, forceRefresh);
+        } catch (e) {
+            console.error('GitHub贡献日历加载失败，请检查网络连接或稍后重试');
+            throw e;
         }
 
         // 3) 基于贡献日历数据计算并渲染
         const statsFromCalendar = calculateStatsFromCalendar(calendarData);
-        console.log('📊 [GitHub Debug] 统计数据:', {
-            totalContribs: statsFromCalendar.totalContribs,
-            longestStreak: statsFromCalendar.longestStreak,
-            currentStreak: statsFromCalendar.currentStreak,
-            activeDays: statsFromCalendar.activeDays,
-            activeRate: statsFromCalendar.activeRate
-        });
         updateGitHubDisplay({
             totalCommits: statsFromCalendar.totalContribs,
             longestStreak: statsFromCalendar.longestStreak,
@@ -638,24 +597,18 @@ async function fetchGitHubContributions(username, forceRefresh = false) {
             activeRate: statsFromCalendar.activeRate,
             languages: githubStats.languages
         });
-        console.log('🎨 [GitHub Debug] 开始渲染日历...');
         renderContribCalendar(calendarData);
-        console.log('✅ [GitHub Debug] GitHub 数据加载完成!');
 
         // 4) 添加刷新按钮功能
         addRefreshButton(username);
 
 // 通过后端代理获取第三方API数据（解决CORS问题）
 async function fetchCalendarViaThirdParty(login, forceRefresh = false) {
-    console.log('🌐 [Third-Party Proxy] 尝试通过后端代理获取完整贡献数据...');
-
     try {
         // 通过后端代理调用第三方API，避免CORS问题
         const proxyEndpoint = '/api/github/contributions-third-party';
         const cacheBuster = forceRefresh ? Date.now() : Math.floor(Date.now() / (5 * 60 * 1000));
         const finalUrl = `${proxyEndpoint}?login=${encodeURIComponent(login)}&_t=${cacheBuster}`;
-
-        console.log('🔗 [Third-Party Proxy] 请求URL:', finalUrl);
 
         const response = await fetch(finalUrl, {
             cache: 'no-cache',
@@ -666,19 +619,10 @@ async function fetchCalendarViaThirdParty(login, forceRefresh = false) {
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            console.error('❌ [Third-Party Proxy] 代理请求失败:', response.status, errorData);
             throw new Error(`Third-party proxy failed: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('📦 [Third-Party Proxy] 代理返回数据:', {
-            total: data.total,
-            daysCount: data.days?.length,
-            source: data.source,
-            前5天: data.days?.slice(0, 5).map(d => ({date: d.date, count: d.count})),
-            后5天: data.days?.slice(-5).map(d => ({date: d.date, count: d.count}))
-        });
 
         // 后端已经转换为标准格式，直接使用
         const now = new Date();
@@ -688,18 +632,10 @@ async function fetchCalendarViaThirdParty(login, forceRefresh = false) {
 
         const map = new Map(data.days.map(d => [d.date, d.count]));
 
-        console.log('✅ [Third-Party Proxy] 数据处理完成:', {
-            daysCount: map.size,
-            totalContributions: data.total,
-            前5个键: Array.from(map.keys()).slice(0, 5),
-            后5个键: Array.from(map.keys()).slice(-5)
-        });
-
         return { map, start: from, end: to, source: 'third-party', total: data.total };
 
     } catch (error) {
-        console.warn('⚠️ [Third-Party Proxy] 代理失败:', error.message);
-        throw error; // 抛出错误以便回退到其他方案
+        throw error;
     }
 }
 
@@ -707,7 +643,6 @@ async function fetchCalendarViaThirdParty(login, forceRefresh = false) {
 async function fetchCalendarViaProxy(login, forceRefresh = false) {
     const cfg = (typeof CONFIG !== 'undefined' && CONFIG.github) || {};
     const endpoint = cfg.calendarProxyEndpoint || '/api/github/contributions';
-    console.log('🔗 [GitHub Debug] 代理端点:', endpoint);
 
     // 使用用户本地时区的今天，但确保包含完整的当天
     const now = new Date();
@@ -715,14 +650,6 @@ async function fetchCalendarViaProxy(login, forceRefresh = false) {
     const from = new Date(to);
     from.setDate(from.getDate() - 365);
     from.setHours(0, 0, 0, 0);
-
-    console.log('📅 [GitHub Debug] 日期范围:', {
-        now: now.toISOString(),
-        from: from.toISOString(),
-        to: to.toISOString(),
-        fromLocal: `${from.getFullYear()}-${String(from.getMonth()+1).padStart(2,'0')}-${String(from.getDate()).padStart(2,'0')}`,
-        toLocal: `${to.getFullYear()}-${String(to.getMonth()+1).padStart(2,'0')}-${String(to.getDate()).padStart(2,'0')}`
-    });
 
     const iso = d => d.toISOString();
     const url = `${endpoint}?login=${encodeURIComponent(login)}&from=${encodeURIComponent(iso(from))}&to=${encodeURIComponent(iso(to))}`;
@@ -735,7 +662,6 @@ async function fetchCalendarViaProxy(login, forceRefresh = false) {
         cacheBuster = Math.floor(Date.now() / (5 * 60 * 1000)); // 每5分钟更新
     }
     const finalUrl = `${url}&_t=${cacheBuster}`;
-    console.log('📡 [GitHub Debug] 请求URL:', finalUrl);
 
     const r = await fetch(finalUrl, {
         cache: 'no-cache',  // 强制禁用缓存
@@ -744,43 +670,26 @@ async function fetchCalendarViaProxy(login, forceRefresh = false) {
             'Pragma': 'no-cache'
         }
     });
-    console.log('📬 [GitHub Debug] 代理响应状态:', r.status, r.statusText);
     if (!r.ok) {
         const errorText = await r.text();
-        console.error('❌ [GitHub Debug] 代理请求失败:', errorText);
         throw new Error(`proxy failed: ${r.status} - ${errorText}`);
     }
     const data = await r.json(); // { days:[{date,count}], total, colors }
-    console.log('📦 [GitHub Debug] 代理返回数据:', {
-        days: data.days?.length,
-        total: data.total,
-        前5天: data.days?.slice(0, 5).map(d => ({date: d.date, count: d.count})),
-        后5天: data.days?.slice(-5).map(d => ({date: d.date, count: d.count}))
-    });
     const map = new Map(data.days.map(d => [d.date, d.count]));
-    console.log('🗺️ [GitHub Debug] Map创建完成，大小:', map.size,
-        'Map前5个键:', Array.from(map.keys()).slice(0, 5),
-        'Map后5个键:', Array.from(map.keys()).slice(-5));
     return { map, start: from, end: to };
 }
 
 // 添加刷新GitHub数据的按钮（低调设计）
 function addRefreshButton(username) {
-    console.log('addRefreshButton 被调用，用户名:', username);
-
     // 检查是否已经添加了刷新按钮
     if (document.getElementById('github-refresh-btn')) {
-        console.log('刷新按钮已存在，跳过添加');
         return;
     }
 
     const githubSection = document.querySelector('.github-stats') || document.querySelector('#github');
     if (!githubSection) {
-        console.log('未找到GitHub统计区域');
         return;
     }
-
-    console.log('找到GitHub统计区域，开始添加刷新按钮');
 
     // 创建一个小的刷新图标按钮
     const refreshBtn = document.createElement('button');
@@ -1251,22 +1160,12 @@ function buildDailyContribMap(events) {
 
 // ---------- GitHub 风格日历渲染（带月份/星期/图例） ----------
 function renderContribCalendar(contrib) {
-    console.log('🎨 [GitHub Debug] renderContribCalendar 被调用，参数:', contrib);
-
     const monthsEl = document.getElementById('contrib-months');
     const gridEl = document.getElementById('contrib-grid');
     const legendEl = document.getElementById('contrib-legend');
     const container = document.getElementById('contrib-calendar');
 
-    console.log('🔍 [GitHub Debug] DOM 元素查找结果:', {
-        monthsEl: !!monthsEl,
-        gridEl: !!gridEl,
-        legendEl: !!legendEl,
-        container: !!container
-    });
-
     if (!(monthsEl && gridEl && legendEl && container)) {
-        console.error('❌ [GitHub Debug] 缺少必要的 DOM 元素，无法渲染日历');
         return;
     }
 
@@ -1275,8 +1174,6 @@ function renderContribCalendar(contrib) {
     legendEl.innerHTML = '';
 
     const { map } = contrib;
-    console.log('📊 [GitHub Debug] 贡献数据 map 大小:', map.size);
-    console.log('📊 [GitHub Debug] 贡献数据前5条:', Array.from(map.entries()).slice(0, 5));
 
     // 以“周日”为列起点，计算 53 列 x 7 行的范围：end 对齐到最近的周六
     const now = new Date();
@@ -1345,17 +1242,6 @@ function renderContribCalendar(contrib) {
     legendEl.innerHTML = `少`
         + legend.map(i => `<span class="legend-swatch" style="background:${levelColor(i)}"></span>`).join('')
         + `多`;
-
-    console.log('✅ [GitHub Debug] 日历渲染完成！', {
-        渲染的格子数: gridEl.childElementCount,
-        非零格子数: nonZeroCount,
-        月份标签数: monthsEl.childElementCount,
-        图例HTML长度: legendEl.innerHTML.length,
-        容器display: container.style.display,
-        容器computed_display: window.getComputedStyle(container).display,
-        前5个Map键: mapKeys,
-        前5个渲染键: sampleKeys
-    });
 
     // 添加移动端滚动提示
     addScrollHintForMobile();

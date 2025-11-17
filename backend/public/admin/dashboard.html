@@ -984,19 +984,33 @@
                         </div>
 
                         <div class="form-field">
-                            <label for="GITHUB_TOKEN">GitHub Token</label>
-                            <div style="display: flex; gap: 8px; align-items: flex-start;">
-                                <input type="text" id="GITHUB_TOKEN" name="GITHUB_TOKEN" placeholder="ghp_xxxxx" style="flex: 1;">
-                                <button type="button" class="btn btn-secondary" onclick="testGitHubToken()" id="testTokenBtn">
-                                    <i class="fas fa-vial"></i> 测试 Token
-                                </button>
+                            <label>GitHub 贡献日历数据源</label>
+                            <div style="padding: 16px; background: #f6f8fa; border: 1px solid #d1d5da; border-radius: 8px; font-size: 13px; line-height: 1.8;">
+                                <div style="margin-bottom: 12px;">
+                                    <strong style="color: #24292e;">📊 数据获取方式</strong>
+                                </div>
+                                <div style="color: #586069; margin-bottom: 8px;">
+                                    本系统使用第三方开源API获取GitHub贡献数据，无需配置Token：
+                                </div>
+                                <ul style="margin: 8px 0; padding-left: 20px; color: #586069;">
+                                    <li>✅ 获取完整贡献数（包含组织私有仓库）</li>
+                                    <li>✅ 数据与GitHub Profile完全一致</li>
+                                    <li>✅ 无需Token配置和权限管理</li>
+                                    <li>✅ 自动更新，实时同步</li>
+                                </ul>
+                                <div style="margin-top: 12px; padding: 8px; background: #fff; border-left: 3px solid #0366d6; font-size: 12px;">
+                                    <strong>API来源：</strong>
+                                    <a href="https://github.com/rschristian/github-contribution-calendar-api" target="_blank" style="color: #0366d6; text-decoration: none;">
+                                        github.com/rschristian/github-contribution-calendar-api
+                                    </a>
+                                    <div style="margin-top: 4px; color: #586069;">
+                                        开源项目，Cloudflare Workers部署，稳定可靠
+                                    </div>
+                                </div>
+                                <div style="margin-top: 8px; font-size: 11px; color: #6a737d;">
+                                    💡 提示：GitHub用户名在「前端配置」中设置
+                                </div>
                             </div>
-                            <small>
-                                用于 GitHub 贡献日历。用户名从「前端配置」读取，Token从此处读取。<br/>
-                                <strong>获取私有贡献：</strong>需要 <code>repo</code> 权限（不是 public_repo），且Token必须属于您本人。<br/>
-                                创建地址：<a href="https://github.com/settings/tokens" target="_blank">https://github.com/settings/tokens</a>
-                            </small>
-                            <div id="tokenTestResult" style="margin-top: 12px; display: none;"></div>
                         </div>
 
                         <div class="form-field">
