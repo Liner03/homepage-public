@@ -134,13 +134,27 @@ app.get('/api/github/contributions', async (req, res) => {
       firstWeekDays: calendar.weeks?.[0]?.contributionDays?.length || 0
     });
 
+    // 调试：检查原始数据的第一天
+    if (calendar.weeks?.[0]?.contributionDays?.[0]) {
+      const firstDay = calendar.weeks[0].contributionDays[0];
+      console.log('[GitHub Debug] 第一天原始数据:', {
+        date: firstDay.date,
+        contributionCount: firstDay.contributionCount,
+        contributionsCount: firstDay.contributionsCount,
+        hasContributionCount: 'contributionCount' in firstDay,
+        hasContributionsCount: 'contributionsCount' in firstDay,
+        allKeys: Object.keys(firstDay)
+      });
+    }
+
     // 标准化输出
     const days = [];
     for (const week of calendar.weeks || []) {
       for (const day of week.contributionDays || []) {
+        // 使用空值合并运算符，正确处理0值
         days.push({
           date: day.date,
-          count: day.contributionCount || day.contributionsCount,
+          count: day.contributionCount ?? day.contributionsCount ?? 0,
           color: day.color,
           weekday: day.weekday
         });
