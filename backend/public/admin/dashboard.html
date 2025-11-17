@@ -1216,6 +1216,29 @@
             </div>
         </div>
 
+        <!-- 项目编辑弹窗 -->
+        <div id="itemEditModal" class="modal">
+            <div class="modal-content" style="max-width: 700px;">
+                <div class="modal-header">
+                    <h2 id="itemEditModalTitle">编辑项目</h2>
+                    <button class="icon-btn" onclick="closeItemEditModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="itemEditForm" class="form-grid">
+                        <!-- 表单内容将由JavaScript动态生成 -->
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeItemEditModal()">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveItemEdit()">
+                        <i class="fas fa-save"></i> 保存
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- 用户设置 Tab -->
         <div id="tab-settings" class="tab-pane">
             <div id="settingsAlert" class="alert"></div>
@@ -2487,13 +2510,50 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
         // 全局变量存储当前查看的栏目
         let currentSectionId = null;
         let currentConfigData = null;
+        let currentEditingIndex = null; // 当前正在编辑的项目索引
 
         // 栏目配置映射
         const sectionConfigMap = {
-            websites: { title: '我的站点', icon: 'fa-globe', field: 'websites' },
-            projects: { title: '项目集', icon: 'fa-code', field: 'projects' },
-            skills: { title: '技能栈', icon: 'fa-star', field: 'skills' },
-            timeline: { title: '时间线', icon: 'fa-history', field: 'timeline' }
+            websites: {
+                title: '我的站点',
+                icon: 'fa-globe',
+                field: 'websites',
+                position: 'content-below', // 内容下方
+                defaultTemplate: 'card-grid',
+                itemFields: ['id', 'title', 'url', 'description', 'icon', 'hidden']
+            },
+            projects: {
+                title: '项目集',
+                icon: 'fa-code',
+                field: 'projects',
+                position: 'content-below',
+                defaultTemplate: 'card-grid',
+                itemFields: ['id', 'title', 'url', 'description', 'icon', 'tags', 'hidden']
+            },
+            skills: {
+                title: '技能栈',
+                icon: 'fa-star',
+                field: 'skills',
+                position: 'content-below',
+                defaultTemplate: 'icon-wall',
+                itemFields: ['id', 'name', 'icon', 'level', 'hidden']
+            },
+            timeline: {
+                title: '时间线',
+                icon: 'fa-history',
+                field: 'timeline',
+                position: 'content-below',
+                defaultTemplate: 'list',
+                itemFields: ['id', 'date', 'title', 'description', 'hidden']
+            }
+        };
+
+        // 位置选项
+        const positionOptions = {
+            'content-below': '内容下方',
+            'ip-below': 'IP信息下方',
+            'sidebar': '侧边栏',
+            'footer': '页脚'
         };
 
         // 加载栏目管理（新版）
@@ -2555,8 +2615,9 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                             <tr>
                                 <th style="width: 60px;">图标</th>
                                 <th>栏目名称</th>
-                                <th style="width: 120px;">项目数</th>
-                                <th style="width: 120px;">操作</th>
+                                <th style="width: 140px;">显示位置</th>
+                                <th style="width: 100px;">项目数</th>
+                                <th style="width: 100px;">操作</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2568,7 +2629,12 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                                     <td>
                                         <strong>${section.title}</strong>
                                         <br>
-                                        <small style="color: #666;">${section.id}</small>
+                                        <small style="color: #666; font-family: monospace;">${section.id}</small>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <span style="color: #666; font-size: 13px;">
+                                            ${positionOptions[section.position] || section.position}
+                                        </span>
                                     </td>
                                     <td style="text-align: center;">
                                         <span style="background: var(--accent); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
@@ -2576,8 +2642,8 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                                         </span>
                                     </td>
                                     <td style="text-align: center;">
-                                        <button class="btn btn-sm btn-primary" onclick="viewSectionItems('${section.id}')">
-                                            <i class="fas fa-edit"></i> 管理项目
+                                        <button class="icon-btn" onclick="viewSectionItems('${section.id}')" title="管理项目">
+                                            <i class="fas fa-edit"></i>
                                         </button>
                                     </td>
                                 </tr>
@@ -2632,27 +2698,49 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 60px;">顺序</th>
+                                    <th style="width: 120px;">ID</th>
+                                    <th style="width: 60px;">图标</th>
                                     <th>标题</th>
                                     <th>URL</th>
                                     <th>描述</th>
+                                    <th style="width: 60px;">状态</th>
                                     <th style="width: 120px;">操作</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${items.map((item, index) => `
-                                    <tr>
-                                        <td style="text-align: center;">${index + 1}</td>
-                                        <td><strong>${item.title || item.name || ''}</strong></td>
-                                        <td><a href="${item.url || '#'}" target="_blank" style="color: var(--accent);">${item.url || ''}</a></td>
-                                        <td style="color: #666; font-size: 13px;">${item.description || ''}</td>
+                                    <tr style="${item.hidden ? 'opacity: 0.5;' : ''}">
+                                        <td style="font-family: monospace; font-size: 12px; color: #666;">
+                                            ${item.id || `item-${index}`}
+                                        </td>
                                         <td style="text-align: center;">
-                                            <button class="icon-btn" onclick="editSectionItem(${index})" title="编辑">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="icon-btn" onclick="deleteSectionItem(${index})" title="删除" style="color: var(--danger);">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
+                                            ${item.icon ? `<i class="fas ${item.icon}" style="font-size: 16px; color: var(--accent);"></i>` : '-'}
+                                        </td>
+                                        <td><strong>${item.title || item.name || ''}</strong></td>
+                                        <td>
+                                            ${item.url ? `<a href="${item.url}" target="_blank" style="color: var(--accent); font-size: 12px;">${item.url.length > 40 ? item.url.substring(0, 40) + '...' : item.url}</a>` : '-'}
+                                        </td>
+                                        <td style="color: #666; font-size: 13px; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                            ${item.description || '-'}
+                                        </td>
+                                        <td style="text-align: center;">
+                                            ${item.hidden ? '<span style="color: #999; font-size: 12px;">隐藏</span>' : '<span style="color: var(--success); font-size: 12px;">显示</span>'}
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <div style="display: flex; gap: 4px; justify-content: center;">
+                                                <button class="icon-btn" onclick="editSectionItem(${index})" title="编辑">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="icon-btn" onclick="moveItemUp(${index})" title="上移" ${index === 0 ? 'disabled' : ''}>
+                                                    <i class="fas fa-arrow-up"></i>
+                                                </button>
+                                                <button class="icon-btn" onclick="moveItemDown(${index})" title="下移" ${index === items.length - 1 ? 'disabled' : ''}>
+                                                    <i class="fas fa-arrow-down"></i>
+                                                </button>
+                                                <button class="icon-btn" onclick="deleteSectionItem(${index})" title="删除" style="color: var(--danger);">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 `).join('')}
@@ -2666,29 +2754,45 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 60px;">顺序</th>
+                                    <th style="width: 120px;">ID</th>
+                                    <th style="width: 60px;">图标</th>
                                     <th>名称</th>
-                                    <th style="width: 120px;">等级</th>
-                                    <th>图标</th>
+                                    <th style="width: 100px;">等级</th>
+                                    <th style="width: 60px;">状态</th>
                                     <th style="width: 120px;">操作</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${items.map((item, index) => `
-                                    <tr>
-                                        <td style="text-align: center;">${index + 1}</td>
+                                    <tr style="${item.hidden ? 'opacity: 0.5;' : ''}">
+                                        <td style="font-family: monospace; font-size: 12px; color: #666;">
+                                            ${item.id || `skill-${index}`}
+                                        </td>
+                                        <td style="text-align: center;">
+                                            ${item.icon ? `<i class="fas ${item.icon}" style="font-size: 16px; color: var(--accent);"></i>` : '-'}
+                                        </td>
                                         <td><strong>${item.name || ''}</strong></td>
                                         <td style="text-align: center;">
-                                            <span style="color: var(--accent);">${item.level || 0}/5</span>
+                                            <span style="color: var(--accent); font-weight: 600;">${item.level || 0}/5</span>
                                         </td>
-                                        <td>${item.icon || ''}</td>
                                         <td style="text-align: center;">
-                                            <button class="icon-btn" onclick="editSectionItem(${index})" title="编辑">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="icon-btn" onclick="deleteSectionItem(${index})" title="删除" style="color: var(--danger);">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
+                                            ${item.hidden ? '<span style="color: #999; font-size: 12px;">隐藏</span>' : '<span style="color: var(--success); font-size: 12px;">显示</span>'}
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <div style="display: flex; gap: 4px; justify-content: center;">
+                                                <button class="icon-btn" onclick="editSectionItem(${index})" title="编辑">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="icon-btn" onclick="moveItemUp(${index})" title="上移" ${index === 0 ? 'disabled' : ''}>
+                                                    <i class="fas fa-arrow-up"></i>
+                                                </button>
+                                                <button class="icon-btn" onclick="moveItemDown(${index})" title="下移" ${index === items.length - 1 ? 'disabled' : ''}>
+                                                    <i class="fas fa-arrow-down"></i>
+                                                </button>
+                                                <button class="icon-btn" onclick="deleteSectionItem(${index})" title="删除" style="color: var(--danger);">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 `).join('')}
@@ -2702,27 +2806,43 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 60px;">顺序</th>
+                                    <th style="width: 120px;">ID</th>
                                     <th style="width: 120px;">日期</th>
                                     <th>标题</th>
                                     <th>描述</th>
+                                    <th style="width: 60px;">状态</th>
                                     <th style="width: 120px;">操作</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${items.map((item, index) => `
-                                    <tr>
-                                        <td style="text-align: center;">${index + 1}</td>
-                                        <td>${item.date || ''}</td>
+                                    <tr style="${item.hidden ? 'opacity: 0.5;' : ''}">
+                                        <td style="font-family: monospace; font-size: 12px; color: #666;">
+                                            ${item.id || `event-${index}`}
+                                        </td>
+                                        <td style="color: var(--accent); font-weight: 500;">${item.date || '-'}</td>
                                         <td><strong>${item.title || ''}</strong></td>
-                                        <td style="color: #666; font-size: 13px;">${item.description || ''}</td>
+                                        <td style="color: #666; font-size: 13px; max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                            ${item.description || '-'}
+                                        </td>
                                         <td style="text-align: center;">
-                                            <button class="icon-btn" onclick="editSectionItem(${index})" title="编辑">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="icon-btn" onclick="deleteSectionItem(${index})" title="删除" style="color: var(--danger);">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
+                                            ${item.hidden ? '<span style="color: #999; font-size: 12px;">隐藏</span>' : '<span style="color: var(--success); font-size: 12px;">显示</span>'}
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <div style="display: flex; gap: 4px; justify-content: center;">
+                                                <button class="icon-btn" onclick="editSectionItem(${index})" title="编辑">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="icon-btn" onclick="moveItemUp(${index})" title="上移" ${index === 0 ? 'disabled' : ''}>
+                                                    <i class="fas fa-arrow-up"></i>
+                                                </button>
+                                                <button class="icon-btn" onclick="moveItemDown(${index})" title="下移" ${index === items.length - 1 ? 'disabled' : ''}>
+                                                    <i class="fas fa-arrow-down"></i>
+                                                </button>
+                                                <button class="icon-btn" onclick="deleteSectionItem(${index})" title="删除" style="color: var(--danger);">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 `).join('')}
@@ -2742,17 +2862,88 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
             document.getElementById('sectionItemsView').style.display = 'none';
         }
 
+        // 移动项目（上移）
+        async function moveItemUp(index) {
+            if (index <= 0) return;
+
+            const section = sectionConfigMap[currentSectionId];
+            const items = currentConfigData[section.field];
+
+            // 交换位置
+            [items[index], items[index - 1]] = [items[index - 1], items[index]];
+
+            // 保存并刷新
+            await saveSectionData();
+            renderSectionItems(currentSectionId);
+        }
+
+        // 移动项目（下移）
+        async function moveItemDown(index) {
+            const section = sectionConfigMap[currentSectionId];
+            const items = currentConfigData[section.field];
+
+            if (index >= items.length - 1) return;
+
+            // 交换位置
+            [items[index], items[index + 1]] = [items[index + 1], items[index]];
+
+            // 保存并刷新
+            await saveSectionData();
+            renderSectionItems(currentSectionId);
+        }
+
         // 编辑栏目项目
         function editSectionItem(index) {
-            alert(`编辑功能开发中 - 索引: ${index}\n\n当前请使用「前端配置」Tab 的代码编辑模式进行高级编辑`);
+            currentEditingIndex = index;
+            const section = sectionConfigMap[currentSectionId];
+            const item = currentConfigData[section.field][index];
+
+            // 打开编辑弹窗
+            showItemEditModal(item);
         }
 
         // 删除栏目项目
-        function deleteSectionItem(index) {
-            if (!confirm('确定要删除这个项目吗？')) {
+        async function deleteSectionItem(index) {
+            const section = sectionConfigMap[currentSectionId];
+            const item = currentConfigData[section.field][index];
+            const itemName = item.title || item.name || `项目 ${index + 1}`;
+
+            if (!confirm(`确定要删除 "${itemName}" 吗？`)) {
                 return;
             }
-            alert(`删除功能开发中 - 索引: ${index}\n\n当前请使用「前端配置」Tab 的代码编辑模式进行高级编辑`);
+
+            // 从数组中删除
+            currentConfigData[section.field].splice(index, 1);
+
+            // 保存并刷新
+            await saveSectionData();
+            renderSectionItems(currentSectionId);
+
+            // 显示成功消息
+            showAlert('sectionsAlert', `已删除: ${itemName}`, 'success');
+        }
+
+        // 保存栏目数据到后端
+        async function saveSectionData() {
+            try {
+                const content = generateConfigContent(currentConfigData);
+
+                const response = await fetch('/admin/api/config/frontend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(data.message || '保存失败');
+                }
+
+                return true;
+            } catch (error) {
+                showAlert('sectionsAlert', `保存失败: ${error.message}`, 'danger');
+                return false;
+            }
         }
 
         // 显示新建栏目弹窗
@@ -2762,7 +2953,219 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
         // 显示添加项目弹窗
         function showAddItemModal() {
-            alert(`添加项目功能开发中\n\n当前请使用「前端配置」Tab 的可视化表单或代码编辑模式添加项目`);
+            currentEditingIndex = null; // 标记为新建
+            showItemEditModal(null);
+        }
+
+        // 显示项目编辑弹窗
+        function showItemEditModal(item) {
+            const section = sectionConfigMap[currentSectionId];
+            const modal = document.getElementById('itemEditModal');
+            const title = document.getElementById('itemEditModalTitle');
+            const form = document.getElementById('itemEditForm');
+
+            // 设置标题
+            title.textContent = item ? '编辑项目' : '添加项目';
+
+            // 根据栏目类型生成表单字段
+            let formHTML = '';
+
+            switch(currentSectionId) {
+                case 'websites':
+                case 'projects':
+                    formHTML = `
+                        <div class="form-field">
+                            <label for="item-id">项目 ID *</label>
+                            <input type="text" id="item-id" value="${item?.id || ''}" required placeholder="my-project">
+                            <small>唯一标识，建议使用英文</small>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-title">标题 *</label>
+                            <input type="text" id="item-title" value="${item?.title || ''}" required placeholder="我的项目">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-url">URL</label>
+                            <input type="url" id="item-url" value="${item?.url || ''}" placeholder="https://example.com">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-description">描述</label>
+                            <textarea id="item-description" rows="3" placeholder="项目描述">${item?.description || ''}</textarea>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-icon">图标</label>
+                            <input type="text" id="item-icon" value="${item?.icon || ''}" placeholder="fa-globe">
+                            <small>Font Awesome 图标类名</small>
+                        </div>
+
+                        ${currentSectionId === 'projects' ? `
+                            <div class="form-field">
+                                <label for="item-tags">标签</label>
+                                <input type="text" id="item-tags" value="${item?.tags?.join(', ') || ''}" placeholder="Vue, TypeScript">
+                                <small>用逗号分隔多个标签</small>
+                            </div>
+                        ` : ''}
+
+                        <div class="form-field">
+                            <label>
+                                <input type="checkbox" id="item-hidden" ${item?.hidden ? 'checked' : ''}>
+                                隐藏此项目
+                            </label>
+                        </div>
+                    `;
+                    break;
+
+                case 'skills':
+                    formHTML = `
+                        <div class="form-field">
+                            <label for="item-id">技能 ID *</label>
+                            <input type="text" id="item-id" value="${item?.id || ''}" required placeholder="javascript">
+                            <small>唯一标识，建议使用英文</small>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-name">技能名称 *</label>
+                            <input type="text" id="item-name" value="${item?.name || ''}" required placeholder="JavaScript">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-icon">图标</label>
+                            <input type="text" id="item-icon" value="${item?.icon || ''}" placeholder="fa-js">
+                            <small>Font Awesome 图标类名</small>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-level">等级 (1-5)</label>
+                            <input type="number" id="item-level" value="${item?.level || 3}" min="1" max="5" required>
+                        </div>
+
+                        <div class="form-field">
+                            <label>
+                                <input type="checkbox" id="item-hidden" ${item?.hidden ? 'checked' : ''}>
+                                隐藏此技能
+                            </label>
+                        </div>
+                    `;
+                    break;
+
+                case 'timeline':
+                    formHTML = `
+                        <div class="form-field">
+                            <label for="item-id">事件 ID *</label>
+                            <input type="text" id="item-id" value="${item?.id || ''}" required placeholder="event-2024">
+                            <small>唯一标识，建议使用英文</small>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-date">日期 *</label>
+                            <input type="text" id="item-date" value="${item?.date || ''}" required placeholder="2024-01">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-title">标题 *</label>
+                            <input type="text" id="item-title" value="${item?.title || ''}" required placeholder="重要事件">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="item-description">描述</label>
+                            <textarea id="item-description" rows="3" placeholder="事件描述">${item?.description || ''}</textarea>
+                        </div>
+
+                        <div class="form-field">
+                            <label>
+                                <input type="checkbox" id="item-hidden" ${item?.hidden ? 'checked' : ''}>
+                                隐藏此事件
+                            </label>
+                        </div>
+                    `;
+                    break;
+            }
+
+            form.innerHTML = formHTML;
+            modal.style.display = 'flex';
+        }
+
+        // 关闭项目编辑弹窗
+        function closeItemEditModal() {
+            document.getElementById('itemEditModal').style.display = 'none';
+            currentEditingIndex = null;
+        }
+
+        // 保存项目编辑
+        async function saveItemEdit() {
+            const section = sectionConfigMap[currentSectionId];
+            const form = document.getElementById('itemEditForm');
+
+            // 收集表单数据
+            let newItem = {};
+
+            switch(currentSectionId) {
+                case 'websites':
+                case 'projects':
+                    newItem = {
+                        id: document.getElementById('item-id').value,
+                        title: document.getElementById('item-title').value,
+                        url: document.getElementById('item-url').value,
+                        description: document.getElementById('item-description').value,
+                        icon: document.getElementById('item-icon').value,
+                        hidden: document.getElementById('item-hidden').checked
+                    };
+
+                    if (currentSectionId === 'projects') {
+                        const tagsInput = document.getElementById('item-tags').value;
+                        newItem.tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
+                    }
+                    break;
+
+                case 'skills':
+                    newItem = {
+                        id: document.getElementById('item-id').value,
+                        name: document.getElementById('item-name').value,
+                        icon: document.getElementById('item-icon').value,
+                        level: parseInt(document.getElementById('item-level').value),
+                        hidden: document.getElementById('item-hidden').checked
+                    };
+                    break;
+
+                case 'timeline':
+                    newItem = {
+                        id: document.getElementById('item-id').value,
+                        date: document.getElementById('item-date').value,
+                        title: document.getElementById('item-title').value,
+                        description: document.getElementById('item-description').value,
+                        hidden: document.getElementById('item-hidden').checked
+                    };
+                    break;
+            }
+
+            // 移除空值
+            Object.keys(newItem).forEach(key => {
+                if (newItem[key] === '' || newItem[key] === null || newItem[key] === undefined) {
+                    delete newItem[key];
+                }
+            });
+
+            // 添加或更新项目
+            if (currentEditingIndex === null) {
+                // 新建
+                currentConfigData[section.field].push(newItem);
+            } else {
+                // 编辑
+                currentConfigData[section.field][currentEditingIndex] = newItem;
+            }
+
+            // 保存并刷新
+            const success = await saveSectionData();
+            if (success) {
+                closeItemEditModal();
+                renderSectionItems(currentSectionId);
+
+                const action = currentEditingIndex === null ? '添加' : '更新';
+                showAlert('sectionsAlert', `${action}成功！`, 'success');
+            }
         }
 
         // 关闭栏目弹窗
