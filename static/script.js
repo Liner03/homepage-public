@@ -640,6 +640,14 @@ async function fetchCalendarViaProxy(login, forceRefresh = false) {
     from.setDate(from.getDate() - 365);
     from.setHours(0, 0, 0, 0);
 
+    console.log('📅 [GitHub Debug] 日期范围:', {
+        now: now.toISOString(),
+        from: from.toISOString(),
+        to: to.toISOString(),
+        fromLocal: `${from.getFullYear()}-${String(from.getMonth()+1).padStart(2,'0')}-${String(from.getDate()).padStart(2,'0')}`,
+        toLocal: `${to.getFullYear()}-${String(to.getMonth()+1).padStart(2,'0')}-${String(to.getDate()).padStart(2,'0')}`
+    });
+
     const iso = d => d.toISOString();
     const url = `${endpoint}?login=${encodeURIComponent(login)}&from=${encodeURIComponent(iso(from))}&to=${encodeURIComponent(iso(to))}`;
 
