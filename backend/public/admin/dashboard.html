@@ -3269,8 +3269,20 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
         // 编辑栏目
         function editSection(sectionId) {
+            console.log('🔧 [编辑栏目] 开始编辑:', sectionId);
+            console.log('📋 [编辑栏目] sectionConfigMap:', sectionConfigMap);
+
             currentEditingSectionId = sectionId;
             const section = sectionConfigMap[sectionId];
+
+            console.log('📦 [编辑栏目] 找到的栏目数据:', section);
+
+            if (!section) {
+                console.error('❌ [编辑栏目] 未找到栏目数据，sectionId:', sectionId);
+                showAlert('sectionsAlert', '未找到栏目数据', 'danger');
+                return;
+            }
+
             showSectionEditModal(section);
         }
 
@@ -3304,6 +3316,8 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
         // 显示栏目编辑弹窗
         function showSectionEditModal(section) {
+            console.log('📝 [显示弹窗] 接收到的栏目数据:', section);
+
             const modal = document.getElementById('sectionEditModal');
             const title = document.getElementById('sectionEditModalTitle');
             const form = document.getElementById('sectionEditForm');
@@ -3313,6 +3327,8 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
             // 填充表单
             if (section) {
+                console.log('✏️ [显示弹窗] 开始填充表单数据...');
+
                 document.getElementById('sectionId').value = section.id;
                 document.getElementById('sectionId').disabled = true; // 编辑时不允许修改 ID
                 document.getElementById('sectionTitle').value = section.title;
@@ -3321,6 +3337,16 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                 document.getElementById('sectionPosition').value = section.position;
                 document.getElementById('sectionTemplate').value = section.defaultTemplate || 'card-grid';
                 document.getElementById('sectionHidden').checked = section.hidden || false;
+
+                console.log('✅ [显示弹窗] 表单数据填充完成:', {
+                    id: document.getElementById('sectionId').value,
+                    title: document.getElementById('sectionTitle').value,
+                    icon: document.getElementById('sectionIcon').value,
+                    field: document.getElementById('sectionField').value,
+                    position: document.getElementById('sectionPosition').value,
+                    template: document.getElementById('sectionTemplate').value,
+                    hidden: document.getElementById('sectionHidden').checked
+                });
             } else {
                 // 新建时清空表单
                 form.reset();
