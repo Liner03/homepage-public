@@ -846,13 +846,14 @@
                 <div class="card-body">
                     <!-- 表单模式 -->
                     <div id="frontendFormMode" style="display: block;">
-                        <p style="color: #666; margin-bottom: 20px;">通过可视化表单编辑前端配置</p>
                         <form id="frontendVisualForm" class="form-grid">
                             <!-- 操作按钮 - 粘性定位在顶部 -->
                             <div class="form-actions">
                                 <button type="button" class="btn btn-secondary" onclick="loadFrontendConfig()">重置</button>
                                 <button type="submit" class="btn btn-primary">保存配置</button>
                             </div>
+
+                            <p style="color: #666; margin-bottom: 20px; font-size: 14px;">通过可视化表单编辑前端配置</p>
 
                             <h4>👤 个人信息</h4>
                             <div class="form-field">
@@ -952,52 +953,24 @@
                             </div>
 
                             <hr>
-                            <h4 style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>🌐 我的站点</span>
-                                <button type="button" class="btn btn-primary" onclick="addWebsite()" style="font-size: 12px; padding: 6px 12px;">+ 添加站点</button>
-                            </h4>
-                            <div id="websitesContainer">
-                                <!-- 站点列表将动态插入这里 -->
-                            </div>
-
-                            <hr>
-                            <h4 style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>💼 项目集</span>
-                                <button type="button" class="btn btn-primary" onclick="addProject()" style="font-size: 12px; padding: 6px 12px;">+ 添加项目</button>
-                            </h4>
-                            <div id="projectsContainer">
-                                <!-- 项目列表将动态插入这里 -->
-                            </div>
-
-                            <hr>
-                            <h4 style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>🛠️ 技能栈</span>
-                                <button type="button" class="btn btn-primary" onclick="addSkill()" style="font-size: 12px; padding: 6px 12px;">+ 添加技能</button>
-                            </h4>
-                            <div id="skillsContainer">
-                                <!-- 技能列表将动态插入这里 -->
-                            </div>
-
-                            <hr>
-                            <h4 style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>📅 时间线</span>
-                                <button type="button" class="btn btn-primary" onclick="addTimeline()" style="font-size: 12px; padding: 6px 12px;">+ 添加事件</button>
-                            </h4>
-                            <div id="timelineContainer">
-                                <!-- 时间线列表将动态插入这里 -->
+                            <div style="padding: 40px 20px; text-align: center; background: var(--bg-secondary); border-radius: var(--radius-lg); color: var(--text-secondary);">
+                                <i class="fas fa-info-circle" style="font-size: 32px; color: var(--accent); margin-bottom: 12px;"></i>
+                                <p style="font-size: 15px; font-weight: 500; margin-bottom: 8px;">站点、项目、技能、时间线管理已移至「栏目管理」</p>
+                                <p style="font-size: 13px;">请前往 <strong>栏目管理</strong> Tab 进行编辑</p>
                             </div>
                         </form>
                     </div>
 
                     <!-- 代码模式 -->
                     <div id="frontendCodeMode" style="display: none;">
-                        <p style="color: #666; margin-bottom: 20px;">直接编辑 config.js 代码</p>
                         <form id="frontendCodeForm">
                             <!-- 操作按钮 - 粘性定位在顶部 -->
                             <div class="form-actions">
                                 <button type="button" class="btn btn-secondary" onclick="loadFrontendConfig()">重置</button>
                                 <button type="submit" class="btn btn-primary">保存配置</button>
                             </div>
+
+                            <p style="color: #666; margin-bottom: 20px; font-size: 14px;">直接编辑 config.js 代码</p>
 
                             <textarea id="frontendConfigEditor" class="code-editor" placeholder="加载中..."></textarea>
                         </form>
@@ -1015,14 +988,14 @@
                     <h2>⚙️ 后端配置 (.env)</h2>
                 </div>
                 <div class="card-body">
-                    <p style="color: #666; margin-bottom: 20px;">修改后需要重启服务器才能生效</p>
-
                     <form id="envForm" class="form-grid">
                         <!-- 操作按钮 - 粘性定位在顶部 -->
                         <div class="form-actions">
                             <button type="button" class="btn btn-secondary" onclick="loadEnvConfig()">重置</button>
                             <button type="submit" class="btn btn-primary">保存配置</button>
                         </div>
+
+                        <p style="color: #666; margin-bottom: 20px; font-size: 14px;">修改后需要重启服务器才能生效</p>
 
                         <div class="form-field">
                             <label for="PORT">服务器端口</label>
@@ -2232,7 +2205,7 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
         async function loadSectionContent(sectionName) {
             try {
                 // 从前端配置加载数据
-                const response = await fetch('/admin/api/frontend-config');
+                const response = await fetch('/admin/api/config/frontend');
                 const data = await response.json();
 
                 if (!data.success) {
