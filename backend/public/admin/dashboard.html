@@ -3026,7 +3026,7 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
                 // 生成配置内容
                 console.log('🔄 正在生成配置文件内容...');
-                const content = generateConfigContent(currentConfigData);
+                const content = generateConfigCode(currentConfigData);
                 console.log('✅ 配置内容已生成，长度:', content.length, '字符');
 
                 // 发送请求
