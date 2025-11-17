@@ -2741,8 +2741,16 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                                     </td>
                                     <td>
                                         <strong>${section.title}</strong>
+                                        ${section.items.length === 0 ?
+                                            '<span style="background: #ff9f0a; color: white; padding: 2px 6px; border-radius: 8px; font-size: 11px; margin-left: 6px;">空</span>' :
+                                            ''
+                                        }
                                         <br>
                                         <small style="color: #666; font-family: monospace;">${section.id}</small>
+                                        ${section.hidden && section.items.length === 0 ?
+                                            '<br><small style="color: #999; font-size: 11px;">⚠️ 因无项目已自动隐藏</small>' :
+                                            ''
+                                        }
                                     </td>
                                     <td style="text-align: center;">
                                         <span style="color: #666; font-size: 13px;">
@@ -2756,7 +2764,7 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                                         }
                                     </td>
                                     <td style="text-align: center;">
-                                        <span style="background: var(--accent); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                                        <span style="background: ${section.items.length === 0 ? '#ccc' : 'var(--accent)'}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
                                             ${section.items.length}
                                         </span>
                                     </td>
@@ -3100,6 +3108,44 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
             // 显示成功消息
             showAlert('sectionsAlert', `已删除: ${itemName}`, 'success');
+
+            // 检查栏目是否为空，如果为空则提示隐藏
+            if (currentConfigData[section.field].length === 0) {
+                setTimeout(() => {
+                    if (confirm(`栏目 "${section.title}" 已经没有项目了，是否隐藏此栏目？\n\n您可以稍后在栏目列表中重新显示它。`)) {
+                        autoHideEmptySection(currentSectionId);
+                    }
+                }, 500); // 延迟显示，避免与删除确认对话框冲突
+            }
+        }
+
+        // 自动隐藏空栏目
+        async function autoHideEmptySection(sectionId) {
+            const section = sectionConfigMap[sectionId];
+
+            try {
+                const response = await fetch(`/admin/api/sections/${sectionId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...section, hidden: true })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('sectionsAlert', `栏目 "${section.title}" 已隐藏`, 'success');
+                    // 更新本地配置
+                    section.hidden = true;
+                    sectionConfigMap[sectionId].hidden = true;
+
+                    // 返回栏目列表
+                    setTimeout(() => {
+                        backToSectionsList();
+                    }, 1000);
+                }
+            } catch (error) {
+                console.error('隐藏栏目失败:', error);
+            }
         }
 
         // 保存栏目数据到后端
@@ -3236,11 +3282,27 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                 form.reset();
                 document.getElementById('sectionId').disabled = false;
                 document.getElementById('sectionTemplate').value = 'card-grid';
-                document.getElementById('sectionHidden').checked = false;
+                // 新栏目默认隐藏（因为肯定是空的，添加项目后再显示）
+                document.getElementById('sectionHidden').checked = true;
             }
 
             // 显示弹窗
             modal.style.display = 'flex';
+
+            // 如果是新建，显示提示
+            if (!section) {
+                setTimeout(() => {
+                    const hiddenCheckbox = document.getElementById('sectionHidden');
+                    const label = hiddenCheckbox.parentElement;
+                    if (!label.querySelector('.new-section-tip')) {
+                        const tip = document.createElement('small');
+                        tip.className = 'new-section-tip';
+                        tip.style.cssText = 'display: block; color: #666; margin-top: 4px; font-size: 12px;';
+                        tip.textContent = '💡 新栏目默认隐藏，添加项目后再显示';
+                        label.appendChild(tip);
+                    }
+                }, 100);
+            }
         }
 
         // 关闭栏目编辑弹窗

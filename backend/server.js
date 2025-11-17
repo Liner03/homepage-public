@@ -363,6 +363,22 @@ function initDefaultSections() {
 
     // 如果还没有栏目配置，初始化默认栏目
     if (!sections || sections.length === 0) {
+      // 尝试读取前端配置，检查各栏目是否有数据
+      let configData = {};
+      try {
+        const configContent = configManager.readConfig();
+        if (configContent) {
+          // 简单解析 CONFIG 对象
+          const match = configContent.match(/const\s+CONFIG\s*=\s*(\{[\s\S]*?\});?\s*$/m);
+          if (match) {
+            // 使用 eval 解析（仅用于初始化，生产环境应该用更安全的方式）
+            configData = eval('(' + match[1] + ')');
+          }
+        }
+      } catch (error) {
+        console.log('⚠️ 无法读取前端配置，使用默认设置');
+      }
+
       const defaultSections = [
         {
           id: 'websites',
@@ -371,7 +387,7 @@ function initDefaultSections() {
           field: 'websites',
           position: 'content-below',
           defaultTemplate: 'card-grid',
-          hidden: false,
+          hidden: !configData.websites || configData.websites.length === 0, // 如果为空则隐藏
           itemFields: [
             { name: 'id', label: 'ID', type: 'text', required: true },
             { name: 'title', label: '标题', type: 'text', required: true },
@@ -388,7 +404,7 @@ function initDefaultSections() {
           field: 'projects',
           position: 'content-below',
           defaultTemplate: 'card-grid',
-          hidden: false,
+          hidden: !configData.projects || configData.projects.length === 0, // 如果为空则隐藏
           itemFields: [
             { name: 'id', label: 'ID', type: 'text', required: true },
             { name: 'title', label: '标题', type: 'text', required: true },
@@ -406,7 +422,7 @@ function initDefaultSections() {
           field: 'skills',
           position: 'content-below',
           defaultTemplate: 'icon-wall',
-          hidden: false,
+          hidden: !configData.skills || configData.skills.length === 0, // 如果为空则隐藏
           itemFields: [
             { name: 'id', label: 'ID', type: 'text', required: true },
             { name: 'name', label: '名称', type: 'text', required: true },
@@ -422,7 +438,7 @@ function initDefaultSections() {
           field: 'timeline',
           position: 'content-below',
           defaultTemplate: 'list',
-          hidden: false,
+          hidden: !configData.timeline || configData.timeline.length === 0, // 如果为空则隐藏
           itemFields: [
             { name: 'id', label: 'ID', type: 'text', required: true },
             { name: 'date', label: '日期', type: 'text', required: true },
@@ -434,10 +450,54 @@ function initDefaultSections() {
       ];
 
       configManager.saveSections(defaultSections);
-      console.log('✅ 已初始化默认栏目配置');
+
+      // 统计隐藏的栏目
+      const hiddenCount = defaultSections.filter(s => s.hidden).length;
+      console.log(`✅ 已初始化默认栏目配置 (${defaultSections.length}个栏目, ${hiddenCount}个已隐藏)`);
+    } else {
+      // 如果栏目配置已存在，检查是否需要更新 hidden 状态
+      updateSectionsHiddenStatus(configManager, sections);
     }
   } catch (error) {
     console.error('❌ 初始化栏目配置失败:', error);
+  }
+}
+
+// 更新栏目的 hidden 状态（基于项目数量）
+function updateSectionsHiddenStatus(configManager, sections) {
+  try {
+    // 读取前端配置
+    let configData = {};
+    try {
+      const configContent = configManager.readConfig();
+      if (configContent) {
+        const match = configContent.match(/const\s+CONFIG\s*=\s*(\{[\s\S]*?\});?\s*$/m);
+        if (match) {
+          configData = eval('(' + match[1] + ')');
+        }
+      }
+    } catch (error) {
+      return; // 无法读取配置，跳过更新
+    }
+
+    let updated = false;
+    sections.forEach(section => {
+      const items = configData[section.field];
+      const shouldHide = !items || items.length === 0;
+
+      // 如果当前是显示的，但项目为空，自动设置为隐藏
+      if (!section.hidden && shouldHide) {
+        section.hidden = true;
+        updated = true;
+        console.log(`ℹ️ 栏目 "${section.title}" 无项目，已自动隐藏`);
+      }
+    });
+
+    if (updated) {
+      configManager.saveSections(sections);
+    }
+  } catch (error) {
+    console.error('⚠️ 更新栏目隐藏状态失败:', error);
   }
 }
 
