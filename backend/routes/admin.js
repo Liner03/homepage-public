@@ -10,6 +10,14 @@ function createAdminRouter(config, dataStorage, visitStorage) {
   const projectRoot = path.join(__dirname, '../..');
   const configManager = new ConfigManager(projectRoot);
 
+  // 根路由 - 自动跳转
+  router.get('/', (req, res) => {
+    if (req.session && req.session.isAdmin) {
+      return res.redirect('/admin/dashboard');
+    }
+    res.redirect('/admin/login');
+  });
+
   // 登录页面
   router.get('/login', (req, res) => {
     if (req.session && req.session.isAdmin) {
@@ -176,6 +184,53 @@ function createAdminRouter(config, dataStorage, visitStorage) {
       res.json({ success: true, content: exampleContent });
     } catch (error) {
       res.status(500).json({ error: 'server_error', message: error.message });
+    }
+  });
+
+  // ==================== 用户设置 API ====================
+
+  // API: 修改管理员密码
+  router.post('/api/change-password', requireAuth, (req, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({
+          success: false,
+          message: '请提供当前密码和新密码'
+        });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({
+          success: false,
+          message: '新密码至少需要 6 个字符'
+        });
+      }
+
+      // 验证当前密码
+      const username = req.session.username;
+      if (!verifyAdmin(username, currentPassword, config)) {
+        return res.status(401).json({
+          success: false,
+          message: '当前密码错误'
+        });
+      }
+
+      // 更新 .env 文件中的密码
+      const envData = configManager.readEnv();
+      envData.ADMIN_PASSWORD = newPassword;
+      configManager.saveEnv(envData);
+
+      res.json({
+        success: true,
+        message: '密码修改成功，下次登录时生效'
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: '修改失败: ' + error.message
+      });
     }
   });
 
