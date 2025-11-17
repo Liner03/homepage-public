@@ -200,7 +200,10 @@
     <div class="header">
         <div class="header-content">
             <h1>📊 管理后台</h1>
-            <button class="logout-btn" onclick="logout()">退出登录</button>
+            <div style="display: flex; gap: 10px;">
+                <button class="logout-btn" onclick="location.href='/admin/config.html'">⚙️ 配置管理</button>
+                <button class="logout-btn" onclick="logout()">退出登录</button>
+            </div>
         </div>
     </div>
 
@@ -240,7 +243,10 @@
         <div class="card">
             <div class="card-header">
                 <h2>✅ 签到用户</h2>
-                <button class="btn btn-primary" onclick="refreshCheckins()">刷新</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="refreshCheckins()">刷新</button>
+                    <button class="btn btn-danger" onclick="clearAllCheckins()">清空全部</button>
+                </div>
             </div>
             <div class="card-body">
                 <div id="checkinContent" class="loading">加载中...</div>
@@ -345,9 +351,14 @@
                 const data = await response.json();
 
                 if (data.users && data.users.length > 0) {
-                    let html = '<table class="data-table"><thead><tr><th>用户ID</th><th>签到天数</th><th>最近签到</th></tr></thead><tbody>';
+                    let html = '<table class="data-table"><thead><tr><th>用户ID</th><th>签到天数</th><th>最近签到</th><th>操作</th></tr></thead><tbody>';
                     data.users.forEach(user => {
-                        html += `<tr><td>${user.uid}</td><td>${user.totalDays}</td><td>${user.lastDay || '-'}</td></tr>`;
+                        html += `<tr>
+                            <td>${user.uid}</td>
+                            <td>${user.totalDays}</td>
+                            <td>${user.lastDay || '-'}</td>
+                            <td><button class="btn btn-danger" onclick="deleteCheckin('${user.uid}')">删除</button></td>
+                        </tr>`;
                     });
                     html += '</tbody></table>';
                     content.innerHTML = html;
@@ -356,6 +367,46 @@
                 }
             } catch (error) {
                 content.innerHTML = '<div class="empty">加载失败</div>';
+            }
+        }
+
+        // 删除单个签到用户
+        async function deleteCheckin(uid) {
+            if (!confirm(`确定要删除用户 ${uid} 的签到记录吗？`)) return;
+
+            try {
+                const response = await fetch(`/admin/api/checkins/${uid}`, { method: 'DELETE' });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(data.message);
+                    refreshCheckins();
+                    loadStats();
+                } else {
+                    alert('删除失败: ' + data.message);
+                }
+            } catch (error) {
+                alert('删除失败: ' + error.message);
+            }
+        }
+
+        // 清空所有签到数据
+        async function clearAllCheckins() {
+            if (!confirm('⚠️ 确定要清空所有签到数据吗？此操作不可恢复！')) return;
+
+            try {
+                const response = await fetch('/admin/api/checkins', { method: 'DELETE' });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(data.message);
+                    refreshCheckins();
+                    loadStats();
+                } else {
+                    alert('清空失败: ' + data.message);
+                }
+            } catch (error) {
+                alert('清空失败: ' + error.message);
             }
         }
 

@@ -23,6 +23,11 @@ function createAdminRouter(config, dataStorage, visitStorage) {
     res.sendFile(path.join(__dirname, '../public/admin/dashboard.html'));
   });
 
+  // 配置管理页面
+  router.get('/config.html', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/admin/config.html'));
+  });
+
   // API: 登录
   router.post('/api/login', (req, res) => {
     const { username, password } = req.body;
