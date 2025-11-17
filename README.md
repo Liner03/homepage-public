@@ -124,7 +124,11 @@ const CUSTOM_SECTION_CONFIG = {
 git clone https://github.com/zduu/homepage-public.git
 cd homepage-public
 
-# 进入后端目录
+# 🔧 第一步：创建前端配置文件（重要！）
+cp config.example.js config.js
+# 编辑 config.js，修改你的个人信息（GitHub 用户名等）
+
+# 🔧 第二步：配置并启动后端
 cd backend
 
 # 安装依赖
@@ -139,6 +143,8 @@ npm start
 
 # 访问 http://localhost:3000
 ```
+
+> ⚠️ **重要提示**：必须先在项目根目录创建 `config.js` 文件（从 `config.example.js` 复制），否则前端会报错 `CONFIG is not defined`。
 
 **配置访问统计存储方式：**
 编辑 `backend/.env` 文件：
@@ -161,6 +167,10 @@ GITHUB_TOKEN=your_github_token_here
 git clone https://github.com/zduu/homepage-public.git
 cd homepage-public
 
+# 创建前端配置文件
+cp config.example.js config.js
+# 编辑 config.js，修改你的个人信息
+
 # 启动本地服务器（含可选 GraphQL 代理，端口 8002）
 # 可选：设置 GitHub Token 以启用"精确贡献日历"
 # Windows PowerShell
@@ -179,7 +189,10 @@ npx http-server -p 8000
 
 ### 选项三：纯静态部署（最简单）
 
-直接将项目文件部署到任何静态托管平台（GitHub Pages、Vercel、Netlify 等），访问统计等功能将使用浏览器本地存储。
+1. 创建配置文件：`cp config.example.js config.js`
+2. 编辑 `config.js`，修改你的个人信息
+3. 将项目文件部署到静态托管平台（GitHub Pages、Vercel、Netlify 等）
+4. 访问统计等功能将使用浏览器本地存储
 
 ### 环境变量与配置示例
 - `.env.example`：环境变量示例（复制为 `.env`，不会被提交到 Git）

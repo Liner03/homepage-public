@@ -15,9 +15,17 @@
 
 ## 📦 快速开始
 
+> ⚠️ **前置条件**：必须先在项目根目录创建 `config.js`（从 `config.example.js` 复制），否则前端页面会报错 `CONFIG is not defined`。
+
 ### 方式一：直接运行
 
 ```bash
+# 第一步：在项目根目录创建前端配置（如果还没有）
+cd /path/to/homepage-public
+cp config.example.js config.js
+# 编辑 config.js，修改你的 GitHub 用户名等个人信息
+
+# 第二步：配置并启动后端
 cd backend
 
 # 安装依赖
