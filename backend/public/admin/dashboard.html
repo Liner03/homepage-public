@@ -438,13 +438,15 @@
             gap: 28px;
         }
 
-        .form-field {
+        .form-field,
+        .form-group {
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
 
-        .form-field label {
+        .form-field label,
+        .form-group label {
             font-weight: 600;
             color: var(--text-primary);
             font-size: 13px;
@@ -453,7 +455,11 @@
 
         .form-field input,
         .form-field select,
-        .form-field textarea {
+        .form-field textarea,
+        .form-group input,
+        .form-group select,
+        .form-group textarea,
+        .form-control {
             min-height: 44px;  /* Apple 标准可触摸高度 */
             padding: 11px 14px;
             border: 1.5px solid var(--input-border);
@@ -465,27 +471,45 @@
             color: var(--text-primary);
             -webkit-appearance: none;
             appearance: none;
+            width: 100%;
         }
 
         .form-field input:hover,
         .form-field select:hover,
-        .form-field textarea:hover {
+        .form-field textarea:hover,
+        .form-group input:hover,
+        .form-group select:hover,
+        .form-group textarea:hover,
+        .form-control:hover {
             border-color: var(--text-secondary);
         }
 
         .form-field input:focus,
         .form-field select:focus,
-        .form-field textarea:focus {
+        .form-field textarea:focus,
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus,
+        .form-control:focus {
             outline: none;
             border-color: var(--accent);
             box-shadow: var(--shadow-focus);
         }
 
-        .form-field input::placeholder {
+        .form-field input::placeholder,
+        .form-group input::placeholder,
+        .form-control::placeholder {
             color: #c7c7cc;
         }
 
-        .form-field small {
+        .form-field textarea,
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-field small,
+        .form-group small {
             color: var(--text-secondary);
             font-size: 12px;
             line-height: 1.4;
