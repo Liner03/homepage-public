@@ -80,7 +80,11 @@ app.get('/api/github/contributions', async (req, res) => {
     return res.status(400).json({ error: 'missing params' });
   }
 
-  if (!config.githubToken) {
+  // 支持测试 Token：优先使用 X-Test-Token header，否则使用环境变量
+  const testToken = req.headers['x-test-token'];
+  const token = testToken || config.githubToken;
+
+  if (!token) {
     return res.status(500).json({ error: 'missing GITHUB_TOKEN env' });
   }
 
@@ -103,7 +107,7 @@ app.get('/api/github/contributions', async (req, res) => {
     const response = await fetch('https://api.github.com/graphql', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${config.githubToken}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
         'User-Agent': 'homepage-backend'
       },

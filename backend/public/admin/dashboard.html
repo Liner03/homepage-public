@@ -984,9 +984,21 @@
                         </div>
 
                         <div class="form-field">
+                            <label for="GITHUB_USERNAME">GitHub 用户名</label>
+                            <input type="text" id="GITHUB_USERNAME" name="GITHUB_USERNAME" placeholder="octocat">
+                            <small>您的 GitHub 用户名，用于获取贡献日历数据</small>
+                        </div>
+
+                        <div class="form-field">
                             <label for="GITHUB_TOKEN">GitHub Token</label>
-                            <input type="text" id="GITHUB_TOKEN" name="GITHUB_TOKEN" placeholder="ghp_xxxxx">
+                            <div style="display: flex; gap: 8px; align-items: flex-start;">
+                                <input type="text" id="GITHUB_TOKEN" name="GITHUB_TOKEN" placeholder="ghp_xxxxx" style="flex: 1;">
+                                <button type="button" class="btn btn-secondary" onclick="testGitHubToken()" id="testTokenBtn">
+                                    <i class="fas fa-vial"></i> 测试 Token
+                                </button>
+                            </div>
                             <small>用于 GitHub 贡献日历。获取地址：<a href="https://github.com/settings/tokens" target="_blank">https://github.com/settings/tokens</a></small>
+                            <div id="tokenTestResult" style="margin-top: 12px; display: none;"></div>
                         </div>
 
                         <div class="form-field">
@@ -2079,6 +2091,147 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                 }
             } catch (error) {
                 showAlert('backendAlert', 'danger', '加载失败: ' + error.message);
+            }
+        }
+
+        // 测试 GitHub Token
+        async function testGitHubToken() {
+            const tokenInput = document.getElementById('GITHUB_TOKEN');
+            const resultDiv = document.getElementById('tokenTestResult');
+            const testBtn = document.getElementById('testTokenBtn');
+
+            const token = tokenInput.value.trim();
+
+            if (!token) {
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = '<div class="alert alert-warning" style="margin: 0;">请先输入 GitHub Token</div>';
+                return;
+            }
+
+            // 显示加载状态
+            testBtn.disabled = true;
+            testBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 测试中...';
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="alert alert-info" style="margin: 0;">正在测试 Token...</div>';
+
+            try {
+                // 获取当前登录用户名（从 .env 获取）
+                const username = document.getElementById('GITHUB_USERNAME')?.value || 'octocat';
+
+                // 计算日期范围（过去一年）
+                const to = new Date();
+                const from = new Date(to);
+                from.setFullYear(from.getFullYear() - 1);
+
+                // 测试 Token - 调用 GitHub contributions API
+                const testUrl = `/api/github/contributions?login=${username}&from=${from.toISOString()}&to=${to.toISOString()}&_t=${Date.now()}`;
+
+                const response = await fetch(testUrl, {
+                    headers: {
+                        'X-Test-Token': token  // 传递待测试的 token
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                }
+
+                // 解析结果
+                const totalDays = data.days?.length || 0;
+                const totalContributions = data.total || 0;
+                const hasData = totalDays > 0;
+                const hasContributions = totalContributions > 0;
+
+                // 计算有贡献的天数
+                const contributionDays = data.days?.filter(d => d.count > 0).length || 0;
+
+                // 生成结果HTML
+                let resultHTML = '<div class="alert alert-success" style="margin: 0; padding: 16px;">';
+                resultHTML += '<h4 style="margin: 0 0 12px 0; font-size: 16px;"><i class="fas fa-check-circle"></i> Token 测试通过</h4>';
+                resultHTML += '<div style="background: rgba(0,0,0,0.05); padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.8;">';
+
+                resultHTML += `<div><strong>用户名：</strong>${username}</div>`;
+                resultHTML += `<div><strong>数据天数：</strong>${totalDays} 天</div>`;
+                resultHTML += `<div><strong>总贡献数：</strong>${totalContributions}</div>`;
+                resultHTML += `<div><strong>有贡献的天数：</strong>${contributionDays} 天</div>`;
+
+                if (!hasData) {
+                    resultHTML += '<div style="margin-top: 8px; padding: 8px; background: #fff3cd; border-left: 3px solid #ffc107; color: #856404;">';
+                    resultHTML += '<i class="fas fa-exclamation-triangle"></i> Token 有效，但未获取到数据';
+                    resultHTML += '</div>';
+                } else if (!hasContributions) {
+                    resultHTML += '<div style="margin-top: 8px; padding: 8px; background: #fff3cd; border-left: 3px solid #ffc107; color: #856404;">';
+                    resultHTML += '<i class="fas fa-exclamation-triangle"></i> Token 有效，但所有贡献数为 0。可能需要以下权限：';
+                    resultHTML += '<ul style="margin: 8px 0 0 20px; padding: 0;">';
+                    resultHTML += '<li><code>read:user</code> - 读取用户信息</li>';
+                    resultHTML += '<li><code>repo</code> 或 <code>public_repo</code> - 访问仓库数据</li>';
+                    resultHTML += '</ul>';
+                    resultHTML += '</div>';
+                } else {
+                    resultHTML += '<div style="margin-top: 8px; padding: 8px; background: #d4edda; border-left: 3px solid #28a745; color: #155724;">';
+                    resultHTML += '<i class="fas fa-check"></i> Token 工作正常，已获取到贡献数据';
+                    resultHTML += '</div>';
+                }
+
+                // 显示示例数据
+                if (data.days && data.days.length > 0) {
+                    const recentDays = data.days.slice(-7);
+                    resultHTML += '<div style="margin-top: 12px; font-size: 12px;">';
+                    resultHTML += '<strong>最近7天数据样本：</strong>';
+                    resultHTML += '<div style="margin-top: 4px; font-family: monospace; background: rgba(0,0,0,0.1); padding: 8px; border-radius: 4px; overflow-x: auto;">';
+                    recentDays.forEach(day => {
+                        resultHTML += `<div>${day.date}: ${day.count} 次贡献</div>`;
+                    });
+                    resultHTML += '</div>';
+                    resultHTML += '</div>';
+                }
+
+                resultHTML += '</div>';
+                resultHTML += '</div>';
+
+                resultDiv.innerHTML = resultHTML;
+
+            } catch (error) {
+                // 显示错误
+                let errorHTML = '<div class="alert alert-danger" style="margin: 0; padding: 16px;">';
+                errorHTML += '<h4 style="margin: 0 0 12px 0; font-size: 16px;"><i class="fas fa-times-circle"></i> Token 测试失败</h4>';
+                errorHTML += '<div style="background: rgba(0,0,0,0.05); padding: 12px; border-radius: 8px; font-size: 13px;">';
+                errorHTML += `<div><strong>错误信息：</strong>${error.message}</div>`;
+
+                // 提供常见错误的解决方案
+                if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+                    errorHTML += '<div style="margin-top: 12px; padding: 8px; background: #f8d7da; border-left: 3px solid #dc3545;">';
+                    errorHTML += '<strong>可能的原因：</strong>';
+                    errorHTML += '<ul style="margin: 8px 0 0 20px; padding: 0;">';
+                    errorHTML += '<li>Token 格式错误</li>';
+                    errorHTML += '<li>Token 已过期或被撤销</li>';
+                    errorHTML += '<li>Token 没有必要的权限</li>';
+                    errorHTML += '</ul>';
+                    errorHTML += '</div>';
+                } else if (error.message.includes('403') || error.message.includes('Forbidden')) {
+                    errorHTML += '<div style="margin-top: 12px; padding: 8px; background: #f8d7da; border-left: 3px solid #dc3545;">';
+                    errorHTML += '<strong>权限不足：</strong>';
+                    errorHTML += '<ul style="margin: 8px 0 0 20px; padding: 0;">';
+                    errorHTML += '<li>Token 需要 <code>read:user</code> 权限</li>';
+                    errorHTML += '<li>Token 需要 <code>repo</code> 或 <code>public_repo</code> 权限</li>';
+                    errorHTML += '</ul>';
+                    errorHTML += '</div>';
+                } else if (error.message.includes('404')) {
+                    errorHTML += '<div style="margin-top: 12px; padding: 8px; background: #f8d7da; border-left: 3px solid #dc3545;">';
+                    errorHTML += '<strong>用户不存在：</strong> 请检查 GITHUB_USERNAME 配置';
+                    errorHTML += '</div>';
+                }
+
+                errorHTML += '</div>';
+                errorHTML += '</div>';
+
+                resultDiv.innerHTML = errorHTML;
+            } finally {
+                // 恢复按钮状态
+                testBtn.disabled = false;
+                testBtn.innerHTML = '<i class="fas fa-vial"></i> 测试 Token';
             }
         }
 
