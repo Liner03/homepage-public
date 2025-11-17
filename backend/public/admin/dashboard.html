@@ -3241,7 +3241,14 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                 document.getElementById('sectionTemplate').value = section.defaultTemplate || 'card-grid';
 
                 // 明确设置 hidden 状态
-                hiddenCheckbox.checked = section.hidden === true;
+                // 使用 setAttribute 和 property 两种方式确保设置成功
+                if (section.hidden === true) {
+                    hiddenCheckbox.checked = true;
+                    hiddenCheckbox.setAttribute('checked', 'checked');
+                } else {
+                    hiddenCheckbox.checked = false;
+                    hiddenCheckbox.removeAttribute('checked');
+                }
                 hiddenCheckbox.disabled = false; // 确保可以点击
 
                 console.log('🔘 [显示弹窗] Checkbox 设置后:', {
@@ -3304,12 +3311,35 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                 }
             }, 50);
 
-            // 添加点击测试监听器
+            // 添加点击测试监听器和二次验证
             setTimeout(() => {
                 const checkbox = document.getElementById('sectionHidden');
                 if (!checkbox) {
                     console.error('❌ [显示弹窗] 无法找到 checkbox 元素！');
                     return;
+                }
+
+                // 如果是编辑模式，二次验证并强制设置checkbox状态
+                if (section) {
+                    const expectedChecked = section.hidden === true;
+                    if (checkbox.checked !== expectedChecked) {
+                        console.warn('⚠️ [显示弹窗] Checkbox状态异常！重新设置...', {
+                            当前状态: checkbox.checked,
+                            期望状态: expectedChecked,
+                            原始值: section.hidden
+                        });
+
+                        checkbox.checked = expectedChecked;
+                        if (expectedChecked) {
+                            checkbox.setAttribute('checked', 'checked');
+                        } else {
+                            checkbox.removeAttribute('checked');
+                        }
+
+                        console.log('✅ [显示弹窗] Checkbox状态已修正为:', checkbox.checked);
+                    } else {
+                        console.log('✅ [显示弹窗] Checkbox状态正常:', checkbox.checked);
+                    }
                 }
 
                 // 添加点击监听器测试
@@ -3361,8 +3391,25 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
         // 关闭栏目编辑弹窗
         function closeSectionEditModal() {
-            document.getElementById('sectionEditModal').style.display = 'none';
+            const modal = document.getElementById('sectionEditModal');
+            const form = document.getElementById('sectionEditForm');
+
+            // 隐藏modal
+            modal.style.display = 'none';
+
+            // 清理状态
             currentEditingSectionId = null;
+
+            // 重置表单（清理遗留状态）
+            if (form) {
+                form.reset();
+            }
+
+            // 清除新建提示（如果有）
+            const tips = modal.querySelectorAll('.new-section-tip');
+            tips.forEach(tip => tip.remove());
+
+            console.log('🚪 [关闭弹窗] Modal已关闭并清理');
         }
 
         // 保存栏目配置
