@@ -64,17 +64,12 @@ function createAdminRouter(config, dataStorage, visitStorage) {
       // 获取今日和总访问
       const visitStats = await visitStorage.getVisitStats(today);
 
-      // 获取签到用户数
-      const data = dataStorage.loadData();
-      const checkinUsers = Object.keys(data.checkin || {}).length;
-
       // 获取存储类型
       const storageType = config.visitStorage.toUpperCase();
 
       res.json({
         todayVisits: visitStats.todayCount,
         totalVisits: visitStats.totalCount,
-        checkinUsers,
         storageType
       });
     } catch (error) {
@@ -101,25 +96,6 @@ function createAdminRouter(config, dataStorage, visitStorage) {
       }
 
       res.json({ stats });
-    } catch (error) {
-      res.status(500).json({ error: 'server_error', message: error.message });
-    }
-  });
-
-  // API: 获取签到用户列表
-  router.get('/api/checkins', requireAuth, (req, res) => {
-    try {
-      const data = dataStorage.loadData();
-      const checkins = data.checkin || {};
-
-      const users = Object.entries(checkins).map(([uid, userData]) => ({
-        uid,
-        totalDays: userData.days.length,
-        lastDay: userData.days[userData.days.length - 1] || null,
-        days: userData.days
-      }));
-
-      res.json({ users });
     } catch (error) {
       res.status(500).json({ error: 'server_error', message: error.message });
     }
@@ -198,38 +174,6 @@ function createAdminRouter(config, dataStorage, visitStorage) {
     try {
       const exampleContent = configManager.getConfigExample();
       res.json({ success: true, content: exampleContent });
-    } catch (error) {
-      res.status(500).json({ error: 'server_error', message: error.message });
-    }
-  });
-
-  // ==================== 数据管理 API ====================
-
-  // API: 删除签到用户
-  router.delete('/api/checkins/:uid', requireAuth, (req, res) => {
-    try {
-      const { uid } = req.params;
-      const data = dataStorage.loadData();
-
-      if (data.checkin && data.checkin[uid]) {
-        delete data.checkin[uid];
-        dataStorage.saveData(data);
-        res.json({ success: true, message: '用户签到记录已删除' });
-      } else {
-        res.status(404).json({ error: 'not_found', message: '用户不存在' });
-      }
-    } catch (error) {
-      res.status(500).json({ error: 'server_error', message: error.message });
-    }
-  });
-
-  // API: 清空所有签到数据
-  router.delete('/api/checkins', requireAuth, (req, res) => {
-    try {
-      const data = dataStorage.loadData();
-      data.checkin = {};
-      dataStorage.saveData(data);
-      res.json({ success: true, message: '所有签到数据已清空' });
     } catch (error) {
       res.status(500).json({ error: 'server_error', message: error.message });
     }

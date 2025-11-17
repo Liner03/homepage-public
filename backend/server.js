@@ -32,7 +32,7 @@ switch (visitStorageType) {
     break;
 }
 
-// 通用数据存储（主题、签到）
+// 通用数据存储（主题）
 const dataStorage = new DataStorage(config.dataDir);
 
 const app = express();
@@ -186,46 +186,7 @@ app.post('/api/daily-visit', async (req, res) => {
   }
 });
 
-// 4. 签到 - GET（查询）
-app.get('/api/checkin', (req, res) => {
-  const { uid } = req.query;
-
-  if (!uid) {
-    return res.status(400).json({ error: 'missing uid' });
-  }
-
-  try {
-    const data = dataStorage.getCheckinData(uid);
-    res.json({ success: true, data });
-  } catch (error) {
-    console.error('查询签到失败:', error);
-    res.status(500).json({ error: 'server error', detail: error.message });
-  }
-});
-
-// 5. 签到 - POST（保存）
-app.post('/api/checkin', (req, res) => {
-  const { uid } = req.query;
-  const { day } = req.body;
-
-  if (!uid) {
-    return res.status(400).json({ error: 'missing uid' });
-  }
-
-  if (!day || !/^\d{4}-\d{2}-\d{2}$/.test(day)) {
-    return res.status(400).json({ error: 'bad day', message: '日期格式错误，应为YYYY-MM-DD' });
-  }
-
-  try {
-    const result = dataStorage.saveCheckin(uid, day);
-    res.json(result);
-  } catch (error) {
-    console.error('保存签到失败:', error);
-    res.status(500).json({ error: 'server error', detail: error.message });
-  }
-});
-
-// 6. 主题 - GET（查询）
+// 4. 主题 - GET（查询）
 app.get('/api/theme', (req, res) => {
   try {
     const theme = dataStorage.getTheme();
@@ -249,7 +210,7 @@ app.get('/api/theme', (req, res) => {
   }
 });
 
-// 7. 主题 - POST（保存）
+// 5. 主题 - POST（保存）
 app.post('/api/theme', (req, res) => {
   const { r, g, b, angle, saturation, lightness } = req.body;
 
@@ -284,7 +245,7 @@ app.post('/api/theme', (req, res) => {
   }
 });
 
-// 8. 主题 - DELETE（删除）
+// 6. 主题 - DELETE（删除）
 app.delete('/api/theme', (req, res) => {
   try {
     dataStorage.deleteTheme();

@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * 通用数据存储（主题、签到等）
+ * 通用数据存储（主题等）
  * 使用 JSON 文件存储
  */
 class DataStorage {
@@ -21,7 +21,7 @@ class DataStorage {
 
   ensureDataFile() {
     if (!fs.existsSync(this.dataFile)) {
-      this.saveData({ checkin: {}, theme: null });
+      this.saveData({ theme: null });
     }
   }
 
@@ -31,7 +31,7 @@ class DataStorage {
       return JSON.parse(content);
     } catch (error) {
       console.error('加载数据失败:', error);
-      return { checkin: {}, theme: null };
+      return { theme: null };
     }
   }
 
@@ -43,44 +43,6 @@ class DataStorage {
       console.error('保存数据失败:', error);
       return false;
     }
-  }
-
-  // ==================== 签到相关 ====================
-
-  /**
-   * 获取用户签到数据
-   */
-  getCheckinData(uid) {
-    const data = this.loadData();
-    return data.checkin[uid] || { days: [] };
-  }
-
-  /**
-   * 保存用户签到
-   */
-  saveCheckin(uid, day) {
-    const data = this.loadData();
-
-    if (!data.checkin[uid]) {
-      data.checkin[uid] = { days: [] };
-    }
-
-    const days = data.checkin[uid].days;
-    const isNewDay = !days.includes(day);
-
-    if (isNewDay) {
-      days.push(day);
-      days.sort();
-    }
-
-    this.saveData(data);
-
-    return {
-      ok: true,
-      days: days,
-      newDay: isNewDay,
-      message: isNewDay ? '新访问记录已保存' : '今日已记录'
-    };
   }
 
   // ==================== 主题相关 ====================
