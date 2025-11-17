@@ -115,11 +115,24 @@ app.get('/api/github/contributions', async (req, res) => {
 
     const data = await response.json();
 
+    // 调试日志：记录GitHub API响应
+    console.log('[GitHub Debug] API响应状态:', response.status);
     if (data.errors) {
+      console.error('[GitHub Debug] API返回错误:', JSON.stringify(data.errors, null, 2));
       return res.status(502).json({ error: data.errors });
     }
 
+    if (!data.data || !data.data.user) {
+      console.error('[GitHub Debug] 无效的响应数据:', JSON.stringify(data, null, 2));
+      return res.status(502).json({ error: 'invalid_response', detail: '未找到用户数据' });
+    }
+
     const calendar = data.data.user.contributionsCollection.contributionCalendar;
+    console.log('[GitHub Debug] 日历数据统计:', {
+      totalContributions: calendar.totalContributions,
+      weeksCount: calendar.weeks?.length || 0,
+      firstWeekDays: calendar.weeks?.[0]?.contributionDays?.length || 0
+    });
 
     // 标准化输出
     const days = [];
@@ -133,6 +146,10 @@ app.get('/api/github/contributions', async (req, res) => {
         });
       }
     }
+
+    // 调试：检查前5天的数据
+    console.log('[GitHub Debug] 前5天数据样本:', days.slice(0, 5));
+    console.log('[GitHub Debug] 总天数:', days.length, '总贡献:', calendar.totalContributions);
 
     res.json({
       days,

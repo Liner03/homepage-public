@@ -1847,7 +1847,8 @@
                     document.getElementById('tags_input').value = configObj.tags.join(', ');
                 }
 
-                // 处理网站列表
+                // 网站、项目、技能、时间线管理已移至"栏目管理"Tab
+                // 这里仅加载数据但不渲染（容器已移除）
                 if (configObj.websites) {
                     websitesData = [];
                     websiteIdCounter = 0;
@@ -1859,10 +1860,9 @@
                             description: item.description || ''
                         });
                     });
-                    renderAllWebsites();
+                    // renderAllWebsites(); // 已移至栏目管理
                 }
 
-                // 处理项目列表
                 if (configObj.projects) {
                     projectsData = [];
                     projectIdCounter = 0;
@@ -1875,10 +1875,9 @@
                             image: item.image || ''
                         });
                     });
-                    renderAllProjects();
+                    // renderAllProjects(); // 已移至栏目管理
                 }
 
-                // 处理技能列表
                 if (configObj.skills) {
                     skillsData = [];
                     skillIdCounter = 0;
@@ -1890,10 +1889,9 @@
                             icon: item.icon || ''
                         });
                     });
-                    renderAllSkills();
+                    // renderAllSkills(); // 已移至栏目管理
                 }
 
-                // 处理时间线列表
                 if (configObj.timeline) {
                     timelineData = [];
                     timelineIdCounter = 0;
@@ -1904,7 +1902,7 @@
                             date: item.date || ''
                         });
                     });
-                    renderAllTimeline();
+                    // renderAllTimeline(); // 已移至栏目管理
                 }
 
                 if (configObj.texts) {
@@ -2194,6 +2192,25 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
         let sectionsData = [];
         let currentSection = null;
         let currentTemplate = 'card-grid';
+
+        // 解析配置代码为对象（工具函数）
+        function parseConfigContent(code) {
+            try {
+                // 提取 CONFIG 对象
+                const configMatch = code.match(/const\s+CONFIG\s*=\s*({[\s\S]*?});/);
+                if (!configMatch) {
+                    console.error('无法解析配置文件');
+                    return {};
+                }
+
+                // 使用 eval 解析配置对象（在受信任的后台环境中）
+                const configObj = eval('(' + configMatch[1] + ')');
+                return configObj;
+            } catch (error) {
+                console.error('解析配置失败:', error);
+                return {};
+            }
+        }
 
         // 加载栏目管理（新版）
         async function loadSectionManagement() {
