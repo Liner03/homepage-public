@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const session = require('express-session');
 const path = require('path');
 const config = require('./config');
 const DataStorage = require('./storage/data-storage');
@@ -40,6 +41,18 @@ const app = express();
 app.use(cors(config.cors));
 app.use(express.json());
 
+// Session 配置（管理后台需要）
+app.use(session({
+  secret: config.sessionSecret,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: config.env === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24小时
+  }
+}));
+
 // 静态文件服务（提供前端页面）
 app.use(express.static(path.join(__dirname, '..')));
 
@@ -50,6 +63,12 @@ function getClientIP(req) {
          req.connection.remoteAddress ||
          'unknown';
 }
+
+// ==================== 管理后台路由 ====================
+
+const createAdminRouter = require('./routes/admin');
+const adminRouter = createAdminRouter(config, dataStorage, visitStorage);
+app.use('/admin', adminRouter);
 
 // ==================== API 路由 ====================
 

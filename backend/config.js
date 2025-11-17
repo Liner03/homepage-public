@@ -26,5 +26,10 @@ module.exports = {
     origin: '*',
     methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type']
-  }
+  },
+
+  // 管理后台配置
+  adminUsername: process.env.ADMIN_USERNAME || 'admin',
+  adminPassword: process.env.ADMIN_PASSWORD || 'admin123',
+  sessionSecret: process.env.SESSION_SECRET || 'change-this-secret-key-in-production'
 };

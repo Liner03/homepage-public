@@ -153,6 +153,78 @@ DELETE /api/theme
 GET /health
 ```
 
+## 🔐 管理后台
+
+后端内置了可视化管理后台，支持查看和管理所有数据。
+
+### 访问地址
+
+```
+http://localhost:3000/admin/login
+```
+
+### 默认账号
+
+```
+用户名: admin
+密码: admin123
+```
+
+⚠️ **安全提示**：首次部署后请立即修改默认密码！
+
+### 修改密码
+
+编辑 `backend/.env` 文件：
+
+```bash
+ADMIN_USERNAME=your_username
+ADMIN_PASSWORD=your_strong_password
+SESSION_SECRET=your_random_secret_key
+```
+
+### 功能特性
+
+- 📊 **实时统计** - 查看今日/累计访问次数、签到用户数等
+- 📈 **访问趋势** - 最近7天访问统计图表
+- ✅ **签到管理** - 查看所有签到用户及签到天数
+- 🎨 **主题管理** - 查看和删除全局主题色设置
+- ⚙️ **系统信息** - 查看服务器运行状态和存储配置
+- 🔒 **安全认证** - 基于 session 的身份验证
+
+### 管理界面预览
+
+访问 `/admin/dashboard` 可以看到：
+
+1. **统计概览卡片**
+   - 今日访问次数
+   - 累计访问次数
+   - 签到用户总数
+   - 当前存储方式
+
+2. **访问统计表格**
+   - 最近7天每日访问详情
+
+3. **签到用户列表**
+   - 用户ID、签到天数、最近签到日期
+
+4. **全局主题色**
+   - 颜色预览
+   - RGB/HSL 参数
+   - 一键删除功能
+
+5. **系统信息**
+   - 服务状态
+   - 存储配置
+   - 服务器时间
+
+### 安全建议
+
+1. ✅ 修改默认用户名和密码
+2. ✅ 使用强密码（至少12位，包含大小写字母、数字、符号）
+3. ✅ 修改 SESSION_SECRET 为随机字符串
+4. ✅ 生产环境建议使用 HTTPS
+5. ✅ 考虑添加 IP 白名单限制
+
 ## 📁 目录结构
 
 ```
@@ -162,6 +234,14 @@ backend/
 ├── package.json              # 依赖管理
 ├── .env.example              # 环境变量示例
 ├── Dockerfile                # Docker 镜像
+├── middleware/               # 中间件
+│   └── auth.js               # 身份验证中间件
+├── routes/                   # 路由模块
+│   └── admin.js              # 管理后台路由
+├── public/                   # 静态资源
+│   └── admin/                # 管理后台前端
+│       ├── login.html        # 登录页面
+│       └── dashboard.html    # 管理面板
 ├── storage/                  # 存储适配器
 │   ├── json-adapter.js       # JSON 文件存储
 │   ├── sqlite-adapter.js     # SQLite 存储
