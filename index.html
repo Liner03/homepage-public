@@ -6,6 +6,8 @@
     <title>个人主页 - zoe.x</title>
     <link rel="stylesheet" href="./static/style.css">
     <link rel="shortcut icon" href="./static/f2.png">
+    <!-- Font Awesome CDN - 完整图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
     <link rel="stylesheet" href="./static/fontawesome.css">
     <!-- 自定义栏目样式 -->
     <link rel="stylesheet" href="./modules/custom-section.css">
@@ -1278,10 +1280,10 @@ function updateWebsites(websites) {
         siteLink.innerHTML = `
             <div class="site-card">
                 <div class="site-icon">
-                    <img src="${site.icon}" alt="${site.name}">
+                    <i class="fas fa-globe"></i>
                 </div>
                 <div class="site-info">
-                    <h3>${site.name}</h3>
+                    <h3>${site.title}</h3>
                     <p>${site.description}</p>
                 </div>
             </div>
@@ -1308,10 +1310,10 @@ function updateProjects(projects) {
         projectLink.innerHTML = `
             <div class="project-card">
                 <div class="project-icon">
-                    <img src="${project.icon}" alt="${project.name}">
+                    ${project.image ? `<img src="${project.image}" alt="${project.title}">` : '<i class="fas fa-code"></i>'}
                 </div>
                 <div class="project-info">
-                    <h3>${project.name}</h3>
+                    <h3>${project.title}</h3>
                     <p>${project.description}</p>
                 </div>
             </div>
@@ -1332,8 +1334,22 @@ function updateSkills(skills) {
     skills.forEach(skill => {
         const skillIcon = document.createElement('div');
         skillIcon.className = 'skill-icon';
-        skillIcon.title = skill.name;
-        skillIcon.innerHTML = `<img src="${skill.icon}" alt="${skill.name}">`;
+        skillIcon.title = `${skill.name}${skill.level ? ' - ' + skill.level : ''}`;
+
+        // 支持 Font Awesome 图标类名或图片 URL
+        if (skill.icon) {
+            if (skill.icon.startsWith('fa-')) {
+                // Font Awesome 图标
+                skillIcon.innerHTML = `<i class="fas ${skill.icon}"></i>`;
+            } else {
+                // 图片 URL
+                skillIcon.innerHTML = `<img src="${skill.icon}" alt="${skill.name}">`;
+            }
+        } else {
+            // 没有图标时显示文字
+            skillIcon.innerHTML = `<span>${skill.name}</span>`;
+        }
+
         skillsContainer.appendChild(skillIcon);
     });
 }

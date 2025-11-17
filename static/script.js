@@ -545,17 +545,23 @@ const GITHUB_USERNAME = window.GITHUB_USERNAME ||
 
 // 获取真实的GitHub统计数据（更健壮：REST失败不影响日历渲染）
 async function fetchGitHubContributions(username, forceRefresh = false) {
+    console.log('🔍 [GitHub Debug] 开始获取 GitHub 数据...', { username, forceRefresh });
     try {
         // 1) 尝试获取用户与仓库信息（失败则降级为空数据）
         let userData = {};
         let repos = [];
         let events = [];
         try {
+            console.log('📡 [GitHub Debug] 正在获取用户信息...');
             const userResponse = await fetch(`https://api.github.com/users/${username}`);
-            if (userResponse.ok) userData = await userResponse.json();
-            else console.warn('用户API请求失败:', userResponse.status);
+            if (userResponse.ok) {
+                userData = await userResponse.json();
+                console.log('✅ [GitHub Debug] 用户信息获取成功:', { name: userData.name, public_repos: userData.public_repos });
+            } else {
+                console.warn('⚠️ [GitHub Debug] 用户API请求失败:', userResponse.status);
+            }
         } catch (e) {
-            console.warn('用户API请求异常:', e);
+            console.warn('❌ [GitHub Debug] 用户API请求异常:', e);
         }
         try {
             const reposResponse = await fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=updated`);
@@ -578,21 +584,34 @@ async function fetchGitHubContributions(username, forceRefresh = false) {
 
         // 2) 渲染贡献日历：优先使用后端代理，失败再用 events 估算
         const source = (CONFIG && CONFIG.github && CONFIG.github.calendarSource) || 'auto';
+        console.log('📅 [GitHub Debug] 日历数据源配置:', source);
         let calendarData = null;
         if (source === 'proxy' || source === 'auto') {
             try {
+                console.log('🌐 [GitHub Debug] 尝试通过后端代理获取日历数据...');
                 calendarData = await fetchCalendarViaProxy(username, forceRefresh);
+                console.log('✅ [GitHub Debug] 代理获取成功, 数据量:', calendarData.map.size);
             } catch (e) {
+                console.warn('❌ [GitHub Debug] 代理获取失败:', e.message);
                 if (source === 'proxy') throw e;
-                console.warn('proxy 获取失败，回退到 events 估算');
+                console.warn('⚠️ [GitHub Debug] proxy 获取失败，回退到 events 估算');
             }
         }
         if (!calendarData) {
+            console.log('📊 [GitHub Debug] 使用 events 构建日历数据, events 数量:', events.length);
             calendarData = buildDailyContribMap(events);
+            console.log('✅ [GitHub Debug] Events 日历数据构建完成, 数据量:', calendarData.map.size);
         }
 
         // 3) 基于贡献日历数据计算并渲染
         const statsFromCalendar = calculateStatsFromCalendar(calendarData);
+        console.log('📊 [GitHub Debug] 统计数据:', {
+            totalContribs: statsFromCalendar.totalContribs,
+            longestStreak: statsFromCalendar.longestStreak,
+            currentStreak: statsFromCalendar.currentStreak,
+            activeDays: statsFromCalendar.activeDays,
+            activeRate: statsFromCalendar.activeRate
+        });
         updateGitHubDisplay({
             totalCommits: statsFromCalendar.totalContribs,
             longestStreak: statsFromCalendar.longestStreak,
@@ -601,7 +620,9 @@ async function fetchGitHubContributions(username, forceRefresh = false) {
             activeRate: statsFromCalendar.activeRate,
             languages: githubStats.languages
         });
+        console.log('🎨 [GitHub Debug] 开始渲染日历...');
         renderContribCalendar(calendarData);
+        console.log('✅ [GitHub Debug] GitHub 数据加载完成!');
 
         // 4) 添加刷新按钮功能
         addRefreshButton(username);
@@ -610,6 +631,7 @@ async function fetchGitHubContributions(username, forceRefresh = false) {
 async function fetchCalendarViaProxy(login, forceRefresh = false) {
     const cfg = (typeof CONFIG !== 'undefined' && CONFIG.github) || {};
     const endpoint = cfg.calendarProxyEndpoint || '/api/github/contributions';
+    console.log('🔗 [GitHub Debug] 代理端点:', endpoint);
 
     // 使用用户本地时区的今天，但确保包含完整的当天
     const now = new Date();
@@ -629,10 +651,17 @@ async function fetchCalendarViaProxy(login, forceRefresh = false) {
         cacheBuster = Math.floor(Date.now() / (5 * 60 * 1000)); // 每5分钟更新
     }
     const finalUrl = `${url}&_t=${cacheBuster}`;
+    console.log('📡 [GitHub Debug] 请求URL:', finalUrl);
 
     const r = await fetch(finalUrl);
-    if (!r.ok) throw new Error('proxy failed');
+    console.log('📬 [GitHub Debug] 代理响应状态:', r.status, r.statusText);
+    if (!r.ok) {
+        const errorText = await r.text();
+        console.error('❌ [GitHub Debug] 代理请求失败:', errorText);
+        throw new Error(`proxy failed: ${r.status} - ${errorText}`);
+    }
     const data = await r.json(); // { days:[{date,count}], total, colors }
+    console.log('📦 [GitHub Debug] 代理返回数据:', { days: data.days?.length, total: data.total });
     const map = new Map(data.days.map(d => [d.date, d.count]));
     return { map, start: from, end: to };
 }
