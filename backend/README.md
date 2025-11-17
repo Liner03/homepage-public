@@ -68,11 +68,24 @@ PORT=3000
 VISIT_STORAGE=json
 
 # GitHub Token（用于精确贡献日历，可选）
+# 获取地址：https://github.com/settings/tokens
+# 创建 Fine-grained token，选择"只读公共仓库"权限即可
 GITHUB_TOKEN=your_github_token_here
 
 # 数据存储目录
 DATA_DIR=./data
 ```
+
+### 如何获取 GitHub Token
+
+1. 访问 **https://github.com/settings/tokens**
+2. 点击 "Generate new token" → 选择 "Fine-grained token"（或 Classic token）
+3. 设置权限：
+   - **Public repositories (read-only)** - 只读公共仓库（推荐）
+   - 如需包含私有贡献，需在 GitHub 个人设置中勾选 "Include private contributions"
+4. 复制生成的 Token（格式：`ghp_xxxxx`）
+5. 粘贴到 `backend/.env` 文件的 `GITHUB_TOKEN=` 后
+6. **重要**：切勿将 `.env` 文件提交到 Git（已在 `.gitignore` 中排除）
 
 ### 存储方式选择
 

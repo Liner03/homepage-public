@@ -147,8 +147,12 @@ npm start
 VISIT_STORAGE=json
 
 # GitHub Token（可选，用于精确贡献日历）
+# 获取方式：https://github.com/settings/tokens
+# 详细说明见下方"如何获取 GITHUB_TOKEN"章节
 GITHUB_TOKEN=your_github_token_here
 ```
+
+> 💡 **获取 GitHub Token**：访问 https://github.com/settings/tokens 创建新 Token，选择"只读公共仓库"权限即可。详细步骤见本文档后面的"如何获取 GITHUB_TOKEN"章节。
 
 ### 选项二：Python 本地服务器（简单测试）
 
