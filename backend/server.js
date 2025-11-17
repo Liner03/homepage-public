@@ -165,9 +165,18 @@ app.get('/api/github/contributions', async (req, res) => {
       }
     }
 
-    // 调试：检查前5天的数据
+    // 调试：检查前5天和后5天的数据
     console.log('[GitHub Debug] 前5天数据样本:', days.slice(0, 5));
+    console.log('[GitHub Debug] 后5天数据样本:', days.slice(-5));
     console.log('[GitHub Debug] 总天数:', days.length, '总贡献:', calendar.totalContributions);
+
+    // 调试：显示有贡献的日期
+    const daysWithContributions = days.filter(d => d.count > 0);
+    console.log('[GitHub Debug] 有贡献的天数:', daysWithContributions.length);
+    if (daysWithContributions.length > 0) {
+      console.log('[GitHub Debug] 前10个有贡献的日期:', daysWithContributions.slice(0, 10).map(d => `${d.date}(${d.count})`));
+      console.log('[GitHub Debug] 最大贡献数:', Math.max(...daysWithContributions.map(d => d.count)));
+    }
 
     res.json({
       days,

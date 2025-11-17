@@ -2129,6 +2129,8 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                 let scopes = [];
                 let tokenOwner = null;
 
+                let userOrgs = [];
+
                 try {
                     const scopeCheckResponse = await fetch('https://api.github.com/user', {
                         headers: {
@@ -2145,6 +2147,19 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                         scopes = scopeHeader ? scopeHeader.split(',').map(s => s.trim()).filter(s => s) : [];
                         console.log('[Token Test] Token所有者:', tokenOwner);
                         console.log('[Token Test] Token权限范围:', scopes);
+                    }
+
+                    // 检查用户所属的组织
+                    const orgsResponse = await fetch('https://api.github.com/user/orgs', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+
+                    if (orgsResponse.ok) {
+                        userOrgs = await orgsResponse.json();
+                        console.log('[Token Test] 用户所属组织:', userOrgs.map(o => o.login));
                     }
                 } catch (e) {
                     console.error('[Token Test] 无法检查Token权限:', e);
@@ -2229,6 +2244,21 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                     resultHTML += '<code style="font-size: 11px; background: rgba(0,0,0,0.1); padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 4px;">';
                     resultHTML += scopes.join(', ');
                     resultHTML += '</code></div>';
+                }
+
+                if (userOrgs.length > 0) {
+                    resultHTML += '<div style="margin-top: 8px;"><strong>所属组织：</strong><br/>';
+                    resultHTML += '<div style="font-size: 12px; margin-top: 4px;">';
+                    userOrgs.forEach(org => {
+                        resultHTML += `<span style="background: rgba(0,0,0,0.05); padding: 3px 8px; border-radius: 4px; margin: 2px; display: inline-block;">${org.login}</span>`;
+                    });
+                    resultHTML += '</div>';
+                    resultHTML += '<div style="margin-top: 8px; padding: 8px; background: #e7f3ff; border-left: 3px solid #0366d6; font-size: 12px;">';
+                    resultHTML += '<strong>💡 提示：</strong>如果看不到组织贡献，请检查：<br/>';
+                    resultHTML += '1. <a href="https://github.com/settings/tokens" target="_blank">Token设置</a> → Organization access → 确认组织已授权<br/>';
+                    resultHTML += '2. 如果组织启用了SSO，需要点击 "Configure SSO" 授权';
+                    resultHTML += '</div>';
+                    resultHTML += '</div>';
                 }
 
                 if (!hasData) {
