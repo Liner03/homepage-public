@@ -991,7 +991,11 @@
                                     <i class="fas fa-vial"></i> 测试 Token
                                 </button>
                             </div>
-                            <small>用于 GitHub 贡献日历。用户名从「前端配置」读取，Token从此处读取。获取地址：<a href="https://github.com/settings/tokens" target="_blank">https://github.com/settings/tokens</a></small>
+                            <small>
+                                用于 GitHub 贡献日历。用户名从「前端配置」读取，Token从此处读取。<br/>
+                                <strong>获取私有贡献：</strong>需要 <code>repo</code> 权限（不是 public_repo），且Token必须属于您本人。<br/>
+                                创建地址：<a href="https://github.com/settings/tokens" target="_blank">https://github.com/settings/tokens</a>
+                            </small>
                             <div id="tokenTestResult" style="margin-top: 12px; display: none;"></div>
                         </div>
 
@@ -2120,6 +2124,32 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
             console.log('[Token Test] 已显示加载状态');
 
             try {
+                // 首先检查Token权限
+                console.log('[Token Test] 正在检查Token权限...');
+                let scopes = [];
+                let tokenOwner = null;
+
+                try {
+                    const scopeCheckResponse = await fetch('https://api.github.com/user', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+
+                    if (scopeCheckResponse.ok) {
+                        const userData = await scopeCheckResponse.json();
+                        tokenOwner = userData.login;
+
+                        const scopeHeader = scopeCheckResponse.headers.get('X-OAuth-Scopes');
+                        scopes = scopeHeader ? scopeHeader.split(',').map(s => s.trim()).filter(s => s) : [];
+                        console.log('[Token Test] Token所有者:', tokenOwner);
+                        console.log('[Token Test] Token权限范围:', scopes);
+                    }
+                } catch (e) {
+                    console.error('[Token Test] 无法检查Token权限:', e);
+                }
+
                 // 从前端配置读取 GitHub 用户名
                 let username = 'octocat';
                 try {
@@ -2174,31 +2204,70 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                 // 计算有贡献的天数
                 const contributionDays = data.days?.filter(d => d.count > 0).length || 0;
 
+                // 检查权限
+                const hasRepoScope = scopes.includes('repo');
+                const hasPublicRepoScope = scopes.includes('public_repo');
+                const hasReadUserScope = scopes.includes('read:user') || scopes.includes('user');
+                const isOwnAccount = tokenOwner && username && tokenOwner.toLowerCase() === username.toLowerCase();
+                const canAccessPrivate = hasRepoScope && isOwnAccount;
+
                 // 生成结果HTML
                 let resultHTML = '<div class="alert alert-success" style="margin: 0; padding: 16px;">';
                 resultHTML += '<h4 style="margin: 0 0 12px 0; font-size: 16px;"><i class="fas fa-check-circle"></i> Token 测试通过</h4>';
                 resultHTML += '<div style="background: rgba(0,0,0,0.05); padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.8;">';
 
-                resultHTML += `<div><strong>用户名：</strong>${username}</div>`;
+                resultHTML += `<div><strong>查询用户名：</strong>${username}</div>`;
+                if (tokenOwner) {
+                    resultHTML += `<div><strong>Token所有者：</strong>${tokenOwner} ${isOwnAccount ? '<span style="color: #28a745;">✓ 匹配</span>' : '<span style="color: #ffc107;">⚠ 不匹配</span>'}</div>`;
+                }
                 resultHTML += `<div><strong>数据天数：</strong>${totalDays} 天</div>`;
                 resultHTML += `<div><strong>总贡献数：</strong>${totalContributions}</div>`;
                 resultHTML += `<div><strong>有贡献的天数：</strong>${contributionDays} 天</div>`;
 
+                if (scopes.length > 0) {
+                    resultHTML += '<div style="margin-top: 8px;"><strong>Token权限：</strong><br/>';
+                    resultHTML += '<code style="font-size: 11px; background: rgba(0,0,0,0.1); padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 4px;">';
+                    resultHTML += scopes.join(', ');
+                    resultHTML += '</code></div>';
+                }
+
                 if (!hasData) {
-                    resultHTML += '<div style="margin-top: 8px; padding: 8px; background: #fff3cd; border-left: 3px solid #ffc107; color: #856404;">';
+                    resultHTML += '<div style="margin-top: 12px; padding: 8px; background: #fff3cd; border-left: 3px solid #ffc107; color: #856404;">';
                     resultHTML += '<i class="fas fa-exclamation-triangle"></i> Token 有效，但未获取到数据';
                     resultHTML += '</div>';
                 } else if (!hasContributions) {
-                    resultHTML += '<div style="margin-top: 8px; padding: 8px; background: #fff3cd; border-left: 3px solid #ffc107; color: #856404;">';
-                    resultHTML += '<i class="fas fa-exclamation-triangle"></i> Token 有效，但所有贡献数为 0。可能需要以下权限：';
-                    resultHTML += '<ul style="margin: 8px 0 0 20px; padding: 0;">';
-                    resultHTML += '<li><code>read:user</code> - 读取用户信息</li>';
-                    resultHTML += '<li><code>repo</code> 或 <code>public_repo</code> - 访问仓库数据</li>';
+                    resultHTML += '<div style="margin-top: 12px; padding: 8px; background: #fff3cd; border-left: 3px solid #ffc107; color: #856404;">';
+                    resultHTML += '<i class="fas fa-exclamation-triangle"></i> <strong>所有贡献数为 0</strong><br/>';
+                    resultHTML += '<div style="margin-top: 8px; font-size: 12px;">可能的原因：</div>';
+                    resultHTML += '<ul style="margin: 4px 0 0 20px; padding: 0; font-size: 12px;">';
+                    resultHTML += '<li>该账号近一年无任何 GitHub 活动</li>';
+
+                    if (!hasRepoScope) {
+                        resultHTML += '<li><strong style="color: #dc3545;">缺少 <code>repo</code> 权限</strong> - 无法查看私有仓库贡献</li>';
+                    }
+                    if (!isOwnAccount) {
+                        resultHTML += '<li><strong style="color: #dc3545;">Token 所有者与查询用户不匹配</strong> - 无法查看私有贡献</li>';
+                    }
+                    if (!hasReadUserScope) {
+                        resultHTML += '<li>缺少 <code>read:user</code> 权限</li>';
+                    }
+
                     resultHTML += '</ul>';
+
+                    if (!canAccessPrivate) {
+                        resultHTML += '<div style="margin-top: 8px; padding: 8px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; font-size: 12px;">';
+                        resultHTML += '<strong>⚠️ 无法获取私有贡献</strong><br/>';
+                        resultHTML += '要查看包含私有仓库的贡献，需要：<br/>';
+                        resultHTML += '1. Token 必须有 <code>repo</code> 权限（不是 public_repo）<br/>';
+                        resultHTML += '2. Token 必须属于查询的用户本人<br/>';
+                        resultHTML += '3. GitHub设置中勾选「Include private contributions on my profile」';
+                        resultHTML += '</div>';
+                    }
                     resultHTML += '</div>';
                 } else {
-                    resultHTML += '<div style="margin-top: 8px; padding: 8px; background: #d4edda; border-left: 3px solid #28a745; color: #155724;">';
-                    resultHTML += '<i class="fas fa-check"></i> Token 工作正常，已获取到贡献数据';
+                    resultHTML += '<div style="margin-top: 12px; padding: 8px; background: #d4edda; border-left: 3px solid #28a745; color: #155724;">';
+                    resultHTML += '<i class="fas fa-check"></i> <strong>Token 工作正常</strong><br/>';
+                    resultHTML += `<div style="font-size: 12px; margin-top: 4px;">已获取到贡献数据${canAccessPrivate ? '（包含私有贡献）' : '（仅公开贡献）'}</div>`;
                     resultHTML += '</div>';
                 }
 
