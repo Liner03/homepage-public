@@ -1153,17 +1153,32 @@ function buildDailyContribMap(events) {
 
 // ---------- GitHub 风格日历渲染（带月份/星期/图例） ----------
 function renderContribCalendar(contrib) {
+    console.log('🎨 [GitHub Debug] renderContribCalendar 被调用，参数:', contrib);
+
     const monthsEl = document.getElementById('contrib-months');
     const gridEl = document.getElementById('contrib-grid');
     const legendEl = document.getElementById('contrib-legend');
     const container = document.getElementById('contrib-calendar');
-    if (!(monthsEl && gridEl && legendEl && container)) return;
+
+    console.log('🔍 [GitHub Debug] DOM 元素查找结果:', {
+        monthsEl: !!monthsEl,
+        gridEl: !!gridEl,
+        legendEl: !!legendEl,
+        container: !!container
+    });
+
+    if (!(monthsEl && gridEl && legendEl && container)) {
+        console.error('❌ [GitHub Debug] 缺少必要的 DOM 元素，无法渲染日历');
+        return;
+    }
 
     monthsEl.innerHTML = '';
     gridEl.innerHTML = '';
     legendEl.innerHTML = '';
 
     const { map } = contrib;
+    console.log('📊 [GitHub Debug] 贡献数据 map 大小:', map.size);
+    console.log('📊 [GitHub Debug] 贡献数据前5条:', Array.from(map.entries()).slice(0, 5));
 
     // 以“周日”为列起点，计算 53 列 x 7 行的范围：end 对齐到最近的周六
     const now = new Date();
