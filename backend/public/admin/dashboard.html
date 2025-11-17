@@ -3304,19 +3304,58 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                 }
             }, 50);
 
+            // 添加点击测试监听器
+            setTimeout(() => {
+                const checkbox = document.getElementById('sectionHidden');
+                if (!checkbox) {
+                    console.error('❌ [显示弹窗] 无法找到 checkbox 元素！');
+                    return;
+                }
+
+                // 添加点击监听器测试
+                checkbox.addEventListener('click', function(e) {
+                    console.log('🖱️ [Checkbox] 点击事件触发！', {
+                        checked_before: this.checked,
+                        will_be: !this.checked,
+                        event_target: e.target,
+                        current_target: e.currentTarget
+                    });
+                });
+
+                checkbox.addEventListener('change', function(e) {
+                    console.log('🔄 [Checkbox] Change 事件触发！', {
+                        checked: this.checked,
+                        event: e
+                    });
+                });
+
+                // 测试label点击
+                const label = checkbox.parentElement;
+                if (label && label.tagName === 'LABEL') {
+                    label.addEventListener('click', function(e) {
+                        console.log('🏷️ [Label] Label 被点击！', {
+                            target: e.target,
+                            checkbox_checked: checkbox.checked
+                        });
+                    });
+                }
+
+                console.log('✅ [显示弹窗] 已添加 checkbox 点击监听器');
+            }, 100);
+
             // 如果是新建，显示提示
             if (!section) {
                 setTimeout(() => {
                     const hiddenCheckbox = document.getElementById('sectionHidden');
-                    const label = hiddenCheckbox.parentElement;
-                    if (!label.querySelector('.new-section-tip')) {
+                    const label = hiddenCheckbox ? hiddenCheckbox.parentElement : null;
+                    if (label && !label.querySelector('.new-section-tip')) {
                         const tip = document.createElement('small');
                         tip.className = 'new-section-tip';
                         tip.style.cssText = 'display: block; color: #666; margin-top: 4px; font-size: 12px;';
                         tip.textContent = '💡 新栏目默认隐藏，添加项目后再显示';
                         label.appendChild(tip);
                     }
-                }, 100);
+                }, 150);
             }
         }
 
