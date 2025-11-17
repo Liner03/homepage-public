@@ -984,12 +984,6 @@
                         </div>
 
                         <div class="form-field">
-                            <label for="GITHUB_USERNAME">GitHub 用户名</label>
-                            <input type="text" id="GITHUB_USERNAME" name="GITHUB_USERNAME" placeholder="octocat">
-                            <small>您的 GitHub 用户名，用于获取贡献日历数据</small>
-                        </div>
-
-                        <div class="form-field">
                             <label for="GITHUB_TOKEN">GitHub Token</label>
                             <div style="display: flex; gap: 8px; align-items: flex-start;">
                                 <input type="text" id="GITHUB_TOKEN" name="GITHUB_TOKEN" placeholder="ghp_xxxxx" style="flex: 1;">
@@ -997,7 +991,7 @@
                                     <i class="fas fa-vial"></i> 测试 Token
                                 </button>
                             </div>
-                            <small>用于 GitHub 贡献日历。获取地址：<a href="https://github.com/settings/tokens" target="_blank">https://github.com/settings/tokens</a></small>
+                            <small>用于 GitHub 贡献日历。用户名从「前端配置」读取，Token从此处读取。获取地址：<a href="https://github.com/settings/tokens" target="_blank">https://github.com/settings/tokens</a></small>
                             <div id="tokenTestResult" style="margin-top: 12px; display: none;"></div>
                         </div>
 
@@ -2096,13 +2090,23 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
         // 测试 GitHub Token
         async function testGitHubToken() {
+            console.log('[Token Test] 开始测试 GitHub Token');
+
             const tokenInput = document.getElementById('GITHUB_TOKEN');
             const resultDiv = document.getElementById('tokenTestResult');
             const testBtn = document.getElementById('testTokenBtn');
 
+            console.log('[Token Test] DOM元素:', {
+                tokenInput: !!tokenInput,
+                resultDiv: !!resultDiv,
+                testBtn: !!testBtn
+            });
+
             const token = tokenInput.value.trim();
+            console.log('[Token Test] Token长度:', token.length);
 
             if (!token) {
+                console.log('[Token Test] Token为空，显示警告');
                 resultDiv.style.display = 'block';
                 resultDiv.innerHTML = '<div class="alert alert-warning" style="margin: 0;">请先输入 GitHub Token</div>';
                 return;
@@ -2113,10 +2117,25 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
             testBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 测试中...';
             resultDiv.style.display = 'block';
             resultDiv.innerHTML = '<div class="alert alert-info" style="margin: 0;">正在测试 Token...</div>';
+            console.log('[Token Test] 已显示加载状态');
 
             try {
-                // 获取当前登录用户名（从 .env 获取）
-                const username = document.getElementById('GITHUB_USERNAME')?.value || 'octocat';
+                // 从前端配置读取 GitHub 用户名
+                let username = 'octocat';
+                try {
+                    console.log('[Token Test] 正在读取前端配置...');
+                    const configResponse = await fetch('/admin/api/config/frontend');
+                    const configData = await configResponse.json();
+                    if (configData.success) {
+                        const config = parseConfigContent(configData.content);
+                        username = config.github?.username || 'octocat';
+                        console.log('[Token Test] 从配置读取到用户名:', username);
+                    }
+                } catch (e) {
+                    console.error('[Token Test] 无法读取前端配置，使用默认用户名', e);
+                }
+
+                console.log('[Token Test] 最终使用的用户名:', username);
 
                 // 计算日期范围（过去一年）
                 const to = new Date();
@@ -2125,6 +2144,7 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
                 // 测试 Token - 调用 GitHub contributions API
                 const testUrl = `/api/github/contributions?login=${username}&from=${from.toISOString()}&to=${to.toISOString()}&_t=${Date.now()}`;
+                console.log('[Token Test] 测试URL:', testUrl);
 
                 const response = await fetch(testUrl, {
                     headers: {
@@ -2132,9 +2152,16 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                     }
                 });
 
+                console.log('[Token Test] API响应状态:', response.status);
                 const data = await response.json();
+                console.log('[Token Test] API响应数据:', {
+                    total: data.total,
+                    daysCount: data.days?.length,
+                    error: data.error
+                });
 
                 if (!response.ok) {
+                    console.error('[Token Test] API返回错误:', data);
                     throw new Error(data.error || `HTTP ${response.status}`);
                 }
 
@@ -2191,9 +2218,12 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                 resultHTML += '</div>';
                 resultHTML += '</div>';
 
+                console.log('[Token Test] 测试成功，显示结果');
                 resultDiv.innerHTML = resultHTML;
 
             } catch (error) {
+                console.error('[Token Test] 测试失败:', error);
+
                 // 显示错误
                 let errorHTML = '<div class="alert alert-danger" style="margin: 0; padding: 16px;">';
                 errorHTML += '<h4 style="margin: 0 0 12px 0; font-size: 16px;"><i class="fas fa-times-circle"></i> Token 测试失败</h4>';
@@ -2227,9 +2257,11 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                 errorHTML += '</div>';
                 errorHTML += '</div>';
 
+                console.log('[Token Test] 显示错误信息');
                 resultDiv.innerHTML = errorHTML;
             } finally {
                 // 恢复按钮状态
+                console.log('[Token Test] 恢复按钮状态');
                 testBtn.disabled = false;
                 testBtn.innerHTML = '<i class="fas fa-vial"></i> 测试 Token';
             }
