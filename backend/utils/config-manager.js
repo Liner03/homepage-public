@@ -177,6 +177,48 @@ class ConfigManager {
       return null;
     }
   }
+
+  // ==================== 栏目管理 ====================
+
+  /**
+   * 获取栏目配置
+   */
+  getSections() {
+    try {
+      const sectionsPath = path.join(this.projectRoot, 'backend', 'data', 'sections.json');
+
+      if (!fs.existsSync(sectionsPath)) {
+        return [];
+      }
+
+      const content = fs.readFileSync(sectionsPath, 'utf8');
+      return JSON.parse(content);
+    } catch (error) {
+      console.error('读取 sections.json 失败:', error);
+      return [];
+    }
+  }
+
+  /**
+   * 保存栏目配置
+   */
+  saveSections(sections) {
+    try {
+      const sectionsPath = path.join(this.projectRoot, 'backend', 'data', 'sections.json');
+      const dataDir = path.dirname(sectionsPath);
+
+      // 确保 data 目录存在
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+      }
+
+      fs.writeFileSync(sectionsPath, JSON.stringify(sections, null, 2), 'utf8');
+      return true;
+    } catch (error) {
+      console.error('保存 sections.json 失败:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = ConfigManager;

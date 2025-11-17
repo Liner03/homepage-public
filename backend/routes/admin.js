@@ -234,6 +234,121 @@ function createAdminRouter(config, dataStorage, visitStorage) {
     }
   });
 
+  // ==================== 栏目管理 API ====================
+
+  // 获取栏目列表
+  router.get('/api/sections', requireAuth, (req, res) => {
+    try {
+      const sections = configManager.getSections();
+      res.json({
+        success: true,
+        sections: sections || []
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: '获取失败: ' + error.message
+      });
+    }
+  });
+
+  // 创建新栏目
+  router.post('/api/sections', requireAuth, (req, res) => {
+    try {
+      const sectionData = req.body;
+
+      if (!sectionData.id || !sectionData.title) {
+        return res.status(400).json({
+          success: false,
+          message: '缺少必要字段: id 和 title'
+        });
+      }
+
+      const sections = configManager.getSections() || [];
+
+      // 检查 ID 是否已存在
+      if (sections.find(s => s.id === sectionData.id)) {
+        return res.status(400).json({
+          success: false,
+          message: '栏目 ID 已存在'
+        });
+      }
+
+      sections.push(sectionData);
+      configManager.saveSections(sections);
+
+      res.json({
+        success: true,
+        message: '创建成功'
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: '创建失败: ' + error.message
+      });
+    }
+  });
+
+  // 更新栏目
+  router.put('/api/sections/:id', requireAuth, (req, res) => {
+    try {
+      const { id } = req.params;
+      const sectionData = req.body;
+
+      let sections = configManager.getSections() || [];
+      const index = sections.findIndex(s => s.id === id);
+
+      if (index === -1) {
+        return res.status(404).json({
+          success: false,
+          message: '栏目不存在'
+        });
+      }
+
+      sections[index] = { ...sections[index], ...sectionData };
+      configManager.saveSections(sections);
+
+      res.json({
+        success: true,
+        message: '更新成功'
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: '更新失败: ' + error.message
+      });
+    }
+  });
+
+  // 删除栏目
+  router.delete('/api/sections/:id', requireAuth, (req, res) => {
+    try {
+      const { id } = req.params;
+
+      let sections = configManager.getSections() || [];
+      const filteredSections = sections.filter(s => s.id !== id);
+
+      if (filteredSections.length === sections.length) {
+        return res.status(404).json({
+          success: false,
+          message: '栏目不存在'
+        });
+      }
+
+      configManager.saveSections(filteredSections);
+
+      res.json({
+        success: true,
+        message: '删除成功'
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: '删除失败: ' + error.message
+      });
+    }
+  });
+
   return router;
 }
 
