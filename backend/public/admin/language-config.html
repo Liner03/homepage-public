@@ -454,6 +454,50 @@
             <p>管理编程语言到 CSS 类名的映射关系，用于前台语言标签的显示</p>
         </div>
 
+        <!-- 使用说明卡片 -->
+        <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+            <div class="card-title" style="color: white;">📚 使用说明</div>
+            <div style="line-height: 1.8; font-size: 14px;">
+                <p style="margin-bottom: 12px;">这个页面用于配置编程语言在前台的显示样式。当访客查看你的 GitHub 统计时，系统会显示你使用的主要编程语言。</p>
+
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 16px; border-radius: 10px; margin: 16px 0;">
+                    <strong style="display: block; margin-bottom: 8px;">💡 工作原理：</strong>
+                    <ol style="margin: 0; padding-left: 20px;">
+                        <li>GitHub API 返回语言名称（如 "JavaScript"）</li>
+                        <li>系统查找对应的 CSS 类名（如 "js"）</li>
+                        <li>前台显示带颜色的标签：<span style="background: rgba(255, 255, 255, 0.2); padding: 4px 10px; border-radius: 4px; margin-left: 8px;">JavaScript (24%)</span></li>
+                    </ol>
+                </div>
+
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 16px; border-radius: 10px;">
+                    <strong style="display: block; margin-bottom: 8px;">🎨 CSS 类名说明：</strong>
+                    <p style="margin: 0;">• <code style="background: rgba(255, 255, 255, 0.2); padding: 2px 8px; border-radius: 4px;">js</code> - 黄色（JavaScript/Vue/React）</p>
+                    <p style="margin: 8px 0 0 0;">• <code style="background: rgba(255, 255, 255, 0.2); padding: 2px 8px; border-radius: 4px;">py</code> - 蓝色（Python/Java/C++/Go 等）</p>
+                    <p style="margin: 8px 0 0 0;">• <code style="background: rgba(255, 255, 255, 0.2); padding: 2px 8px; border-radius: 4px;">ts</code> - 蓝色（TypeScript）</p>
+                    <p style="margin: 8px 0 0 0;">• <code style="background: rgba(255, 255, 255, 0.2); padding: 2px 8px; border-radius: 4px;">css</code> - 紫色（CSS/HTML）</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 快速开始指南 -->
+        <div class="card">
+            <div class="card-title">🚀 快速开始</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+                <div style="padding: 16px; background: var(--input-bg); border-radius: 10px; border-left: 4px solid var(--apple-blue);">
+                    <div style="font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">1️⃣ 查看当前配置</div>
+                    <div style="font-size: 13px; color: var(--text-secondary);">向下滚动查看已配置的语言列表，系统已预设了常用语言</div>
+                </div>
+                <div style="padding: 16px; background: var(--input-bg); border-radius: 10px; border-left: 4px solid var(--apple-green);">
+                    <div style="font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">2️⃣ 添加新语言</div>
+                    <div style="font-size: 13px; color: var(--text-secondary);">在下方表单中填写语言名称和 CSS 类名，点击"添加语言"按钮</div>
+                </div>
+                <div style="padding: 16px; background: var(--input-bg); border-radius: 10px; border-left: 4px solid var(--apple-orange);">
+                    <div style="font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">3️⃣ 编辑或删除</div>
+                    <div style="font-size: 13px; color: var(--text-secondary);">在语言列表中点击"编辑"修改配置，或点击"删除"移除不需要的语言</div>
+                </div>
+            </div>
+        </div>
+
         <!-- 统计卡片 -->
         <div class="stats-grid">
             <div class="stat-card">
@@ -510,6 +554,90 @@
         <div class="actions">
             <button class="btn btn-secondary" onclick="loadLanguageConfig()">刷新列表</button>
             <button class="btn btn-danger" onclick="resetToDefault()">重置为默认</button>
+        </div>
+
+        <!-- 使用示例 -->
+        <div class="card">
+            <div class="card-title">💡 使用示例</div>
+            <div style="background: var(--input-bg); padding: 20px; border-radius: 10px; margin-bottom: 16px;">
+                <div style="font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">示例 1：添加 Golang 语言</div>
+                <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; margin-bottom: 12px;">
+                    <div>
+                        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">语言名称</div>
+                        <div style="padding: 8px 12px; background: white; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace;">Golang</div>
+                    </div>
+                    <div style="color: var(--text-secondary);">→</div>
+                    <div>
+                        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">CSS 类名</div>
+                        <div style="padding: 8px 12px; background: white; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace;">py</div>
+                    </div>
+                </div>
+                <div style="font-size: 13px; color: var(--text-secondary);">💭 说明：Golang 使用 "py" 类名，会显示为蓝色标签</div>
+            </div>
+
+            <div style="background: var(--input-bg); padding: 20px; border-radius: 10px;">
+                <div style="font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">示例 2：修改现有语言的颜色</div>
+                <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; margin-bottom: 12px;">
+                    <div>
+                        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">原配置</div>
+                        <div style="padding: 8px 12px; background: white; border: 1px solid var(--border-color); border-radius: 6px;">
+                            <div style="font-family: monospace;">Python → <span style="color: var(--apple-blue);">py</span></div>
+                        </div>
+                    </div>
+                    <div style="color: var(--text-secondary);">✏️</div>
+                    <div>
+                        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">修改后</div>
+                        <div style="padding: 8px 12px; background: white; border: 1px solid var(--border-color); border-radius: 6px;">
+                            <div style="font-family: monospace;">Python → <span style="color: #FF9500;">js</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div style="font-size: 13px; color: var(--text-secondary);">💭 说明：将 Python 的 CSS 类名改为 "js"，显示颜色会从蓝色变为黄色</div>
+            </div>
+        </div>
+
+        <!-- 常见问题 -->
+        <div class="card">
+            <div class="card-title">❓ 常见问题</div>
+            <div style="display: grid; gap: 12px;">
+                <details style="padding: 16px; background: var(--input-bg); border-radius: 10px; cursor: pointer;">
+                    <summary style="font-weight: 600; color: var(--text-primary); cursor: pointer; user-select: none;">Q: 如何知道我的 GitHub 项目使用了哪些语言？</summary>
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
+                        访问你的 GitHub 主页，系统会自动从 GitHub API 获取你的语言使用统计。打开浏览器开发者工具（F12）→ Network 标签页，刷新前台页面，查找 GitHub API 请求可以看到返回的语言列表。
+                    </div>
+                </details>
+
+                <details style="padding: 16px; background: var(--input-bg); border-radius: 10px; cursor: pointer;">
+                    <summary style="font-weight: 600; color: var(--text-primary); cursor: pointer; user-select: none;">Q: 为什么添加了语言但前台没有显示？</summary>
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
+                        请检查：<br>
+                        1. 语言名称是否与 GitHub API 返回的完全一致（包括大小写）<br>
+                        2. 刷新前台页面，清除浏览器缓存<br>
+                        3. 检查浏览器控制台是否有错误信息
+                    </div>
+                </details>
+
+                <details style="padding: 16px; background: var(--input-bg); border-radius: 10px; cursor: pointer;">
+                    <summary style="font-weight: 600; color: var(--text-primary); cursor: pointer; user-select: none;">Q: CSS 类名只能使用 js、py、ts、css 这几种吗？</summary>
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
+                        目前系统预设了这几种 CSS 类名对应不同的颜色。如果需要添加新的颜色类名，需要在前台的 CSS 文件中添加对应的样式定义。建议使用现有的类名以保持统一的视觉风格。
+                    </div>
+                </details>
+
+                <details style="padding: 16px; background: var(--input-bg); border-radius: 10px; cursor: pointer;">
+                    <summary style="font-weight: 600; color: var(--text-primary); cursor: pointer; user-select: none;">Q: 不小心删除了配置怎么办？</summary>
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
+                        点击页面底部的"重置为默认"按钮，系统会恢复所有常用语言的默认配置（JavaScript、Python、TypeScript 等18种语言）。
+                    </div>
+                </details>
+
+                <details style="padding: 16px; background: var(--input-bg); border-radius: 10px; cursor: pointer;">
+                    <summary style="font-weight: 600; color: var(--text-primary); cursor: pointer; user-select: none;">Q: 修改配置后需要重启服务器吗？</summary>
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
+                        不需要。所有配置都是实时保存的，修改后只需刷新前台页面即可看到效果。配置数据保存在数据库中，服务器重启后仍然有效。
+                    </div>
+                </details>
+            </div>
         </div>
     </div>
 

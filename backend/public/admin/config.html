@@ -220,14 +220,117 @@
                 <!-- 前端配置 Tab -->
                 <div id="tab-frontend" class="tab-content">
                     <h3 style="margin-bottom: 20px;">前端配置文件 (config.js)</h3>
-                    <p style="color: #666; margin-bottom: 20px;">直接编辑前端配置文件，保存后立即生效（刷新页面）</p>
+
+                    <!-- 使用说明 -->
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                        <div style="font-weight: 600; margin-bottom: 12px; font-size: 16px;">📚 使用说明</div>
+                        <div style="line-height: 1.8; font-size: 14px;">
+                            <p style="margin: 0 0 12px 0;">这个页面用于编辑前台网站的配置文件，包括个人信息、GitHub账号、社交链接等。</p>
+
+                            <div style="background: rgba(255, 255, 255, 0.1); padding: 12px; border-radius: 8px; margin: 12px 0;">
+                                <strong>⚠️ 重要提示：</strong><br>
+                                • 这是 JavaScript 代码，请保持正确的语法格式<br>
+                                • 字符串要用引号包裹（单引号或双引号）<br>
+                                • 数组用方括号 [ ]，对象用花括号 { }<br>
+                                • 不要删除必需的字段，可以修改值
+                            </div>
+
+                            <div style="background: rgba(255, 255, 255, 0.1); padding: 12px; border-radius: 8px;">
+                                <strong>💡 常用配置项：</strong><br>
+                                • <code style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">PERSONAL</code> - 个人信息（姓名、头像、座右铭）<br>
+                                • <code style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">GITHUB_USERNAME</code> - GitHub 用户名<br>
+                                • <code style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">SOCIAL_LINKS</code> - 社交媒体链接<br>
+                                • <code style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">websites</code> - 我的站点列表<br>
+                                • <code style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">projects</code> - 项目列表
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 快速帮助 -->
+                    <details style="margin-bottom: 20px; background: #f8f9fa; padding: 16px; border-radius: 8px; cursor: pointer;">
+                        <summary style="font-weight: 600; cursor: pointer; user-select: none;">🚀 快速入门指南</summary>
+                        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #dee2e6;">
+                            <div style="margin-bottom: 16px;">
+                                <div style="font-weight: 600; margin-bottom: 8px;">1️⃣ 修改个人信息</div>
+                                <div style="font-size: 14px; color: #666; line-height: 1.6;">
+                                    找到 <code>PERSONAL</code> 对象，修改 <code>name</code>（姓名）、<code>title</code>（标题）、<code>quote</code>（座右铭）等字段。<br>
+                                    示例：<code>name: "张三"</code>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 16px;">
+                                <div style="font-weight: 600; margin-bottom: 8px;">2️⃣ 设置 GitHub 用户名</div>
+                                <div style="font-size: 14px; color: #666; line-height: 1.6;">
+                                    找到 <code>GITHUB_USERNAME</code>，将其改为你的 GitHub 用户名。<br>
+                                    示例：<code>const GITHUB_USERNAME = "octocat";</code>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 16px;">
+                                <div style="font-weight: 600; margin-bottom: 8px;">3️⃣ 添加社交链接</div>
+                                <div style="font-size: 14px; color: #666; line-height: 1.6;">
+                                    在 <code>SOCIAL_LINKS</code> 数组中添加你的社交媒体。每个链接包含 <code>icon</code>（图标）和 <code>url</code>（链接）。<br>
+                                    图标请参考 <a href="https://fontawesome.com/icons" target="_blank" style="color: #007bff;">Font Awesome</a>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div style="font-weight: 600; margin-bottom: 8px;">4️⃣ 保存并预览</div>
+                                <div style="font-size: 14px; color: #666; line-height: 1.6;">
+                                    点击"保存配置"按钮，然后刷新前台页面查看效果。如果有错误，请检查语法是否正确。
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+
+                    <p style="color: #666; margin-bottom: 20px;">
+                        <i class="fas fa-edit"></i> 直接在下方编辑器中修改配置，保存后刷新前台页面即可看到效果
+                    </p>
 
                     <textarea id="frontendConfig" class="code-editor" placeholder="加载中..."></textarea>
 
                     <div class="action-bar">
-                        <button type="button" class="btn btn-secondary" onclick="loadFrontendConfig()">重置</button>
-                        <button type="button" class="btn btn-primary" onclick="saveFrontendConfig()">保存配置</button>
+                        <button type="button" class="btn btn-secondary" onclick="loadFrontendConfig()">
+                            <i class="fas fa-undo"></i> 重置
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="saveFrontendConfig()">
+                            <i class="fas fa-save"></i> 保存配置
+                        </button>
                     </div>
+
+                    <!-- 常见问题 -->
+                    <details style="margin-top: 20px; background: #fff3cd; padding: 16px; border-radius: 8px; cursor: pointer; border: 1px solid #ffeaa7;">
+                        <summary style="font-weight: 600; cursor: pointer; user-select: none; color: #856404;">❓ 常见问题</summary>
+                        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.1);">
+                            <div style="margin-bottom: 12px;">
+                                <strong>Q: 保存后前台没有变化怎么办？</strong><br>
+                                <span style="color: #666; font-size: 14px;">
+                                    1. 确保点击了"保存配置"按钮<br>
+                                    2. 强制刷新前台页面（Ctrl+Shift+R 或 Cmd+Shift+R）<br>
+                                    3. 清除浏览器缓存
+                                </span>
+                            </div>
+
+                            <div style="margin-bottom: 12px;">
+                                <strong>Q: 保存后出现错误怎么办？</strong><br>
+                                <span style="color: #666; font-size: 14px;">
+                                    检查 JavaScript 语法是否正确：<br>
+                                    • 字符串要用引号包裹<br>
+                                    • 数组元素之间要用逗号分隔<br>
+                                    • 对象的键值对用冒号连接<br>
+                                    • 每行代码后面可能需要分号或逗号<br>
+                                    如果不确定，点击"重置"按钮恢复原始配置
+                                </span>
+                            </div>
+
+                            <div>
+                                <strong>Q: 不小心删除了重要内容怎么办？</strong><br>
+                                <span style="color: #666; font-size: 14px;">
+                                    点击"重置"按钮可以恢复到上次保存的状态。如果需要恢复默认配置，请联系技术支持或查看项目文档。
+                                </span>
+                            </div>
+                        </div>
+                    </details>
                 </div>
             </div>
         </div>

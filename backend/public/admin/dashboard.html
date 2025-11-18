@@ -982,9 +982,47 @@
                 </div>
             </div>
 
-            <div class="card">
+            <!-- 前端配置卡片 -->
+            <div class="card" style="margin-bottom: 30px;">
                 <div class="card-header">
-                    <h2>🎨 前端配置 (config.js)</h2>
+                    <h2>🎨 前端配置</h2>
+                    <button class="btn btn-primary" onclick="window.location.href='config.html'">
+                        <i class="fas fa-cog"></i> 配置前端
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                        <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
+                            <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">配置方式</h3>
+                            <div style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                                可视化 + 代码
+                            </div>
+                        </div>
+                        <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
+                            <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">配置文件</h3>
+                            <div style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                                config.js
+                            </div>
+                        </div>
+                        <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
+                            <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">编辑模式</h3>
+                            <div style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                                表单 / 代码
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; padding: 15px; background: rgba(255, 149, 0, 0.05); border-radius: 10px; border-left: 4px solid #FF9500;">
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">
+                            <i class="fas fa-info-circle" style="color: #FF9500; margin-right: 8px;"></i>
+                            配置个人信息、GitHub 账号、社交链接、网站内容等。支持可视化表单编辑和代码编辑两种模式。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="display: none;">
+                <div class="card-header">
+                    <h2>🎨 前端配置 (config.js) - 旧版本</h2>
                     <div style="display: flex; align-items: center; gap: 15px;">
                         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
                             <input type="checkbox" id="frontendModeToggle" onchange="toggleFrontendMode()" style="cursor: pointer;">
