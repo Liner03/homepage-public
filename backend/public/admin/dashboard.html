@@ -906,6 +906,44 @@
         <div id="tab-frontend" class="tab-pane">
             <div id="frontendAlert" class="alert"></div>
 
+            <!-- 语言配置卡片 -->
+            <div class="card" style="margin-bottom: 30px;">
+                <div class="card-header">
+                    <h2>🌐 语言配置</h2>
+                    <button class="btn btn-primary" onclick="window.location.href='language-config'">
+                        <i class="fas fa-cog"></i> 配置语言标签
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                        <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
+                            <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">配置的语言</h3>
+                            <div id="languageConfigCount" style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                                <div class="loading">加载中...</div>
+                            </div>
+                        </div>
+                        <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
+                            <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">CSS 类名</h3>
+                            <div id="languageConfigClasses" style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                                <div class="loading">加载中...</div>
+                            </div>
+                        </div>
+                        <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
+                            <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">状态</h3>
+                            <div id="languageConfigStatus" style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                                <div class="loading">加载中...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; padding: 15px; background: rgba(102, 126, 234, 0.05); border-radius: 10px; border-left: 4px solid #667eea;">
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">
+                            <i class="fas fa-info-circle" style="color: #667eea; margin-right: 8px;"></i>
+                            配置编程语言到CSS类名的映射关系，用于GitHub统计中的"主要语言"标签显示。支持动态增删改。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <!-- 日记配置卡片 -->
             <div class="card" style="margin-bottom: 30px;">
                 <div class="card-header">
@@ -1576,6 +1614,43 @@
                 `;
             } catch (error) {
                 info.innerHTML = '<div style="color: #999; font-size: 13px;">加载失败</div>';
+            }
+        }
+
+        // 刷新语言配置状态
+        async function refreshLanguageConfig() {
+            const countEl = document.getElementById('languageConfigCount');
+            const classesEl = document.getElementById('languageConfigClasses');
+            const statusEl = document.getElementById('languageConfigStatus');
+
+            if (!countEl || !classesEl || !statusEl) return;
+
+            countEl.innerHTML = '<div class="loading">加载中...</div>';
+            classesEl.innerHTML = '<div class="loading">加载中...</div>';
+            statusEl.innerHTML = '<div class="loading">加载中...</div>';
+
+            try {
+                const response = await fetch('/api/language-config');
+                const data = await response.json();
+
+                if (data.success && data.data) {
+                    const config = data.data;
+                    const totalLanguages = Object.keys(config).length;
+                    const uniqueClasses = new Set(Object.values(config)).size;
+
+                    countEl.innerHTML = `${totalLanguages} 种语言`;
+                    classesEl.innerHTML = `${uniqueClasses} 个类名`;
+                    statusEl.innerHTML = '<span style="color: #48bb78;">● 已配置</span>';
+                } else {
+                    countEl.innerHTML = '0 种语言';
+                    classesEl.innerHTML = '0 个类名';
+                    statusEl.innerHTML = '<span style="color: #f56565;">● 未配置</span>';
+                }
+            } catch (error) {
+                console.error('加载语言配置失败:', error);
+                countEl.innerHTML = '<span style="color: #999;">加载失败</span>';
+                classesEl.innerHTML = '<span style="color: #999;">加载失败</span>';
+                statusEl.innerHTML = '<span style="color: #f56565;">● 错误</span>';
             }
         }
 
@@ -3844,6 +3919,7 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
             refreshVisitStats();
             refreshTheme();
             refreshSystemInfo();
+            refreshLanguageConfig();
             refreshDiaryStatus();
         });
 

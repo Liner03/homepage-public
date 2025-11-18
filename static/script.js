@@ -1136,9 +1136,49 @@ function getCSSVar(name){
 })();
 
 
-// 获取语言对应的CSS类名
+// 全局语言配置缓存
+let languageConfigCache = null;
+
+// 获取语言配置（从API）
+async function fetchLanguageConfig() {
+    try {
+        const response = await fetch('/api/language-config');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        const result = await response.json();
+        if (result.success && result.data) {
+            languageConfigCache = result.data;
+            return result.data;
+        }
+    } catch (error) {
+        console.warn('获取语言配置失败，使用默认配置:', error);
+        // 返回默认配置
+        languageConfigCache = {
+            'JavaScript': 'js',
+            'Python': 'py',
+            'TypeScript': 'ts',
+            'CSS': 'css',
+            'HTML': 'css',
+            'Java': 'py',
+            'C++': 'py',
+            'C': 'py',
+            'Go': 'py',
+            'Rust': 'py'
+        };
+        return languageConfigCache;
+    }
+}
+
+// 获取语言对应的CSS类名（同步版本，使用缓存）
 function getLanguageClass(language) {
-    const langMap = {
+    // 如果缓存存在，直接使用
+    if (languageConfigCache) {
+        return languageConfigCache[language] || 'py';
+    }
+
+    // 如果缓存不存在，返回默认值（这种情况应该很少见）
+    const defaultMap = {
         'JavaScript': 'js',
         'Python': 'py',
         'TypeScript': 'ts',
@@ -1151,7 +1191,7 @@ function getLanguageClass(language) {
         'Rust': 'py'
     };
 
-    return langMap[language] || 'py';
+    return defaultMap[language] || 'py';
 }
 
 // 数字动画函数
@@ -1924,9 +1964,12 @@ function createParticles() {
     document.head.appendChild(style);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     addAnimationStyles();
     addPulseAnimation();
+
+    // 初始化语言配置（优先加载）
+    await fetchLanguageConfig();
 
     // 初始化自定义栏目（替代原日记统计）
     if (typeof initCustomSection === 'function') {
