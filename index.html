@@ -1258,9 +1258,9 @@ function createSectionElement(section, data) {
 
         sectionElement.appendChild(grid);
     } else if (section.defaultTemplate === 'icon-wall') {
-        // 图标墙布局（类似标签云）
+        // 图标墙布局 - 使用 Tailwind CSS
         const iconWall = document.createElement('div');
-        iconWall.className = 'tags-section'; // 复用标签样式
+        iconWall.className = 'flex flex-wrap gap-2';
 
         data.forEach(item => {
             if (item.hidden) return;
@@ -1270,19 +1270,19 @@ function createSectionElement(section, data) {
                 const link = document.createElement('a');
                 link.href = item.url;
                 link.target = '_blank';
-                link.className = 'tag';
+                link.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-500 dark:hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 shadow-sm hover:shadow-md';
                 link.innerHTML = `
-                    ${item.icon && item.icon.startsWith('fa-') ? `<i class="fas ${item.icon}"></i> ` : ''}
-                    ${item.title}
+                    ${item.icon && item.icon.startsWith('fa-') ? `<i class="fas ${item.icon}"></i>` : ''}
+                    <span>${item.title}</span>
                 `;
                 iconWall.appendChild(link);
             } else {
                 // 纯展示的图标
                 const tag = document.createElement('span');
-                tag.className = 'tag';
+                tag.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 transition-colors duration-300';
                 tag.innerHTML = `
-                    ${item.icon && item.icon.startsWith('fa-') ? `<i class="fas ${item.icon}"></i> ` : ''}
-                    ${item.title}
+                    ${item.icon && item.icon.startsWith('fa-') ? `<i class="fas ${item.icon}"></i>` : ''}
+                    <span>${item.title}</span>
                 `;
                 iconWall.appendChild(tag);
             }
@@ -1290,21 +1290,21 @@ function createSectionElement(section, data) {
 
         sectionElement.appendChild(iconWall);
     } else if (section.defaultTemplate === 'timeline') {
-        // 时间线布局
+        // 时间线布局 - 使用 Tailwind CSS
         const timelineContainer = document.createElement('div');
-        timelineContainer.className = 'timeline-section';
+        timelineContainer.className = 'relative border-l-2 border-gray-300 dark:border-gray-700 pl-6 ml-3 space-y-6';
 
         data.forEach(item => {
             if (item.hidden) return;
 
             const timelineItem = document.createElement('div');
-            timelineItem.className = 'timeline-item';
+            timelineItem.className = 'relative group';
 
             timelineItem.innerHTML = `
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="timeline-title">${item.title}</div>
-                    ${item.date || item.description ? `<div class="timeline-date">${item.date || item.description}</div>` : ''}
+                <div class="absolute -left-[1.6rem] top-1 w-3 h-3 bg-blue-500 dark:bg-blue-400 rounded-full border-2 border-white dark:border-gray-900 shadow-md transition-all duration-300 group-hover:scale-125 group-hover:shadow-lg"></div>
+                <div class="space-y-1">
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100 transition-colors duration-300 group-hover:text-blue-500 dark:group-hover:text-blue-400">${item.title}</div>
+                    ${item.date || item.description ? `<div class="text-xs text-gray-600 dark:text-gray-400 transition-colors duration-300">${item.date || item.description}</div>` : ''}
                 </div>
             `;
 
@@ -1313,31 +1313,32 @@ function createSectionElement(section, data) {
 
         sectionElement.appendChild(timelineContainer);
     } else if (section.defaultTemplate === 'list') {
-        // 列表布局
+        // 列表布局 - 使用 Tailwind CSS
         const list = document.createElement('div');
-        list.className = 'section-list';
+        list.className = 'space-y-3';
 
         data.forEach(item => {
             if (item.hidden) return;
 
             const itemElement = document.createElement('div');
-            itemElement.className = 'list-item';
+            itemElement.className = 'group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-all duration-300 hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-md hover:translate-x-1';
 
             if (item.url) {
                 // 带链接的列表项
                 const link = document.createElement('a');
                 link.href = item.url;
                 link.target = '_blank';
+                link.className = 'block';
                 link.innerHTML = `
-                    <h3>${item.title}</h3>
-                    ${item.description ? `<p>${item.description}</p>` : ''}
+                    <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">${item.title}</h3>
+                    ${item.description ? `<p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">${item.description}</p>` : ''}
                 `;
                 itemElement.appendChild(link);
             } else {
                 // 纯展示的列表项
                 itemElement.innerHTML = `
-                    <h3>${item.title}</h3>
-                    ${item.description ? `<p>${item.description}</p>` : ''}
+                    <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">${item.title}</h3>
+                    ${item.description ? `<p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">${item.description}</p>` : ''}
                 `;
             }
 
@@ -1346,18 +1347,18 @@ function createSectionElement(section, data) {
 
         sectionElement.appendChild(list);
     } else {
-        // 默认使用列表布局
+        // 默认使用列表布局 - Tailwind CSS
         const list = document.createElement('div');
-        list.className = 'section-list';
+        list.className = 'space-y-3';
 
         data.forEach(item => {
             if (item.hidden) return;
 
             const itemElement = document.createElement('div');
-            itemElement.className = 'list-item';
+            itemElement.className = 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-all duration-300';
             itemElement.innerHTML = `
-                <h3>${item.title}</h3>
-                ${item.description ? `<p>${item.description}</p>` : ''}
+                <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">${item.title}</h3>
+                ${item.description ? `<p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">${item.description}</p>` : ''}
             `;
 
             list.appendChild(itemElement);
