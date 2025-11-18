@@ -1177,7 +1177,7 @@ function renderDynamicSections() {
         return;
     }
 
-    // 遍历所有栏目配置
+    // 遍历所有栏目配置，处理位置调整
     sectionsConfig.forEach(section => {
         // 跳过隐藏的栏目
         if (section.hidden) {
@@ -1185,9 +1185,17 @@ function renderDynamicSections() {
             return;
         }
 
-        // 跳过已有的内置栏目（websites, projects, skills）
+        // 处理内置栏目的位置调整
         if (['websites', 'projects', 'skills'].includes(section.id)) {
-            console.log(`跳过内置栏目: ${section.title}`);
+            const sectionElement = document.querySelector(`.${section.id === 'websites' ? 'sites' : section.id}-section`);
+            if (sectionElement && section.position === 'ip-below') {
+                // 将内置栏目移动到左侧边栏
+                const timeline = sidebar.querySelector('.timeline-section');
+                if (timeline) {
+                    timeline.after(sectionElement);
+                    console.log(`✅ 已将内置栏目 "${section.title}" 移动到IP信息下方`);
+                }
+            }
             return;
         }
 
