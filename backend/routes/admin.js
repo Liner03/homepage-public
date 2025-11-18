@@ -36,6 +36,11 @@ function createAdminRouter(config, dataStorage, visitStorage) {
     res.sendFile(path.join(__dirname, '../public/admin/config.html'));
   });
 
+  // 日记配置页面
+  router.get('/diary-config', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/admin/diary-config.html'));
+  });
+
   // API: 登录
   router.post('/api/login', (req, res) => {
     const { username, password } = req.body;
