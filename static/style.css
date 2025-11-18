@@ -900,8 +900,9 @@ body::before {
 .timeline-card {
     margin-left: 16px;
     border-radius: 16px;
-    border: 1px solid rgba(229, 231, 235, 0.8);
-    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--border-primary);
+    background: var(--bg-card);
+    backdrop-filter: blur(25px);
     box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
     padding: 14px 16px;
     transition: all 0.3s ease-out;
@@ -910,21 +911,9 @@ body::before {
 
 .timeline-card:hover {
     box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
-    border-color: rgba(147, 197, 253, 0.6);
+    background: var(--bg-card-hover);
+    border-color: var(--border-primary);
     transform: translateY(-2px);
-}
-
-@media (prefers-color-scheme: dark) {
-    .timeline-card {
-        border-color: rgb(31, 41, 55);
-        background: rgba(17, 24, 39, 0.9);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    }
-
-    .timeline-card:hover {
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
-        border-color: rgba(29, 78, 216, 0.6);
-    }
 }
 
 /* 卡片头部（日期）*/

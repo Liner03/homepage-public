@@ -56,6 +56,9 @@ app.use(session({
 // 静态文件服务（提供前端页面）
 app.use(express.static(path.join(__dirname, '..')));
 
+// 后台管理静态资源服务（优先级更高，提供 CSS/字体文件）
+app.use('/admin/static', express.static(path.join(__dirname, 'public/static')));
+
 // 获取客户端 IP
 function getClientIP(req) {
   return req.headers['x-forwarded-for']?.split(',')[0].trim() ||
