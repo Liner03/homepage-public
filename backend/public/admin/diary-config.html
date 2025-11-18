@@ -172,47 +172,6 @@
             transform: translateX(20px);
         }
 
-        .type-selector {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-top: 8px;
-        }
-
-        .type-option {
-            padding: 16px;
-            background: var(--input-bg);
-            border: 2px solid var(--input-border);
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s var(--ease-out);
-            text-align: center;
-        }
-
-        .type-option:hover {
-            background: var(--bg-secondary);
-            border-color: var(--apple-blue);
-        }
-
-        .type-option.selected {
-            background: rgba(0, 122, 255, 0.1);
-            border-color: var(--apple-blue);
-        }
-
-        .type-option i {
-            font-size: 24px;
-            margin-bottom: 8px;
-            display: block;
-            color: var(--apple-blue);
-        }
-
-        .type-option span {
-            display: block;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
         .btn {
             padding: 14px 28px;
             border: none;
@@ -333,10 +292,6 @@
         }
 
         @media (max-width: 768px) {
-            .type-selector {
-                grid-template-columns: 1fr;
-            }
-
             .stats-grid {
                 grid-template-columns: 1fr;
             }
@@ -375,26 +330,6 @@
                         <span id="enabledText">已启用</span>
                     </div>
                     <span class="help-text">关闭后，前台将不显示"日记"标签页</span>
-                </div>
-
-                <!-- 栏目类型 -->
-                <div class="form-group">
-                    <label>栏目类型</label>
-                    <div class="type-selector">
-                        <div class="type-option selected" data-type="diary" onclick="selectType('diary')">
-                            <i class="fas fa-book"></i>
-                            <span>RSS 日记</span>
-                        </div>
-                        <div class="type-option" data-type="projects" onclick="selectType('projects')">
-                            <i class="fas fa-folder"></i>
-                            <span>项目展示</span>
-                        </div>
-                        <div class="type-option" data-type="custom" onclick="selectType('custom')">
-                            <i class="fas fa-star"></i>
-                            <span>自定义内容</span>
-                        </div>
-                    </div>
-                    <span class="help-text">选择第三个标签页显示的内容类型</span>
                 </div>
 
                 <!-- 标题 -->
@@ -508,11 +443,6 @@
             document.getElementById('title').value = currentConfig.title || '日记';
             document.getElementById('icon').value = currentConfig.icon || 'fas fa-book';
 
-            // 选择类型
-            document.querySelectorAll('.type-option').forEach(el => {
-                el.classList.toggle('selected', el.dataset.type === currentConfig.type);
-            });
-
             // RSS 配置
             if (currentConfig.config) {
                 document.getElementById('rssUrl').value = currentConfig.config.rssUrl || '';
@@ -525,14 +455,6 @@
             currentConfig.enabled = !currentConfig.enabled;
             document.getElementById('enabledToggle').classList.toggle('active');
             document.getElementById('enabledText').textContent = currentConfig.enabled ? '已启用' : '已禁用';
-        }
-
-        // 选择类型
-        function selectType(type) {
-            currentConfig.type = type;
-            document.querySelectorAll('.type-option').forEach(el => {
-                el.classList.toggle('selected', el.dataset.type === type);
-            });
         }
 
         // 显示状态消息
@@ -607,7 +529,7 @@
 
             const config = {
                 enabled: currentConfig.enabled,
-                type: currentConfig.type,
+                type: 'diary',  // 固定为日记类型
                 title: document.getElementById('title').value.trim(),
                 icon: document.getElementById('icon').value.trim(),
                 config: {
