@@ -4,17 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>个人主页 - zoe.x</title>
+    <!-- Tailwind CSS (构建工具生成) -->
+    <link rel="stylesheet" href="./static/tailwind.css">
+    <!-- 自定义样式 (覆盖 Tailwind) -->
     <link rel="stylesheet" href="./static/style.css">
     <link rel="shortcut icon" href="./static/f2.png">
-    <!-- Font Awesome CDN - 完整图标库 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
-    <link rel="stylesheet" href="./static/fontawesome.css">
     <!-- 自定义栏目样式 -->
     <link rel="stylesheet" href="./modules/custom-section.css">
     <!-- 引入配置文件 -->
     <script src="./config.js"></script>
     <!-- 自定义栏目配置 -->
     <script src="./modules/custom-section-config.js"></script>
+    <!-- Heroicons 图标库 -->
+    <script src="./static/icons.js"></script>
+    <style>
+        /* 图标样式 - 统一大小和对齐 */
+        .social-links a svg {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
 
     <!-- 防止主题色闪烁：立即应用保存的主题色和背景 -->
     <script>
@@ -52,40 +67,9 @@
         })();
     </script>
 
-    <!-- 防止调色盘页面刷新时闪现 -->
-    <style>
-        #circular-palette-panel {
-            opacity: 0 !important;
-            visibility: hidden !important;
-            pointer-events: none !important;
-        }
-    </style>
-</head>
+  </head>
 <body>
     <!-- 移除原有的主题切换按钮，改为JavaScript动态创建 -->
-
-    <!-- 圆形七彩调色盘面板 -->
-    <div class="circular-palette-panel" id="circular-palette-panel">
-        <div class="palette-header">
-            <h3>背景调色盘</h3>
-            <button class="palette-close" id="palette-close">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="palette-content">
-            <div class="circular-palette-container">
-                <canvas class="circular-palette" id="circular-palette" width="200" height="200"></canvas>
-                <div class="palette-center" id="palette-center">
-                    <div class="selected-color" id="selected-color"></div>
-                </div>
-            </div>
-            <div class="palette-controls">
-                <button class="reset-btn" id="reset-background" title="重置为默认">
-                    <i class="fas fa-undo"></i> 重置默认
-                </button>
-            </div>
-        </div>
-    </div>
 
     <div class="main-container">
         <!-- 左侧个人信息 -->
@@ -130,8 +114,8 @@
                 <!-- 标签将由配置文件动态生成 -->
             </section>
 
-            <!-- 技能展示 -->
-            <section class="skills-section">
+            <!-- IP 统计展示 -->
+            <section class="skills-section ip-stats-section">
                 <h2><i class="fas fa-heart"></i> <span id="welcome-title">加载中...</span></h2>
                 <div class="stat-item">
                     <span class="stat-label" id="visitor-ip-label">加载中...</span>
@@ -139,10 +123,6 @@
                 </div>
             </section>
             <br>
-            <!-- 时间线 -->
-            <section class="timeline-section">
-                <!-- 时间线将由配置文件动态生成 -->
-            </section>
         </aside>
 
         <!-- 右侧内容区域 -->
@@ -263,20 +243,17 @@ document.addEventListener('DOMContentLoaded', async function() {
     // 然后应用 CONFIG
     if (typeof CONFIG !== 'undefined') {
         applyConfig();
-    }
 
-    // 延迟初始化调色盘，确保其他脚本已加载
-    setTimeout(() => {
-        initCircularColorPalette();
-    }, 100);
+        // 标记配置已应用，防止 script.js 中的 typewriter 效果使用旧值
+        window.configApplied = true;
+    } else {
+        console.error('❌ CONFIG 未定义，请检查 config.js 文件');
+    }
 });
 
-// 圆形七彩调色盘功能
+// 调色盘功能已移除 - 该函数已禁用
 function initCircularColorPalette() {
-    console.log('初始化圆形七彩调色盘...');
-    
-    const themeToggle = document.getElementById('theme-toggle');
-    const palettePanel = document.getElementById('circular-palette-panel');
+    return; // 功能已移除
     const paletteClose = document.getElementById('palette-close');
     const canvas = document.getElementById('circular-palette');
     const selectedColorDiv = document.getElementById('selected-color');
@@ -1126,11 +1103,6 @@ function applyConfig() {
         updateTags(tags);
     }
 
-    // 更新时间线
-    if (timeline) {
-        updateTimeline(timeline);
-    }
-
     // 更新站点展示
     if (websites) {
         updateWebsites(websites);
@@ -1183,12 +1155,12 @@ function renderDynamicSections() {
 
         // 处理内置栏目的位置调整
         if (['websites', 'projects', 'skills'].includes(section.id)) {
-            const sectionElement = document.querySelector(`.${section.id === 'websites' ? 'sites' : section.id}-section`);
+            const sectionElement = document.querySelector(`.${section.id === 'websites' ? 'sites' : section.id}-section:not(.ip-stats-section)`);
             if (sectionElement && section.position === 'ip-below') {
                 // 将内置栏目移动到左侧边栏
-                const timeline = sidebar.querySelector('.timeline-section');
-                if (timeline) {
-                    timeline.after(sectionElement);
+                const ipStatsSection = sidebar.querySelector('.ip-stats-section');
+                if (ipStatsSection) {
+                    ipStatsSection.after(sectionElement);
                     console.log(`✅ 已将内置栏目 "${section.title}" 移动到IP信息下方`);
                 }
             }
@@ -1207,10 +1179,10 @@ function renderDynamicSections() {
 
         // 根据position插入到不同位置
         if (section.position === 'ip-below') {
-            // 插入到左侧边栏时间线之后
-            const timeline = sidebar.querySelector('.timeline-section');
-            if (timeline) {
-                timeline.after(sectionElement);
+            // 插入到左侧边栏 IP 统计之后
+            const ipStatsSection = sidebar.querySelector('.ip-stats-section');
+            if (ipStatsSection) {
+                ipStatsSection.after(sectionElement);
                 console.log(`✅ 已将栏目 "${section.title}" 插入到IP信息下方`);
             }
         } else {
@@ -1227,15 +1199,19 @@ function createSectionElement(section, data) {
     sectionElement.className = `dynamic-section ${section.id}-section`;
     sectionElement.id = `section-${section.id}`;
 
-    // 创建标题
-    const title = document.createElement('h2');
-    title.innerHTML = `<i class="fas ${section.icon}"></i> ${section.title}`;
-    sectionElement.appendChild(title);
+    // 时间线模板不需要标题，其他模板添加标题
+    if (section.defaultTemplate !== 'timeline') {
+        const title = document.createElement('h2');
+        const iconSvg = section.icon ? createIcon(section.icon.replace('fa-', '')) : '';
+        title.innerHTML = `${iconSvg} ${section.title}`;
+        sectionElement.appendChild(title);
+    }
 
     // 根据模板类型渲染内容
     if (section.defaultTemplate === 'card-grid') {
+        // 卡片网格布局
         const grid = document.createElement('div');
-        grid.className = 'sites-grid'; // 复用sites-grid样式
+        grid.className = 'sites-grid';
 
         data.forEach(item => {
             if (item.hidden) return;
@@ -1249,10 +1225,10 @@ function createSectionElement(section, data) {
                 <div class="site-card">
                     <div class="site-icon">
                         ${item.icon ?
-                            (item.icon.startsWith('fa-') ?
-                                `<i class="fas ${item.icon}"></i>` :
-                                `<img src="${item.icon}" alt="${item.title}">`)
-                            : '<i class="fas fa-link"></i>'}
+                            (item.icon.startsWith('http://') || item.icon.startsWith('https://') || item.icon.startsWith('/') || item.icon.startsWith('./') ?
+                                `<img src="${item.icon}" alt="${item.title}">` :
+                                createIcon(item.icon.replace('fa-', '')))
+                            : createIcon('link')}
                     </div>
                     <div class="site-info">
                         <h3>${item.title}</h3>
@@ -1265,19 +1241,115 @@ function createSectionElement(section, data) {
         });
 
         sectionElement.appendChild(grid);
-    } else {
-        // 其他模板类型的处理
+    } else if (section.defaultTemplate === 'icon-wall') {
+        // 图标墙布局 - 使用 Tailwind CSS
+        const iconWall = document.createElement('div');
+        iconWall.className = 'flex flex-wrap gap-2';
+
+        data.forEach(item => {
+            if (item.hidden) return;
+
+            if (item.url) {
+                // 带链接的图标
+                const link = document.createElement('a');
+                link.href = item.url;
+                link.target = '_blank';
+                link.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-500 dark:hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 shadow-sm hover:shadow-md';
+                link.innerHTML = `
+                    ${item.icon ? createIcon(item.icon.replace('fa-', '')) : ''}
+                    <span>${item.title}</span>
+                `;
+                iconWall.appendChild(link);
+            } else {
+                // 纯展示的图标
+                const tag = document.createElement('span');
+                tag.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 transition-colors duration-300';
+                tag.innerHTML = `
+                    ${item.icon ? createIcon(item.icon.replace('fa-', '')) : ''}
+                    <span>${item.title}</span>
+                `;
+                iconWall.appendChild(tag);
+            }
+        });
+
+        sectionElement.appendChild(iconWall);
+    } else if (section.defaultTemplate === 'timeline') {
+        // 时间线布局 - 卡片式设计（纯 CSS）
+        const timelineContainer = document.createElement('div');
+        timelineContainer.className = 'timeline-container';
+
+        data.forEach((item, index) => {
+            if (item.hidden) return;
+
+            const timelineItem = document.createElement('article');
+            timelineItem.className = 'timeline-item';
+
+            timelineItem.innerHTML = `
+                <div class="timeline-card">
+                    ${item.date || item.description ? `
+                    <header class="timeline-card-header">
+                        <time class="timeline-card-time">
+                            ${item.date || item.description}
+                        </time>
+                    </header>
+                    ` : ''}
+                    <p class="timeline-card-content">
+                        ${item.title}
+                    </p>
+                </div>
+            `;
+
+            timelineContainer.appendChild(timelineItem);
+        });
+
+        sectionElement.appendChild(timelineContainer);
+    } else if (section.defaultTemplate === 'list') {
+        // 列表布局 - 使用 Tailwind CSS
         const list = document.createElement('div');
-        list.className = 'section-list';
+        list.className = 'space-y-3';
 
         data.forEach(item => {
             if (item.hidden) return;
 
             const itemElement = document.createElement('div');
-            itemElement.className = 'list-item';
+            itemElement.className = 'group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-all duration-300 hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-md hover:translate-x-1';
+
+            if (item.url) {
+                // 带链接的列表项
+                const link = document.createElement('a');
+                link.href = item.url;
+                link.target = '_blank';
+                link.className = 'block';
+                link.innerHTML = `
+                    <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">${item.title}</h3>
+                    ${item.description ? `<p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">${item.description}</p>` : ''}
+                `;
+                itemElement.appendChild(link);
+            } else {
+                // 纯展示的列表项
+                itemElement.innerHTML = `
+                    <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">${item.title}</h3>
+                    ${item.description ? `<p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">${item.description}</p>` : ''}
+                `;
+            }
+
+            list.appendChild(itemElement);
+        });
+
+        sectionElement.appendChild(list);
+    } else {
+        // 默认使用列表布局 - Tailwind CSS
+        const list = document.createElement('div');
+        list.className = 'space-y-3';
+
+        data.forEach(item => {
+            if (item.hidden) return;
+
+            const itemElement = document.createElement('div');
+            itemElement.className = 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-all duration-300';
             itemElement.innerHTML = `
-                <h3>${item.title}</h3>
-                ${item.description ? `<p>${item.description}</p>` : ''}
+                <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">${item.title}</h3>
+                ${item.description ? `<p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">${item.description}</p>` : ''}
             `;
 
             list.appendChild(itemElement);
@@ -1301,23 +1373,42 @@ function updateSocialLinks(social) {
     // 清空现有链接
     socialContainer.innerHTML = '';
 
-    // 社交平台图标映射
+    // 社交平台图标映射（使用 Heroicons 名称）
     const iconMap = {
-        github: 'fas fa-github',
-        email: 'fas fa-envelope',
-        wechat: 'fas fa-qrcode',
-        telegram: 'fas fa-paper-plane',
-        twitter: 'fab fa-twitter',
-        linkedin: 'fab fa-linkedin',
-        blog: 'fas fa-blog'
+        github: 'github',
+        email: 'envelope',
+        wechat: 'wechat',
+        telegram: 'telegram',
+        twitter: 'twitter',
+        linkedin: 'linkedin',
+        blog: 'globe',
+        google: 'google'
     };
 
     // 添加配置的社交链接
-    Object.entries(social).forEach(([platform, url]) => {
+    Object.entries(social).forEach(([platform, urlOrObj]) => {
+        if (!urlOrObj) return;
+
+        // 兼容两种格式：字符串 或 {url: "...", icon: "..."}
+        const url = typeof urlOrObj === 'string' ? urlOrObj : urlOrObj.url;
+        const customIcon = typeof urlOrObj === 'object' ? urlOrObj.icon : null;
+
         if (!url) return;
 
         const link = document.createElement('a');
-        link.innerHTML = `<i class="${iconMap[platform] || 'fas fa-link'}"></i>`;
+
+        // 确定使用哪个图标
+        let iconName;
+        if (customIcon) {
+            // 直接使用 Heroicons 名称
+            iconName = customIcon;
+        } else {
+            // 使用默认映射
+            iconName = iconMap[platform] || 'link';
+        }
+
+        // 使用 createIcon 函数生成 SVG
+        link.innerHTML = createIcon(iconName);
 
         // 邮箱/微信 采用一键复制
         if (platform === 'email' || platform === 'wechat') {
@@ -1377,14 +1468,6 @@ function updateSocialLinks(social) {
         }, 1500);
     }
 
-    // 保留原有的特殊链接（夏日空调）
-    const specialLink = document.createElement('a');
-    specialLink.href = '#';
-    specialLink.onclick = () => showIframe();
-    specialLink.title = '夏日空调';
-    specialLink.innerHTML = '<i class="fas fa-circle"></i>';
-    socialContainer.appendChild(specialLink);
-
     console.log('社交链接更新完成，共添加了', socialContainer.children.length, '个链接');
 }
 
@@ -1401,43 +1484,6 @@ function updateTags(tags) {
         tagElement.className = 'tag';
         tagElement.textContent = tag;
         tagsContainer.appendChild(tagElement);
-    });
-}
-
-function updateTimeline(timeline) {
-    const timelineContainer = document.querySelector('.timeline-section');
-    if (!timelineContainer) return;
-
-    // 检查栏目是否隐藏
-    if (isSectionHidden('timeline')) {
-        timelineContainer.style.display = 'none';
-        console.log('✅ 栏目 "时间线" 已隐藏');
-        return;
-    }
-
-    // 显示栏目
-    timelineContainer.style.display = 'block';
-
-    // 清空现有时间线
-    timelineContainer.innerHTML = '';
-
-    // 过滤掉隐藏的事件
-    const visibleTimeline = timeline.filter(event => !event.hidden);
-
-    // 添加配置的时间线事件
-    visibleTimeline.forEach(event => {
-        const timelineItem = document.createElement('div');
-        timelineItem.className = 'timeline-item';
-
-        timelineItem.innerHTML = `
-            <div class="timeline-dot"></div>
-            <div class="timeline-content">
-                <div class="timeline-title">${event.title}</div>
-                <div class="timeline-date">${event.date}</div>
-            </div>
-        `;
-
-        timelineContainer.appendChild(timelineItem);
     });
 }
 
@@ -1473,10 +1519,10 @@ function updateWebsites(websites) {
             <div class="site-card">
                 <div class="site-icon">
                     ${site.icon ?
-                        (site.icon.startsWith('fa-') ?
-                            `<i class="fas ${site.icon}"></i>` :
-                            `<img src="${site.icon}" alt="${site.title}">`)
-                        : '<i class="fas fa-globe"></i>'}
+                        (site.icon.startsWith('http://') || site.icon.startsWith('https://') || site.icon.startsWith('/') || site.icon.startsWith('./') ?
+                            `<img src="${site.icon}" alt="${site.title}">` :
+                            createIcon(site.icon.replace('fa-', '')))
+                        : createIcon('globe')}
                 </div>
                 <div class="site-info">
                     <h3>${site.title}</h3>
@@ -1521,10 +1567,10 @@ function updateProjects(projects) {
             <div class="project-card">
                 <div class="project-icon">
                     ${project.icon || project.image ?
-                        (project.icon && project.icon.startsWith('fa-') ?
-                            `<i class="fas ${project.icon}"></i>` :
-                            `<img src="${project.icon || project.image}" alt="${project.title}">`)
-                        : '<i class="fas fa-code"></i>'}
+                        ((project.icon && (project.icon.startsWith('http://') || project.icon.startsWith('https://') || project.icon.startsWith('/') || project.icon.startsWith('./'))) || project.image ?
+                            `<img src="${project.icon || project.image}" alt="${project.title}">` :
+                            createIcon(project.icon.replace('fa-', '')))
+                        : createIcon('code')}
                 </div>
                 <div class="project-info">
                     <h3>${project.title}</h3>
@@ -1538,7 +1584,7 @@ function updateProjects(projects) {
 }
 
 function updateSkills(skills) {
-    const skillsSection = document.querySelector('.skills-section:last-of-type'); // 最后一个 skills-section
+    const skillsSection = document.querySelector('.skills-section:not(.ip-stats-section)'); // 排除 IP 统计的 section
     const skillsContainer = document.querySelector('.skills-icons');
     if (!skillsContainer) return;
 
@@ -1564,14 +1610,14 @@ function updateSkills(skills) {
         skillIcon.className = 'skill-icon';
         skillIcon.title = `${skill.name}${skill.level ? ' - ' + skill.level : ''}`;
 
-        // 支持 Font Awesome 图标类名或图片 URL
+        // 支持 Heroicons 图标名称或图片 URL
         if (skill.icon) {
-            if (skill.icon.startsWith('fa-')) {
-                // Font Awesome 图标
-                skillIcon.innerHTML = `<i class="fas ${skill.icon}"></i>`;
-            } else {
+            if (skill.icon.startsWith('http://') || skill.icon.startsWith('https://') || skill.icon.startsWith('/') || skill.icon.startsWith('./')) {
                 // 图片 URL
                 skillIcon.innerHTML = `<img src="${skill.icon}" alt="${skill.name}">`;
+            } else {
+                // Heroicons 图标
+                skillIcon.innerHTML = createIcon(skill.icon.replace('fa-', ''));
             }
         } else {
             // 没有图标时显示文字
@@ -1583,6 +1629,8 @@ function updateSkills(skills) {
 }
 
 function updateTexts(texts) {
+    console.log('🎨 开始更新文本:', texts);
+
     // 更新GitHub统计区域文本
     if (texts.githubStats) {
         const { githubStats } = texts;
@@ -1612,21 +1660,33 @@ function updateTexts(texts) {
     // 更新区域标题
     if (texts.sectionTitles) {
         const { sectionTitles } = texts;
+        console.log('📝 更新区域标题:', sectionTitles);
 
         const welcomeTitle = document.getElementById('welcome-title');
-        if (welcomeTitle) welcomeTitle.textContent = sectionTitles.welcome;
+        if (welcomeTitle) {
+            welcomeTitle.textContent = sectionTitles.welcome;
+            console.log('✅ welcome-title 已更新为:', sectionTitles.welcome);
+        }
 
         const visitorIPLabel = document.getElementById('visitor-ip-label');
         if (visitorIPLabel) visitorIPLabel.textContent = sectionTitles.visitorIP;
 
         const websitesTitle = document.getElementById('websites-title');
-        if (websitesTitle) websitesTitle.textContent = sectionTitles.websites;
+        if (websitesTitle) {
+            websitesTitle.textContent = sectionTitles.websites;
+            console.log('✅ websites-title 已更新为:', sectionTitles.websites);
+        }
 
         const projectsTitle = document.getElementById('projects-title');
-        if (projectsTitle) projectsTitle.textContent = sectionTitles.projects;
+        if (projectsTitle) {
+            projectsTitle.textContent = sectionTitles.projects;
+            console.log('✅ projects-title 已更新为:', sectionTitles.projects);
+        }
 
         const skillsTitle = document.getElementById('skills-title');
         if (skillsTitle) skillsTitle.textContent = sectionTitles.skills;
+    } else {
+        console.warn('⚠️ texts.sectionTitles 未定义');
     }
 
     // 更新页脚

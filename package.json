@@ -1,0 +1,22 @@
+{
+  "name": "homepage-frontend",
+  "version": "1.0.0",
+  "description": "Frontend build tools for personal homepage",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/input.css -o ./static/tailwind.css --minify && mkdir -p ./backend/public/static && cp ./static/tailwind.css ./backend/public/static/tailwind.css",
+    "build": "npm run build:css",
+    "watch:css": "tailwindcss -i ./src/input.css -o ./static/tailwind.css --watch",
+    "dev": "npm run watch:css",
+    "postinstall": "npm run build"
+  },
+  "keywords": [
+    "homepage",
+    "tailwindcss",
+    "heroicons"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.0.0-beta.9"
+  }
+}

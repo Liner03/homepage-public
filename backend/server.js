@@ -5,6 +5,11 @@ const path = require('path');
 const config = require('./config');
 const DataStorage = require('./storage/data-storage');
 
+// 确保使用绝对路径
+const rootDir = path.resolve(__dirname, '..');
+const staticDir = path.join(rootDir, 'static');
+const backendStaticDir = path.join(__dirname, 'public', 'static');
+
 // 根据配置选择访问统计存储适配器
 let visitStorage;
 const visitStorageType = config.visitStorage.toLowerCase();
@@ -53,8 +58,15 @@ app.use(session({
   }
 }));
 
-// 静态文件服务（提供前端页面）
-app.use(express.static(path.join(__dirname, '..')));
+// 静态文件服务（按优先级顺序）
+// 1. 前端静态资源（CSS/字体）- 使用绝对路径
+app.use('/static', express.static(staticDir));
+
+// 2. 后台管理静态资源
+app.use('/admin/static', express.static(backendStaticDir));
+
+// 3. 其他静态文件（HTML/JS 等）
+app.use(express.static(rootDir));
 
 // 获取客户端 IP
 function getClientIP(req) {
@@ -816,6 +828,9 @@ const server = app.listen(config.port, () => {
   console.log(`📍 访问地址: http://localhost:${config.port}`);
   console.log(`📊 访问统计: ${visitStorageType} 存储`);
   console.log(`💾 数据目录: ${config.dataDir}`);
+  console.log(`📁 前端静态目录: ${staticDir}`);
+  console.log(`📁 后端静态目录: ${backendStaticDir}`);
+  console.log(`📁 根目录: ${rootDir}`);
   console.log('');
   console.log('按 Ctrl+C 停止服务器');
 

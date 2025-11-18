@@ -4,32 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理后台</title>
-    <!-- Font Awesome CDN - 完整图标库 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
-    <!-- Tailwind CSS v4 (via CDN Play) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Tailwind CSS 配置（使用 CSS 变量整合现有设计系统）
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: 'var(--bg-primary)',
-                        secondary: 'var(--bg-secondary)',
-                        accent: 'var(--accent)',
-                        'accent-hover': 'var(--accent-hover)',
-                        success: 'var(--success)',
-                        warning: 'var(--warning)',
-                        danger: 'var(--danger)',
-                    },
-                    fontFamily: {
-                        apple: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
+    <!-- Heroicons 图标库 -->
+    <script src="/static/icons.js"></script>
+    <!-- Tailwind CSS v4 (npm 管理) -->
+    <link rel="stylesheet" href="/admin/static/tailwind.css">
     <style>
         /* ========== Apple 官方设计系统 ========== */
         :root {
@@ -1245,7 +1223,7 @@
         </div>
 
         <!-- 项目编辑弹窗 -->
-        <div id="itemEditModal" class="modal">
+        <div id="itemEditModal" class="modal" style="display: none;">
             <div class="modal-content" style="max-width: 700px;">
                 <div class="modal-header">
                     <h2 id="itemEditModalTitle">编辑项目</h2>
@@ -1268,7 +1246,7 @@
         </div>
 
         <!-- 栏目编辑弹窗 -->
-        <div id="sectionEditModal" class="modal">
+        <div id="sectionEditModal" class="modal" style="display: none;">
             <div class="modal-content" style="max-width: 700px;">
                 <div class="modal-header">
                     <h2 id="sectionEditModalTitle">编辑栏目</h2>
@@ -1301,15 +1279,17 @@
                             <label for="sectionIcon">
                                 图标 <span style="color: var(--danger);">*</span>
                                 <small style="color: #666; font-weight: normal;">
-                                    (Font Awesome 图标类名，如: fa-link)
+                                    (Heroicons 图标名称，如: github, envelope, link)
                                 </small>
                             </label>
                             <input type="text" id="sectionIcon" class="form-control" required
-                                   placeholder="例如: fa-link">
+                                   placeholder="例如: github">
                             <small style="color: #666;">
-                                查找图标：
-                                <a href="https://fontawesome.com/icons" target="_blank" style="color: var(--accent);">
-                                    Font Awesome 图标库
+                                <a href="javascript:void(0)" onclick="showIconPicker('sectionIcon')" style="color: var(--accent); margin-right: 12px;">
+                                    📖 查看可用图标
+                                </a>
+                                <a href="https://heroicons.com" target="_blank" style="color: var(--accent);">
+                                    Heroicons 官网
                                 </a>
                             </small>
                         </div>
@@ -1687,8 +1667,8 @@
                 </div>
                 <div class="form-field" style="margin: 0;">
                     <label style="font-size: 12px;">图标 (可选)</label>
-                    <input type="text" value="${linkData.icon}" onchange="updateSocialLink(${linkData.id}, 'icon', this.value)" placeholder="fa-github">
-                    <small style="font-size: 10px;">Font Awesome 图标类名</small>
+                    <input type="text" value="${linkData.icon}" onchange="updateSocialLink(${linkData.id}, 'icon', this.value)" placeholder="github">
+                    <small style="font-size: 10px;">Heroicons 图标名称 <a href="javascript:void(0)" onclick="showIconPicker(event.target)" style="color: var(--accent);">查看可用图标</a></small>
                 </div>
                 <div style="display: flex; align-items: flex-end;">
                     <button type="button" class="btn btn-danger" onclick="removeSocialLink(${linkData.id})" style="padding: 8px 12px;">删除</button>
@@ -2843,13 +2823,13 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                                     </td>
                                     <td style="text-align: center;">
                                         <button class="icon-btn" onclick="viewSectionItems('${section.id}')" title="管理项目">
-                                            <i class="fas fa-list"></i>
+                                            ${createIcon('list-bullet', 'icon-inline')}
                                         </button>
                                         <button class="icon-btn" onclick="editSection('${section.id}')" title="编辑栏目">
-                                            <i class="fas fa-edit"></i>
+                                            ${createIcon('pencil', 'icon-inline')}
                                         </button>
                                         <button class="icon-btn" onclick="deleteSection('${section.id}')" title="删除栏目" style="color: var(--danger);">
-                                            <i class="fas fa-trash"></i>
+                                            ${createIcon('trash', 'icon-inline')}
                                         </button>
                                     </td>
                                 </tr>
@@ -2920,7 +2900,7 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                                             ${item.id || `item-${index}`}
                                         </td>
                                         <td style="text-align: center;">
-                                            ${item.icon ? `<i class="fas ${item.icon}" style="font-size: 16px; color: var(--accent);"></i>` : '-'}
+                                            ${item.icon ? createIcon(item.icon.replace('fa-', ''), 'icon-display') : '-'}
                                         </td>
                                         <td><strong>${item.title || item.name || ''}</strong></td>
                                         <td>
@@ -2935,16 +2915,16 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                                         <td style="text-align: center;">
                                             <div style="display: flex; gap: 4px; justify-content: center;">
                                                 <button class="icon-btn" onclick="editSectionItem(${index})" title="编辑">
-                                                    <i class="fas fa-edit"></i>
+                                                    ${createIcon('pencil', 'icon-inline')}
                                                 </button>
                                                 <button class="icon-btn" onclick="moveItemUp(${index})" title="上移" ${index === 0 ? 'disabled' : ''}>
-                                                    <i class="fas fa-arrow-up"></i>
+                                                    ${createIcon('arrow-up', 'icon-inline')}
                                                 </button>
                                                 <button class="icon-btn" onclick="moveItemDown(${index})" title="下移" ${index === items.length - 1 ? 'disabled' : ''}>
-                                                    <i class="fas fa-arrow-down"></i>
+                                                    ${createIcon('arrow-down', 'icon-inline')}
                                                 </button>
                                                 <button class="icon-btn" onclick="deleteSectionItem(${index})" title="删除" style="color: var(--danger);">
-                                                    <i class="fas fa-trash"></i>
+                                                    ${createIcon('trash', 'icon-inline')}
                                                 </button>
                                             </div>
                                         </td>
@@ -2975,7 +2955,7 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                                             ${item.id || `skill-${index}`}
                                         </td>
                                         <td style="text-align: center;">
-                                            ${item.icon ? `<i class="fas ${item.icon}" style="font-size: 16px; color: var(--accent);"></i>` : '-'}
+                                            ${item.icon ? createIcon(item.icon.replace('fa-', ''), 'icon-display') : '-'}
                                         </td>
                                         <td><strong>${item.name || ''}</strong></td>
                                         <td style="text-align: center;">
@@ -2987,16 +2967,16 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                                         <td style="text-align: center;">
                                             <div style="display: flex; gap: 4px; justify-content: center;">
                                                 <button class="icon-btn" onclick="editSectionItem(${index})" title="编辑">
-                                                    <i class="fas fa-edit"></i>
+                                                    ${createIcon('pencil', 'icon-inline')}
                                                 </button>
                                                 <button class="icon-btn" onclick="moveItemUp(${index})" title="上移" ${index === 0 ? 'disabled' : ''}>
-                                                    <i class="fas fa-arrow-up"></i>
+                                                    ${createIcon('arrow-up', 'icon-inline')}
                                                 </button>
                                                 <button class="icon-btn" onclick="moveItemDown(${index})" title="下移" ${index === items.length - 1 ? 'disabled' : ''}>
-                                                    <i class="fas fa-arrow-down"></i>
+                                                    ${createIcon('arrow-down', 'icon-inline')}
                                                 </button>
                                                 <button class="icon-btn" onclick="deleteSectionItem(${index})" title="删除" style="color: var(--danger);">
-                                                    <i class="fas fa-trash"></i>
+                                                    ${createIcon('trash', 'icon-inline')}
                                                 </button>
                                             </div>
                                         </td>
@@ -3037,16 +3017,16 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                                         <td style="text-align: center;">
                                             <div style="display: flex; gap: 4px; justify-content: center;">
                                                 <button class="icon-btn" onclick="editSectionItem(${index})" title="编辑">
-                                                    <i class="fas fa-edit"></i>
+                                                    ${createIcon('pencil', 'icon-inline')}
                                                 </button>
                                                 <button class="icon-btn" onclick="moveItemUp(${index})" title="上移" ${index === 0 ? 'disabled' : ''}>
-                                                    <i class="fas fa-arrow-up"></i>
+                                                    ${createIcon('arrow-up', 'icon-inline')}
                                                 </button>
                                                 <button class="icon-btn" onclick="moveItemDown(${index})" title="下移" ${index === items.length - 1 ? 'disabled' : ''}>
-                                                    <i class="fas fa-arrow-down"></i>
+                                                    ${createIcon('arrow-down', 'icon-inline')}
                                                 </button>
                                                 <button class="icon-btn" onclick="deleteSectionItem(${index})" title="删除" style="color: var(--danger);">
-                                                    <i class="fas fa-trash"></i>
+                                                    ${createIcon('trash', 'icon-inline')}
                                                 </button>
                                             </div>
                                         </td>
@@ -3637,8 +3617,8 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
                         <div class="form-field">
                             <label for="item-icon">图标</label>
-                            <input type="text" id="item-icon" value="${item?.icon || ''}" placeholder="fa-globe">
-                            <small>Font Awesome 图标类名</small>
+                            <input type="text" id="item-icon" value="${item?.icon || ''}" placeholder="globe">
+                            <small>Heroicons 图标名称 <a href="javascript:void(0)" onclick="showIconPicker('item-icon')" style="color: var(--accent);">查看可用图标</a></small>
                         </div>
 
                         ${currentSectionId === 'projects' ? `
@@ -3673,8 +3653,8 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
                         <div class="form-field">
                             <label for="item-icon">图标</label>
-                            <input type="text" id="item-icon" value="${item?.icon || ''}" placeholder="fa-js">
-                            <small>Font Awesome 图标类名</small>
+                            <input type="text" id="item-icon" value="${item?.icon || ''}" placeholder="code">
+                            <small>Heroicons 图标名称 <a href="javascript:void(0)" onclick="showIconPicker('item-icon')" style="color: var(--accent);">查看可用图标</a></small>
                         </div>
 
                         <div class="form-field">
@@ -3866,6 +3846,222 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
             refreshSystemInfo();
             refreshDiaryStatus();
         });
+
+        // 图标选择器
+        function showIconPicker(targetInputId) {
+            const modal = document.getElementById('iconPickerModal');
+            const grid = document.getElementById('iconPickerGrid');
+            const countElement = document.getElementById('iconCount');
+
+            // 清空网格
+            grid.innerHTML = '';
+
+            // 获取所有可用的图标
+            const icons = Object.keys(HeroIcons);
+
+            // 更新图标数量
+            if (countElement) {
+                countElement.textContent = icons.length;
+            }
+
+            // 创建图标网格
+            icons.forEach(iconName => {
+                const item = document.createElement('div');
+                item.className = 'icon-picker-item';
+                item.innerHTML = `
+                    <div class="icon-preview">${createIcon(iconName)}</div>
+                    <div class="icon-name">${iconName}</div>
+                `;
+                item.onclick = () => {
+                    // 将图标名称填入目标输入框
+                    const input = typeof targetInputId === 'string'
+                        ? document.getElementById(targetInputId)
+                        : document.querySelector('input[type="text"]:focus') || document.getElementById('sectionIcon');
+
+                    if (input) {
+                        input.value = iconName;
+                        // 触发 change 事件
+                        input.dispatchEvent(new Event('change'));
+                    }
+
+                    // 关闭 modal
+                    modal.style.display = 'none';
+
+                    // 显示提示
+                    showNotification(`已选择图标: ${iconName}`, 'success');
+                };
+                grid.appendChild(item);
+            });
+
+            // 显示 modal
+            modal.style.display = 'flex';
+        }
+
+        function closeIconPicker() {
+            document.getElementById('iconPickerModal').style.display = 'none';
+        }
     </script>
+
+    <!-- 图标选择器 Modal -->
+    <div id="iconPickerModal" class="modal" style="display: none;" onclick="if(event.target === this) closeIconPicker()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>选择图标</h3>
+                <button onclick="closeIconPicker()" class="icon-btn" style="font-size: 24px; background: none; border: none; cursor: pointer; color: #6b7280;">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="icon-usage-guide">
+                    <h4>💡 如何使用 Heroicons</h4>
+                    <ol>
+                        <li><strong>从下方选择：</strong>点击任意图标即可自动填入图标名称</li>
+                        <li><strong>或访问官网：</strong>打开 <a href="https://heroicons.com" target="_blank" style="color: #007aff;">heroicons.com</a>，浏览所有图标</li>
+                        <li><strong>复制名称：</strong>点击官网的图标，复制图标名称（如 <code>envelope</code>、<code>user-circle</code>、<code>arrow-right</code>）</li>
+                        <li><strong>直接输入：</strong>在输入框中填入完整的图标名称即可使用</li>
+                    </ol>
+                </div>
+                <p style="margin-bottom: 20px;">共 <strong><span id="iconCount">45+</span></strong> 个图标可用。点击图标即可选择。</p>
+                <div id="iconPickerGrid" class="icon-picker-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 0;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            opacity: 1 !important;
+            max-width: 900px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #ffffff;
+        }
+
+        .modal-header h3 {
+            color: #111827;
+            margin: 0;
+        }
+
+        .modal-body {
+            padding: 24px;
+            background: #ffffff;
+        }
+
+        .modal-body p {
+            color: #6b7280;
+        }
+
+        .icon-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        .icon-picker-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #ffffff;
+        }
+
+        .icon-picker-item:hover {
+            background: #f3f4f6;
+            border-color: #007aff;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .icon-preview {
+            width: 32px;
+            height: 32px;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .icon-preview svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .icon-name {
+            font-size: 11px;
+            color: #6b7280;
+            text-align: center;
+            word-break: break-all;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+
+        .icon-usage-guide {
+            background: #f3f4f6;
+            border-left: 3px solid #007aff;
+            padding: 16px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .icon-usage-guide h4 {
+            color: #111827;
+            margin: 0 0 12px 0;
+            font-size: 14px;
+        }
+
+        .icon-usage-guide ol {
+            margin: 0;
+            padding-left: 20px;
+            color: #374151;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .icon-usage-guide code {
+            background: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            color: #dc2626;
+        }
+
+        .icon-inline {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .icon-display {
+            width: 16px;
+            height: 16px;
+            color: var(--accent);
+        }
+    </style>
 </body>
 </html>

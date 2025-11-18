@@ -1,255 +1,5 @@
 // ==================== 视口固定主题按钮 ====================
 
-// 创建视口固定调色盘的位置管理
-function createViewportFixedPalette() {
-    const palettePanel = document.getElementById('circular-palette-panel');
-    if (!palettePanel) return null;
-
-    // 关键修复：将调色盘移动到与主题按钮相同的DOM位置
-    if (palettePanel.parentNode !== document.documentElement) {
-        document.documentElement.appendChild(palettePanel);
-        console.log('调色盘已移动到document.documentElement，与主题按钮保持一致');
-    }
-    
-    // 使用与主题按钮相同的视口坐标系统来居中调色盘
-    function updatePalettePosition() {
-        // 获取实时视口尺寸（与主题按钮使用相同的方法）
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        const isMobile = viewportWidth <= 768;
-        
-        // 计算调色盘尺寸
-        let width, maxHeight;
-        if (isMobile) {
-            if (viewportWidth <= 480) {
-                width = Math.min(260, viewportWidth - 30);
-                maxHeight = Math.min(viewportHeight - 100, 400);
-            } else {
-                width = Math.min(280, viewportWidth - 40);
-                maxHeight = Math.min(viewportHeight - 120, 450);
-            }
-        } else {
-            width = 320;
-            maxHeight = Math.min(viewportHeight - 60, 500);
-        }
-        
-        // 使用与主题按钮相同的视口定位方式 - 精确居中
-        const leftPos = (viewportWidth - width) / 2;
-        const topPos = (viewportHeight - maxHeight) / 2;
-        
-        // 检查当前显示状态，避免重置（与主题按钮逻辑一致）
-        const isCurrentlyVisible = palettePanel.classList.contains('active');
-        
-        // 设置调色盘样式 - 完全参照主题按钮的成功方案
-        palettePanel.style.cssText = `
-            position: fixed !important;
-            top: ${Math.max(20, topPos)}px !important;
-            left: ${Math.max(15, leftPos)}px !important;
-            right: auto !important;
-            bottom: auto !important;
-            z-index: 2147483647 !important;
-            width: ${width}px !important;
-            max-width: calc(100vw - 30px) !important;
-            max-height: ${maxHeight}px !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            border-radius: 20px !important;
-            background: rgba(50, 50, 60, 0.95) !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
-            pointer-events: ${isCurrentlyVisible ? 'all' : 'none'} !important;
-            display: block !important;
-            visibility: ${isCurrentlyVisible ? 'visible' : 'hidden'} !important;
-            opacity: ${isCurrentlyVisible ? '1' : '0'} !important;
-            transform: none !important;
-            -webkit-transform: none !important;
-            -moz-transform: none !important;
-            -ms-transform: none !important;
-            -o-transform: none !important;
-            will-change: auto !important;
-            perspective: none !important;
-            transform-style: flat !important;
-            backface-visibility: visible !important;
-            isolation: auto !important;
-            contain: none !important;
-            filter: none !important;
-            clip-path: none !important;
-            mask: none !important;
-            mix-blend-mode: normal !important;
-            overflow-y: auto !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        `;
-        
-        // 主题适配（与主题按钮保持一致的主题检测）
-        if (document.documentElement.getAttribute('data-theme') === 'dark') {
-            palettePanel.style.setProperty('background', 'rgba(40, 40, 40, 0.95)', 'important');
-            palettePanel.style.setProperty('border', '1px solid rgba(255, 255, 255, 0.1)', 'important');
-        } else {
-            // 亮色主题使用暗色背景
-            palettePanel.style.setProperty('background', 'rgba(50, 50, 60, 0.95)', 'important');
-            palettePanel.style.setProperty('border', '1px solid rgba(255, 255, 255, 0.2)', 'important');
-        }
-    }
-    
-    // 显示调色盘时的样式（不调用可能重置的函数）
-    function showPalette() {
-        // 直接设置显示样式，不调用updatePalettePosition避免重置
-        palettePanel.style.setProperty('opacity', '1', 'important');
-        palettePanel.style.setProperty('visibility', 'visible', 'important');
-        palettePanel.style.setProperty('pointer-events', 'all', 'important');
-        palettePanel.classList.add('active');
-        
-        // 立即更新位置确保居中
-        updatePalettePositionWhenVisible();
-    }
-    
-    // 隐藏调色盘时的样式（添加调试信息）
-    function hidePalette() {
-        console.log('调色盘被隐藏，调用来源：', new Error().stack);
-        palettePanel.style.setProperty('opacity', '0', 'important');
-        palettePanel.style.setProperty('visibility', 'hidden', 'important');
-        palettePanel.style.setProperty('pointer-events', 'none', 'important');
-        palettePanel.classList.remove('active');
-    }
-    
-    // 监听窗口变化（使用与主题按钮相同的处理方式）
-    let resizeTimer;
-    function handleResize() {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => {
-            // 与主题按钮相同：隐藏时更新位置，显示时只更新位置不重置状态
-            if (!palettePanel.classList.contains('active')) {
-                updatePalettePosition();
-            } else {
-                // 使用与主题按钮相同的实时位置更新逻辑
-                updatePalettePositionWhenVisible();
-            }
-        }, 16); // 与主题按钮相同的60fps更新频率
-    }
-    
-    // 监听滚动事件（完全参照主题按钮的处理方式）
-    let scrollTimer;
-    function handleScroll() {
-        clearTimeout(scrollTimer);
-        scrollTimer = setTimeout(() => {
-            // 修正：与主题按钮一致，滚动时总是更新位置确保固定在视口
-            if (palettePanel.classList.contains('active')) {
-                updatePalettePositionWhenVisible();
-            }
-        }, 16); // 与主题按钮相同的更新频率
-    }
-    
-    // 调色盘显示时的位置更新函数（完全参照主题按钮方案）
-    function updatePalettePositionWhenVisible() {
-        // 使用与主题按钮完全相同的视口检测方法
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        const isMobile = viewportWidth <= 768;
-
-        // 计算调色盘尺寸（与主题按钮使用相同的响应式逻辑）
-        let width, maxHeight;
-        if (isMobile) {
-            if (viewportWidth <= 480) {
-                width = Math.min(260, viewportWidth - 30);
-                maxHeight = Math.min(viewportHeight - 100, 400);
-            } else {
-                width = Math.min(280, viewportWidth - 40);
-                maxHeight = Math.min(viewportHeight - 120, 450);
-            }
-        } else {
-            width = 320;
-            maxHeight = Math.min(viewportHeight - 60, 500);
-        }
-
-        // 使用与主题按钮相同的精确像素定位计算
-        const leftPos = (viewportWidth - width) / 2;
-        const topPos = (viewportHeight - maxHeight) / 2;
-
-        // 使用与主题按钮相同的样式设置方法 - 只更新位置和尺寸
-        palettePanel.style.setProperty('position', 'fixed', 'important');
-        palettePanel.style.setProperty('top', `${Math.max(20, topPos)}px`, 'important');
-        palettePanel.style.setProperty('left', `${Math.max(15, leftPos)}px`, 'important');
-        palettePanel.style.setProperty('right', 'auto', 'important');
-        palettePanel.style.setProperty('bottom', 'auto', 'important');
-        palettePanel.style.setProperty('width', `${width}px`, 'important');
-        palettePanel.style.setProperty('max-height', `${maxHeight}px`, 'important');
-        palettePanel.style.setProperty('z-index', '2147483647', 'important');
-
-        // 确保使用与主题按钮相同的transform设置
-        palettePanel.style.setProperty('transform', 'none', 'important');
-        palettePanel.style.setProperty('-webkit-transform', 'none', 'important');
-        palettePanel.style.setProperty('will-change', 'auto', 'important');
-        palettePanel.style.setProperty('contain', 'none', 'important');
-    }
-    
-    window.addEventListener('resize', handleResize, { passive: true });
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('orientationchange', () => {
-        setTimeout(() => {
-            // 设备旋转时也要保持显示状态
-            if (!palettePanel.classList.contains('active')) {
-                updatePalettePosition();
-            } else {
-                updatePalettePositionWhenVisible();
-            }
-        }, 100);
-    });
-    
-    // 初始位置设置
-    updatePalettePosition();
-    
-    // 立即隐藏调色盘，防止页面刷新时闪现（但不添加调试日志）
-    palettePanel.style.setProperty('opacity', '0', 'important');
-    palettePanel.style.setProperty('visibility', 'hidden', 'important');
-    palettePanel.style.setProperty('pointer-events', 'none', 'important');
-    palettePanel.classList.remove('active');
-    
-    // 监听主题变化（但不重置显示状态）
-    const themeObserver = new MutationObserver(() => {
-        // 只有在调色盘隐藏时才更新位置，避免显示时被重置
-        if (!palettePanel.classList.contains('active')) {
-            updatePalettePosition();
-        } else {
-            // 如果调色盘正在显示，只更新主题相关样式
-            if (document.documentElement.getAttribute('data-theme') === 'dark') {
-                palettePanel.style.setProperty('background', 'rgba(40, 40, 40, 0.95)', 'important');
-                palettePanel.style.setProperty('border', '1px solid rgba(255, 255, 255, 0.1)', 'important');
-            } else {
-                palettePanel.style.setProperty('background', 'rgba(50, 50, 60, 0.95)', 'important');
-                palettePanel.style.setProperty('border', '1px solid rgba(255, 255, 255, 0.2)', 'important');
-            }
-        }
-    });
-    
-    themeObserver.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ['data-theme']
-    });
-    
-    // 定期检查（使用与主题按钮相同的检查频率和逻辑）
-    setInterval(() => {
-        // 与主题按钮相同：检查DOM存在性，并强制更新位置确保固定
-        if (!document.documentElement.contains(palettePanel)) {
-            // 如果调色盘被从DOM中移除了，重新添加到documentElement（与主题按钮处理方式一致）
-            document.documentElement.appendChild(palettePanel);
-            console.log('调色盘已重新添加到document.documentElement');
-        }
-        // 强制更新位置，确保在Chrome中始终固定在视口中心
-        if (palettePanel.classList.contains('active')) {
-            updatePalettePositionWhenVisible();
-        }
-    }, 2000); // 使用与主题按钮相同的检查间隔
-    
-    return {
-        panel: palettePanel,
-        updatePosition: updatePalettePosition,
-        updateVisiblePosition: updatePalettePositionWhenVisible,
-        show: showPalette,
-        hide: hidePalette
-    };
-}
 
 // 创建真正固定在视口的主题按钮
 function createViewportFixedThemeButton() {
@@ -497,11 +247,6 @@ class ThemeManager {
         // 创建真正固定在视口的主题按钮
         this.independentButton = createViewportFixedThemeButton();
         
-        // 创建视口固定的调色盘
-        this.viewportPalette = createViewportFixedPalette();
-
-        // 将调色盘管理器暴露给全局作用域，供HTML中的事件处理器使用
-        window.paletteManager = this.viewportPalette;
         
         // 等待DOM加载完成后设置事件
         if (document.readyState === 'loading') {
@@ -1698,19 +1443,42 @@ function initScrollAnimations() {
 function initTypewriterEffect() {
     const quoteElement = document.querySelector('.quote span:last-child');
     if (quoteElement) {
-        const text = quoteElement.innerHTML; // 保留HTML标签
-        quoteElement.innerHTML = '';
-        let i = 0;
+        // 等待配置应用完成后再读取文本
+        const startEffect = () => {
+            const text = quoteElement.innerHTML; // 保留HTML标签
+            quoteElement.innerHTML = '';
+            let i = 0;
 
-        function typeWriter() {
-            if (i < text.length) {
-                quoteElement.innerHTML = text.substring(0, i + 1);
-                i++;
-                setTimeout(typeWriter, 50);
+            function typeWriter() {
+                if (i < text.length) {
+                    quoteElement.innerHTML = text.substring(0, i + 1);
+                    i++;
+                    setTimeout(typeWriter, 50);
+                }
             }
-        }
 
-        setTimeout(typeWriter, 1000);
+            setTimeout(typeWriter, 1000);
+        };
+
+        // 如果配置已应用，立即开始；否则等待配置应用
+        if (window.configApplied) {
+            startEffect();
+        } else {
+            // 等待配置应用完成
+            const checkConfig = setInterval(() => {
+                if (window.configApplied) {
+                    clearInterval(checkConfig);
+                    startEffect();
+                }
+            }, 50);
+            // 最多等待3秒，防止无限等待
+            setTimeout(() => {
+                clearInterval(checkConfig);
+                if (!window.configApplied) {
+                    startEffect();
+                }
+            }, 3000);
+        }
     }
 }
 
