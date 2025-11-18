@@ -1609,10 +1609,10 @@ function updateSkills(skills) {
         skillIcon.className = 'skill-icon';
         skillIcon.title = `${skill.name}${skill.level ? ' - ' + skill.level : ''}`;
 
-        // 支持 Font Awesome 图标类名或图片 URL
+        // 支持 Heroicons 图标名称或图片 URL
         if (skill.icon) {
             if (skill.icon.startsWith('fa-')) {
-                // Font Awesome 图标
+                // Heroicons 图标
                 skillIcon.innerHTML = `<i class="fas ${skill.icon}"></i>`;
             } else {
                 // 图片 URL

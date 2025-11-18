@@ -95,7 +95,6 @@ Tailwind 4 自动支持 `dark:` 前缀，使用系统偏好设置。
 ### 特点
 - ✅ **纯 SVG**：无字体文件依赖，避免加载问题
 - ✅ **轻量级**：按需加载，极小体积
-- ✅ **自动替换**：自动将 Font Awesome 格式转换为 SVG
 - ✅ **品牌图标**：包含 GitHub、Twitter 等社交媒体图标
 
 ### JavaScript API
@@ -146,15 +145,6 @@ social: {
 - `calendar` - 日历
 
 [查看完整图标列表](https://heroicons.com)
-
-### 自动替换 Font Awesome
-
-如果你的代码中使用了 Font Awesome 格式（如 `<i class="fas fa-home"></i>`），图标库会自动将其替换为对应的 Heroicons SVG。
-
-支持的格式：
-- `fas fa-icon-name` → Heroicon SVG
-- `fab fa-icon-name` → 品牌图标 SVG
-- `far fa-icon-name` → Heroicon SVG
 
 ## 🚀 部署流程
 
@@ -222,14 +212,12 @@ social: {
    <script src="./static/icons.js"></script>
    ```
 
-3. **无需修改代码**：图标库会自动替换所有 `<i class="fa* fa-*">` 为 SVG
-
-4. （可选）手动使用新API：
+3. 使用新 API：
    ```javascript
    // 旧：Font Awesome
    <i class="fas fa-github"></i>
 
-   // 新：Heroicons（自动替换）
+   // 新：Heroicons
    createIcon('github')
    ```
 

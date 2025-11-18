@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理后台</title>
-    <!-- Heroicons 图标库（自动替换 Font Awesome）-->
+    <!-- Heroicons 图标库 -->
     <script src="/static/icons.js"></script>
     <!-- Tailwind CSS v4 (npm 管理) -->
     <link rel="stylesheet" href="/admin/static/tailwind.css">
@@ -1279,15 +1279,15 @@
                             <label for="sectionIcon">
                                 图标 <span style="color: var(--danger);">*</span>
                                 <small style="color: #666; font-weight: normal;">
-                                    (Font Awesome 图标类名，如: fa-link)
+                                    (Heroicons 图标名称，如: github, envelope, link)
                                 </small>
                             </label>
                             <input type="text" id="sectionIcon" class="form-control" required
-                                   placeholder="例如: fa-link">
+                                   placeholder="例如: github">
                             <small style="color: #666;">
                                 查找图标：
-                                <a href="https://fontawesome.com/icons" target="_blank" style="color: var(--accent);">
-                                    Font Awesome 图标库
+                                <a href="https://heroicons.com" target="_blank" style="color: var(--accent);">
+                                    Heroicons 图标库
                                 </a>
                             </small>
                         </div>
@@ -1665,8 +1665,8 @@
                 </div>
                 <div class="form-field" style="margin: 0;">
                     <label style="font-size: 12px;">图标 (可选)</label>
-                    <input type="text" value="${linkData.icon}" onchange="updateSocialLink(${linkData.id}, 'icon', this.value)" placeholder="fa-github">
-                    <small style="font-size: 10px;">Font Awesome 图标类名</small>
+                    <input type="text" value="${linkData.icon}" onchange="updateSocialLink(${linkData.id}, 'icon', this.value)" placeholder="github">
+                    <small style="font-size: 10px;">Heroicons 图标名称</small>
                 </div>
                 <div style="display: flex; align-items: flex-end;">
                     <button type="button" class="btn btn-danger" onclick="removeSocialLink(${linkData.id})" style="padding: 8px 12px;">删除</button>
@@ -3615,8 +3615,8 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
                         <div class="form-field">
                             <label for="item-icon">图标</label>
-                            <input type="text" id="item-icon" value="${item?.icon || ''}" placeholder="fa-globe">
-                            <small>Font Awesome 图标类名</small>
+                            <input type="text" id="item-icon" value="${item?.icon || ''}" placeholder="globe">
+                            <small>Heroicons 图标名称</small>
                         </div>
 
                         ${currentSectionId === 'projects' ? `
@@ -3651,8 +3651,8 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
                         <div class="form-field">
                             <label for="item-icon">图标</label>
-                            <input type="text" id="item-icon" value="${item?.icon || ''}" placeholder="fa-js">
-                            <small>Font Awesome 图标类名</small>
+                            <input type="text" id="item-icon" value="${item?.icon || ''}" placeholder="code">
+                            <small>Heroicons 图标名称</small>
                         </div>
 
                         <div class="form-field">
