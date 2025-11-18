@@ -1698,19 +1698,42 @@ function initScrollAnimations() {
 function initTypewriterEffect() {
     const quoteElement = document.querySelector('.quote span:last-child');
     if (quoteElement) {
-        const text = quoteElement.innerHTML; // 保留HTML标签
-        quoteElement.innerHTML = '';
-        let i = 0;
+        // 等待配置应用完成后再读取文本
+        const startEffect = () => {
+            const text = quoteElement.innerHTML; // 保留HTML标签
+            quoteElement.innerHTML = '';
+            let i = 0;
 
-        function typeWriter() {
-            if (i < text.length) {
-                quoteElement.innerHTML = text.substring(0, i + 1);
-                i++;
-                setTimeout(typeWriter, 50);
+            function typeWriter() {
+                if (i < text.length) {
+                    quoteElement.innerHTML = text.substring(0, i + 1);
+                    i++;
+                    setTimeout(typeWriter, 50);
+                }
             }
-        }
 
-        setTimeout(typeWriter, 1000);
+            setTimeout(typeWriter, 1000);
+        };
+
+        // 如果配置已应用，立即开始；否则等待配置应用
+        if (window.configApplied) {
+            startEffect();
+        } else {
+            // 等待配置应用完成
+            const checkConfig = setInterval(() => {
+                if (window.configApplied) {
+                    clearInterval(checkConfig);
+                    startEffect();
+                }
+            }, 50);
+            // 最多等待3秒，防止无限等待
+            setTimeout(() => {
+                clearInterval(checkConfig);
+                if (!window.configApplied) {
+                    startEffect();
+                }
+            }, 3000);
+        }
     }
 }
 

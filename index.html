@@ -224,17 +224,15 @@
 <script>
 // 应用配置到页面
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('🚀 DOMContentLoaded 事件触发');
-    console.log('📦 CONFIG 状态:', typeof CONFIG !== 'undefined' ? 'loaded' : 'not loaded');
-
     // 先加载栏目配置
     await loadSectionsConfig();
 
     // 然后应用 CONFIG
     if (typeof CONFIG !== 'undefined') {
-        console.log('✅ 开始应用 CONFIG');
         applyConfig();
-        console.log('✅ CONFIG 应用完成');
+
+        // 标记配置已应用，防止 script.js 中的 typewriter 效果使用旧值
+        window.configApplied = true;
     } else {
         console.error('❌ CONFIG 未定义，请检查 config.js 文件');
     }
@@ -1032,19 +1030,12 @@ function applyConfig() {
         // 更新个人格言
         if (personal.quote) {
             const quoteElement = document.querySelector('.quote span:last-child');
-            console.log('📝 找到 quote 元素:', quoteElement);
-            console.log('📝 quote 值:', personal.quote);
             if (quoteElement) {
                 // 保持原有的高亮样式，只替换文本内容
                 const highlightBlue = '<span class="highlight-blue">or</span>';
                 const highlightPink = '<span class="highlight-pink">so</span>';
                 quoteElement.innerHTML = personal.quote.replace('or', highlightBlue).replace('so', highlightPink);
-                console.log('✅ quote 已更新为:', personal.quote);
-            } else {
-                console.error('❌ 未找到 .quote span:last-child 元素');
             }
-        } else {
-            console.warn('⚠️ personal.quote 未定义');
         }
 
         // 更新地理位置
@@ -1392,9 +1383,24 @@ function updateSocialLinks(social) {
 
         const link = document.createElement('a');
         // 优先使用自定义图标，否则使用默认映射
-        const iconClass = customIcon ?
-            (customIcon.startsWith('fa-') ? `fab ${customIcon}` : customIcon) :
-            (iconMap[platform] || 'fas fa-link');
+        let iconClass;
+        if (customIcon) {
+            // 如果自定义图标已经包含 fa- 前缀（如 fa-envelope, fa-github），
+            // 检查是否已经有 fas/fab/far 前缀
+            if (customIcon.includes(' ')) {
+                // 已经有完整的类名（如 "fas fa-envelope"）
+                iconClass = customIcon;
+            } else if (customIcon.startsWith('fa-')) {
+                // 只有图标名（如 "fa-envelope"），默认使用 fas
+                iconClass = `fas ${customIcon}`;
+            } else {
+                // 其他情况，直接使用
+                iconClass = customIcon;
+            }
+        } else {
+            // 使用默认映射
+            iconClass = iconMap[platform] || 'fas fa-link';
+        }
         link.innerHTML = `<i class="${iconClass}"></i>`;
 
         // 邮箱/微信 采用一键复制
