@@ -224,12 +224,19 @@
 <script>
 // 应用配置到页面
 document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🚀 DOMContentLoaded 事件触发');
+    console.log('📦 CONFIG 状态:', typeof CONFIG !== 'undefined' ? 'loaded' : 'not loaded');
+
     // 先加载栏目配置
     await loadSectionsConfig();
 
     // 然后应用 CONFIG
     if (typeof CONFIG !== 'undefined') {
+        console.log('✅ 开始应用 CONFIG');
         applyConfig();
+        console.log('✅ CONFIG 应用完成');
+    } else {
+        console.error('❌ CONFIG 未定义，请检查 config.js 文件');
     }
 });
 
@@ -1592,6 +1599,8 @@ function updateSkills(skills) {
 }
 
 function updateTexts(texts) {
+    console.log('🎨 开始更新文本:', texts);
+
     // 更新GitHub统计区域文本
     if (texts.githubStats) {
         const { githubStats } = texts;
@@ -1621,21 +1630,33 @@ function updateTexts(texts) {
     // 更新区域标题
     if (texts.sectionTitles) {
         const { sectionTitles } = texts;
+        console.log('📝 更新区域标题:', sectionTitles);
 
         const welcomeTitle = document.getElementById('welcome-title');
-        if (welcomeTitle) welcomeTitle.textContent = sectionTitles.welcome;
+        if (welcomeTitle) {
+            welcomeTitle.textContent = sectionTitles.welcome;
+            console.log('✅ welcome-title 已更新为:', sectionTitles.welcome);
+        }
 
         const visitorIPLabel = document.getElementById('visitor-ip-label');
         if (visitorIPLabel) visitorIPLabel.textContent = sectionTitles.visitorIP;
 
         const websitesTitle = document.getElementById('websites-title');
-        if (websitesTitle) websitesTitle.textContent = sectionTitles.websites;
+        if (websitesTitle) {
+            websitesTitle.textContent = sectionTitles.websites;
+            console.log('✅ websites-title 已更新为:', sectionTitles.websites);
+        }
 
         const projectsTitle = document.getElementById('projects-title');
-        if (projectsTitle) projectsTitle.textContent = sectionTitles.projects;
+        if (projectsTitle) {
+            projectsTitle.textContent = sectionTitles.projects;
+            console.log('✅ projects-title 已更新为:', sectionTitles.projects);
+        }
 
         const skillsTitle = document.getElementById('skills-title');
         if (skillsTitle) skillsTitle.textContent = sectionTitles.skills;
+    } else {
+        console.warn('⚠️ texts.sectionTitles 未定义');
     }
 
     // 更新页脚
