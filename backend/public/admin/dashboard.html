@@ -928,6 +928,44 @@
         <div id="tab-frontend" class="tab-pane">
             <div id="frontendAlert" class="alert"></div>
 
+            <!-- 日记配置卡片 -->
+            <div class="card" style="margin-bottom: 30px;">
+                <div class="card-header">
+                    <h2>📖 日记配置</h2>
+                    <button class="btn btn-primary" onclick="window.location.href='diary-config'">
+                        <i class="fas fa-cog"></i> 配置日记
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                        <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
+                            <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">状态</h3>
+                            <div id="diaryConfigStatus" style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                                <div class="loading">加载中...</div>
+                            </div>
+                        </div>
+                        <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
+                            <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">RSS 源</h3>
+                            <div id="diaryConfigRss" style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                                <div class="loading">加载中...</div>
+                            </div>
+                        </div>
+                        <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
+                            <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">缓存时间</h3>
+                            <div id="diaryConfigCache" style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                                <div class="loading">加载中...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; padding: 15px; background: rgba(0, 113, 227, 0.05); border-radius: 10px; border-left: 4px solid var(--accent);">
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">
+                            <i class="fas fa-info-circle" style="color: var(--accent); margin-right: 8px;"></i>
+                            通过 RSS 订阅源自动统计日记数据，支持连续天数、文章总数等统计。配置后前台将显示"日记"标签页。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-header">
                     <h2>🎨 前端配置 (config.js)</h2>
@@ -1558,6 +1596,55 @@
                 `;
             } catch (error) {
                 info.innerHTML = '<div style="color: #999; font-size: 13px;">加载失败</div>';
+            }
+        }
+
+        async function refreshDiaryStatus() {
+            const statusEl = document.getElementById('diaryConfigStatus');
+            const rssEl = document.getElementById('diaryConfigRss');
+            const cacheEl = document.getElementById('diaryConfigCache');
+
+            if (!statusEl || !rssEl || !cacheEl) return;
+
+            statusEl.innerHTML = '<div class="loading">加载中...</div>';
+            rssEl.innerHTML = '<div class="loading">加载中...</div>';
+            cacheEl.innerHTML = '<div class="loading">加载中...</div>';
+
+            try {
+                const response = await fetch('/api/diary/config');
+                const data = await response.json();
+
+                if (data.success && data.config) {
+                    const config = data.config;
+
+                    // 状态
+                    const enabled = config.enabled;
+                    const statusText = enabled ? '已启用' : '已禁用';
+                    const statusColor = enabled ? 'var(--success)' : 'var(--text-secondary)';
+                    const statusIcon = enabled ? '✓' : '✗';
+                    statusEl.innerHTML = `<span style="color: ${statusColor};">${statusIcon} ${statusText}</span>`;
+
+                    // RSS 源
+                    const rssUrl = config.config && config.config.rssUrl;
+                    if (rssUrl) {
+                        const domain = new URL(rssUrl).hostname;
+                        rssEl.innerHTML = `<span style="color: var(--success);">✓ ${domain}</span>`;
+                    } else {
+                        rssEl.innerHTML = `<span style="color: var(--warning);">未配置</span>`;
+                    }
+
+                    // 缓存时间
+                    const cacheTime = config.config && config.config.cacheTime || 30;
+                    cacheEl.innerHTML = `${cacheTime} 分钟`;
+                } else {
+                    statusEl.innerHTML = `<span style="color: var(--text-secondary);">未配置</span>`;
+                    rssEl.innerHTML = `<span style="color: var(--text-secondary);">--</span>`;
+                    cacheEl.innerHTML = `<span style="color: var(--text-secondary);">--</span>`;
+                }
+            } catch (error) {
+                statusEl.innerHTML = `<span style="color: var(--danger);">加载失败</span>`;
+                rssEl.innerHTML = `<span style="color: var(--danger);">--</span>`;
+                cacheEl.innerHTML = `<span style="color: var(--danger);">--</span>`;
             }
         }
 
@@ -3777,6 +3864,7 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
             refreshVisitStats();
             refreshTheme();
             refreshSystemInfo();
+            refreshDiaryStatus();
         });
     </script>
 </body>

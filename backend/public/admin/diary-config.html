@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日记配置 - 管理后台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --apple-blue: #007AFF;
+            --apple-blue-hover: #0051D5;
+            --apple-green: #34C759;
+            --apple-red: #FF3B30;
+            --apple-orange: #FF9500;
+
+            --bg-primary: #F5F5F7;
+            --bg-secondary: #FFFFFF;
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --input-bg: rgba(0, 0, 0, 0.03);
+            --input-border: rgba(0, 0, 0, 0.15);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+
+            --ease-out: cubic-bezier(0, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--apple-blue);
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 16px;
+            transition: var(--ease-out) 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--apple-blue-hover);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 14px;
+            letter-spacing: -0.08px;
+        }
+
+        .form-group .help-text {
+            display: block;
+            margin-top: 6px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 10px;
+            font-size: 15px;
+            color: var(--text-primary);
+            transition: all 0.2s var(--ease-out);
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            background: var(--bg-secondary);
+            border-color: var(--apple-blue);
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+        }
+
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toggle {
+            position: relative;
+            width: 51px;
+            height: 31px;
+            background: var(--input-bg);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: background 0.3s var(--ease-out);
+            border: 1px solid var(--input-border);
+        }
+
+        .toggle.active {
+            background: var(--apple-green);
+            border-color: var(--apple-green);
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 27px;
+            height: 27px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s var(--ease-out);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle.active::after {
+            transform: translateX(20px);
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s var(--ease-out);
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--apple-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--apple-blue-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--input-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--input-border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+        }
+
+        .btn-test {
+            background: var(--apple-orange);
+            color: white;
+            margin-left: 12px;
+        }
+
+        .btn-test:hover {
+            background: #cc7700;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 32px;
+        }
+
+        .status-message {
+            padding: 14px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: rgba(52, 199, 89, 0.1);
+            border: 1px solid rgba(52, 199, 89, 0.2);
+            color: var(--apple-green);
+        }
+
+        .status-message.error {
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid rgba(255, 59, 48, 0.2);
+            color: var(--apple-red);
+        }
+
+        .status-message.show {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .preview-section {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .preview-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px dashed var(--border-color);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .stat-number {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="dashboard" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            返回管理后台
+        </a>
+
+        <div class="header">
+            <h1>日记配置</h1>
+            <p>配置日记数据源和展示方式</p>
+        </div>
+
+        <div class="status-message" id="statusMessage"></div>
+
+        <div class="card">
+            <form id="diaryConfigForm">
+                <!-- 启用/禁用 -->
+                <div class="form-group">
+                    <label>启用日记栏目</label>
+                    <div class="toggle-group">
+                        <div class="toggle active" id="enabledToggle" onclick="toggleEnabled()"></div>
+                        <span id="enabledText">已启用</span>
+                    </div>
+                    <span class="help-text">关闭后，前台将不显示"日记"标签页</span>
+                </div>
+
+                <!-- 标题 -->
+                <div class="form-group">
+                    <label for="title">标签页标题</label>
+                    <input type="text" id="title" name="title" placeholder="日记" value="日记">
+                    <span class="help-text">前台显示的标签页按钮文字</span>
+                </div>
+
+                <!-- 图标 -->
+                <div class="form-group">
+                    <label for="icon">图标类名</label>
+                    <input type="text" id="icon" name="icon" placeholder="fas fa-book" value="fas fa-book">
+                    <span class="help-text">
+                        Font Awesome 图标类名，例如：fas fa-book, fas fa-rss, fas fa-pen
+                        <a href="https://fontawesome.com/icons" target="_blank" style="color: var(--apple-blue);">查看图标库</a>
+                    </span>
+                </div>
+
+                <!-- RSS 配置 -->
+                <div id="diaryConfig">
+                    <div class="form-group">
+                        <label for="rssUrl">RSS 订阅地址</label>
+                        <input type="url" id="rssUrl" name="rssUrl" placeholder="https://example.com/feed.xml">
+                        <span class="help-text">输入你的博客或日记的 RSS/Atom 订阅地址，后端将代理获取并解析</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cacheTime">缓存时间（分钟）</label>
+                        <input type="number" id="cacheTime" name="cacheTime" min="1" max="1440" value="30">
+                        <span class="help-text">RSS 数据缓存时间，避免频繁请求源站</span>
+                    </div>
+                </div>
+
+                <!-- 测试预览 -->
+                <div class="preview-section" style="display: none;" id="previewSection">
+                    <h3><i class="fas fa-eye"></i> 数据预览</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">连续天数</span>
+                            <span class="stat-number" id="previewConsecutive">--</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">记录天数</span>
+                            <span class="stat-number" id="previewTotalDays">--</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">文章总数</span>
+                            <span class="stat-number" id="previewTotalEntries">--</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">最新发布</span>
+                            <span class="stat-number" id="previewLatest">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="actions">
+                    <button type="button" class="btn btn-test" onclick="testRss()">
+                        <i class="fas fa-flask"></i> 测试 RSS
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                        <i class="fas fa-undo"></i> 重置
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 保存配置
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentConfig = {
+            enabled: true,
+            type: 'diary',
+            title: '日记',
+            icon: 'fas fa-book',
+            config: {
+                rssUrl: '',
+                cacheTime: 30
+            }
+        };
+
+        // 页面加载时获取配置
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadConfig();
+        });
+
+        // 加载配置
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/diary/config');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.config) {
+                        currentConfig = data.config;
+                        applyConfigToForm();
+                    }
+                }
+            } catch (error) {
+                console.error('加载配置失败:', error);
+            }
+        }
+
+        // 应用配置到表单
+        function applyConfigToForm() {
+            document.getElementById('enabledToggle').classList.toggle('active', currentConfig.enabled);
+            document.getElementById('enabledText').textContent = currentConfig.enabled ? '已启用' : '已禁用';
+            document.getElementById('title').value = currentConfig.title || '日记';
+            document.getElementById('icon').value = currentConfig.icon || 'fas fa-book';
+
+            // RSS 配置
+            if (currentConfig.config) {
+                document.getElementById('rssUrl').value = currentConfig.config.rssUrl || '';
+                document.getElementById('cacheTime').value = currentConfig.config.cacheTime || 30;
+            }
+        }
+
+        // 切换启用状态
+        function toggleEnabled() {
+            currentConfig.enabled = !currentConfig.enabled;
+            document.getElementById('enabledToggle').classList.toggle('active');
+            document.getElementById('enabledText').textContent = currentConfig.enabled ? '已启用' : '已禁用';
+        }
+
+        // 显示状态消息
+        function showMessage(message, type = 'success') {
+            const msgEl = document.getElementById('statusMessage');
+            msgEl.textContent = message;
+            msgEl.className = `status-message ${type} show`;
+
+            setTimeout(() => {
+                msgEl.classList.remove('show');
+            }, 5000);
+        }
+
+        // 测试 RSS
+        async function testRss() {
+            const rssUrl = document.getElementById('rssUrl').value.trim();
+
+            if (!rssUrl) {
+                showMessage('请先输入 RSS 订阅地址', 'error');
+                return;
+            }
+
+            const btn = event.target.closest('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 测试中...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/diary/rss-stats', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ rssUrl })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.data) {
+                    const stats = data.data;
+                    document.getElementById('previewConsecutive').textContent = stats.consecutive_days || 0;
+                    document.getElementById('previewTotalDays').textContent = stats.total_days_with_entries || 0;
+                    document.getElementById('previewTotalEntries').textContent = stats.total_entries || 0;
+                    document.getElementById('previewLatest').textContent = stats.latest_entry_date || '--';
+
+                    document.getElementById('previewSection').style.display = 'block';
+                    showMessage('RSS 测试成功！数据已加载', 'success');
+                } else {
+                    showMessage(data.message || 'RSS 测试失败', 'error');
+                }
+            } catch (error) {
+                console.error('测试 RSS 失败:', error);
+                showMessage('测试失败：' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // 重置表单
+        function resetForm() {
+            if (confirm('确定要重置为初始配置吗？')) {
+                applyConfigToForm();
+                document.getElementById('previewSection').style.display = 'none';
+                showMessage('已重置为当前保存的配置', 'success');
+            }
+        }
+
+        // 提交表单
+        document.getElementById('diaryConfigForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const config = {
+                enabled: currentConfig.enabled,
+                type: 'diary',  // 固定为日记类型
+                title: document.getElementById('title').value.trim(),
+                icon: document.getElementById('icon').value.trim(),
+                config: {
+                    rssUrl: document.getElementById('rssUrl').value.trim(),
+                    cacheTime: parseInt(document.getElementById('cacheTime').value) || 30
+                }
+            };
+
+            const btn = e.target.querySelector('[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/diary/config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(config)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentConfig = config;
+                    showMessage('配置保存成功！', 'success');
+                } else {
+                    showMessage(data.message || '保存失败', 'error');
+                }
+            } catch (error) {
+                console.error('保存配置失败:', error);
+                showMessage('保存失败：' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

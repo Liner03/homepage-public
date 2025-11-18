@@ -75,6 +75,34 @@ class DataStorage {
     data.theme = null;
     return this.saveData(data);
   }
+
+  // ==================== 通用键值存储 ====================
+
+  /**
+   * 获取指定 key 的数据
+   */
+  get(key) {
+    const data = this.loadData();
+    return data[key];
+  }
+
+  /**
+   * 设置指定 key 的数据
+   */
+  set(key, value) {
+    const data = this.loadData();
+    data[key] = value;
+    return this.saveData(data);
+  }
+
+  /**
+   * 删除指定 key 的数据
+   */
+  delete(key) {
+    const data = this.loadData();
+    delete data[key];
+    return this.saveData(data);
+  }
 }
 
 module.exports = DataStorage;
