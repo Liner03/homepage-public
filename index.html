@@ -54,40 +54,9 @@
         })();
     </script>
 
-    <!-- 防止调色盘页面刷新时闪现 -->
-    <style>
-        #circular-palette-panel {
-            opacity: 0 !important;
-            visibility: hidden !important;
-            pointer-events: none !important;
-        }
-    </style>
-</head>
+  </head>
 <body>
     <!-- 移除原有的主题切换按钮，改为JavaScript动态创建 -->
-
-    <!-- 圆形七彩调色盘面板 -->
-    <div class="circular-palette-panel" id="circular-palette-panel">
-        <div class="palette-header">
-            <h3>背景调色盘</h3>
-            <button class="palette-close" id="palette-close">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="palette-content">
-            <div class="circular-palette-container">
-                <canvas class="circular-palette" id="circular-palette" width="200" height="200"></canvas>
-                <div class="palette-center" id="palette-center">
-                    <div class="selected-color" id="selected-color"></div>
-                </div>
-            </div>
-            <div class="palette-controls">
-                <button class="reset-btn" id="reset-background" title="重置为默认">
-                    <i class="fas fa-undo"></i> 重置默认
-                </button>
-            </div>
-        </div>
-    </div>
 
     <div class="main-container">
         <!-- 左侧个人信息 -->
@@ -262,19 +231,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (typeof CONFIG !== 'undefined') {
         applyConfig();
     }
-
-    // 延迟初始化调色盘，确保其他脚本已加载
-    setTimeout(() => {
-        initCircularColorPalette();
-    }, 100);
 });
 
-// 圆形七彩调色盘功能
+// 调色盘功能已移除 - 该函数已禁用
 function initCircularColorPalette() {
-    console.log('初始化圆形七彩调色盘...');
-    
-    const themeToggle = document.getElementById('theme-toggle');
-    const palettePanel = document.getElementById('circular-palette-panel');
+    return; // 功能已移除
     const paletteClose = document.getElementById('palette-close');
     const canvas = document.getElementById('circular-palette');
     const selectedColorDiv = document.getElementById('selected-color');
@@ -1395,13 +1356,14 @@ function updateSocialLinks(social) {
 
     // 社交平台图标映射
     const iconMap = {
-        github: 'fas fa-github',
+        github: 'fab fa-github',
         email: 'fas fa-envelope',
-        wechat: 'fas fa-qrcode',
-        telegram: 'fas fa-paper-plane',
+        wechat: 'fab fa-weixin',
+        telegram: 'fab fa-telegram',
         twitter: 'fab fa-twitter',
         linkedin: 'fab fa-linkedin',
-        blog: 'fas fa-blog'
+        blog: 'fas fa-blog',
+        google: 'fab fa-google'
     };
 
     // 添加配置的社交链接
@@ -1468,14 +1430,6 @@ function updateSocialLinks(social) {
             setTimeout(() => item.remove(), 300);
         }, 1500);
     }
-
-    // 保留原有的特殊链接（夏日空调）
-    const specialLink = document.createElement('a');
-    specialLink.href = '#';
-    specialLink.onclick = () => showIframe();
-    specialLink.title = '夏日空调';
-    specialLink.innerHTML = '<i class="fas fa-circle"></i>';
-    socialContainer.appendChild(specialLink);
 
     console.log('社交链接更新完成，共添加了', socialContainer.children.length, '个链接');
 }
