@@ -15,6 +15,8 @@ CUSTOM_SECTION_README.md
 node_modules/
 package-lock.json
 static/tailwind.css
+static/fontawesome.css
+static/webfonts/
 
 # Backend dependencies and data
 backend/node_modules/

@@ -4,13 +4,20 @@
   "description": "Frontend build tools for personal homepage",
   "scripts": {
     "build:css": "tailwindcss -i ./src/input.css -o ./static/tailwind.css --minify",
+    "build:fontawesome": "cp -r node_modules/@fortawesome/fontawesome-free/css/all.min.css static/fontawesome.css && cp -r node_modules/@fortawesome/fontawesome-free/webfonts static/",
+    "build": "npm run build:fontawesome && npm run build:css",
     "watch:css": "tailwindcss -i ./src/input.css -o ./static/tailwind.css --watch",
-    "dev": "npm run watch:css"
+    "dev": "npm run watch:css",
+    "postinstall": "npm run build"
   },
-  "keywords": ["homepage", "tailwindcss"],
+  "keywords": [
+    "homepage",
+    "tailwindcss"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@fortawesome/fontawesome-free": "^7.1.0",
     "@tailwindcss/cli": "^4.0.0-beta.9"
   }
 }

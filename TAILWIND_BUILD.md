@@ -1,6 +1,12 @@
-# Tailwind CSS 4 构建说明
+# 前端构建说明
 
-本项目使用 **Tailwind CSS v4** 构建工具，采用现代化的 CSS 优先配置方式。
+本项目使用 **npm** 统一管理前端依赖，包括 **Tailwind CSS v4** 和 **Font Awesome**，无需依赖外部 CDN。
+
+## 📦 依赖管理
+
+本项目通过 npm 管理以下前端资源：
+- **Tailwind CSS v4** - 现代化 CSS 框架
+- **Font Awesome** - 完整图标库
 
 ## 🆕 Tailwind CSS 4 新特性
 
@@ -19,11 +25,23 @@ npm install
 
 ## 🔨 构建命令
 
-### 生产环境构建（压缩）
+### 完整构建（推荐）
+```bash
+npm run build
+```
+构建所有资源（Tailwind CSS + Font Awesome）
+
+### 单独构建 Tailwind CSS
 ```bash
 npm run build:css
 ```
 生成压缩的 CSS 文件到 `static/tailwind.css`
+
+### 单独构建 Font Awesome
+```bash
+npm run build:fontawesome
+```
+复制 Font Awesome CSS 和字体文件到 `static/`
 
 ### 开发环境监听（自动重新构建）
 ```bash
@@ -31,7 +49,7 @@ npm run watch:css
 # 或
 npm run dev
 ```
-监听文件变化，自动重新构建 CSS
+监听文件变化，自动重新构建 Tailwind CSS
 
 ## 📁 项目结构
 
@@ -41,6 +59,8 @@ homepage-public/
 │   └── input.css          # Tailwind 4 源文件（使用 @import 和 @theme）
 ├── static/
 │   ├── tailwind.css       # 构建生成的文件（已忽略）
+│   ├── fontawesome.css    # Font Awesome CSS（已忽略）
+│   ├── webfonts/          # Font Awesome 字体文件（已忽略）
 │   └── style.css          # 自定义样式
 ├── package.json           # 前端依赖和构建脚本
 └── index.html             # 引用构建后的 CSS
@@ -75,20 +95,50 @@ Tailwind 4 自动支持 `dark:` 前缀，使用系统偏好设置。
 在 `index.html` 中：
 1. **Tailwind CSS** (`./static/tailwind.css`) - 基础样式
 2. **自定义样式** (`./static/style.css`) - 覆盖和扩展
+3. **Font Awesome** (`./static/fontawesome.css`) - 图标库
+
+## 🎯 Font Awesome 使用
+
+### 安装和构建
+Font Awesome 通过 npm 包 `@fortawesome/fontawesome-free` 管理：
+
+```bash
+# 安装（已包含在 package.json 中）
+npm install
+
+# 构建会自动复制 Font Awesome 文件
+npm run build
+```
+
+### 使用图标
+在 HTML 中直接使用 Font Awesome 图标：
+
+```html
+<i class="fas fa-heart"></i>
+<i class="fab fa-github"></i>
+<i class="far fa-star"></i>
+```
+
+### 图标类型
+- `fas` - Solid 实心图标
+- `far` - Regular 常规图标
+- `fab` - Brands 品牌图标
 
 ## 🚀 部署流程
 
-1. 修改代码后运行构建：
+1. 修改代码后运行完整构建：
    ```bash
-   npm run build:css
+   npm run build
    ```
 
-2. 提交代码（不包括 `static/tailwind.css`，它在 .gitignore 中）
+2. 提交代码（不包括生成的文件，它们在 .gitignore 中）：
+   - `static/tailwind.css`
+   - `static/fontawesome.css`
+   - `static/webfonts/`
 
 3. 服务器部署时自动运行构建：
    ```bash
-   npm install
-   npm run build:css
+   npm install  # postinstall 钩子会自动运行 npm run build
    ```
 
 ## 💡 Tailwind 4 vs 3 差异
@@ -121,6 +171,9 @@ Tailwind 4 自动支持 `dark:` 前缀，使用系统偏好设置。
 - ✅ 使用 Tailwind 类名快速开发 UI
 - ✅ 在 `@theme` 中定义项目级别的主题变量
 - ✅ 自定义样式放在 `static/style.css`
-- ✅ 修改 HTML 后记得重新构建 CSS
-- ❌ 不要手动编辑 `static/tailwind.css`（会被覆盖）
+- ✅ 使用 npm 管理所有前端依赖，避免 CDN
+- ✅ 修改 HTML 后记得重新构建：`npm run build`
+- ✅ `npm install` 会自动触发构建（postinstall 钩子）
+- ❌ 不要手动编辑生成的文件（会被覆盖）
 - ❌ 不要创建 `tailwind.config.js`（v4 不需要）
+- ❌ 不要使用 CDN 引用（已改为本地构建）
