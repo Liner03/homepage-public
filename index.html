@@ -130,8 +130,8 @@
                 <!-- 标签将由配置文件动态生成 -->
             </section>
 
-            <!-- 技能展示 -->
-            <section class="skills-section">
+            <!-- IP 统计展示 -->
+            <section class="skills-section ip-stats-section">
                 <h2><i class="fas fa-heart"></i> <span id="welcome-title">加载中...</span></h2>
                 <div class="stat-item">
                     <span class="stat-label" id="visitor-ip-label">加载中...</span>
@@ -1174,12 +1174,12 @@ function renderDynamicSections() {
 
         // 处理内置栏目的位置调整
         if (['websites', 'projects', 'skills'].includes(section.id)) {
-            const sectionElement = document.querySelector(`.${section.id === 'websites' ? 'sites' : section.id}-section`);
+            const sectionElement = document.querySelector(`.${section.id === 'websites' ? 'sites' : section.id}-section:not(.ip-stats-section)`);
             if (sectionElement && section.position === 'ip-below') {
                 // 将内置栏目移动到左侧边栏
-                const timeline = sidebar.querySelector('.timeline-section');
-                if (timeline) {
-                    timeline.after(sectionElement);
+                const ipStatsSection = sidebar.querySelector('.ip-stats-section');
+                if (ipStatsSection) {
+                    ipStatsSection.after(sectionElement);
                     console.log(`✅ 已将内置栏目 "${section.title}" 移动到IP信息下方`);
                 }
             }
@@ -1198,10 +1198,10 @@ function renderDynamicSections() {
 
         // 根据position插入到不同位置
         if (section.position === 'ip-below') {
-            // 插入到左侧边栏时间线之后
-            const timeline = sidebar.querySelector('.timeline-section');
-            if (timeline) {
-                timeline.after(sectionElement);
+            // 插入到左侧边栏 IP 统计之后
+            const ipStatsSection = sidebar.querySelector('.ip-stats-section');
+            if (ipStatsSection) {
+                ipStatsSection.after(sectionElement);
                 console.log(`✅ 已将栏目 "${section.title}" 插入到IP信息下方`);
             }
         } else {
@@ -1581,7 +1581,7 @@ function updateProjects(projects) {
 }
 
 function updateSkills(skills) {
-    const skillsSection = document.querySelector('.skills-section:last-of-type'); // 最后一个 skills-section
+    const skillsSection = document.querySelector('.skills-section:not(.ip-stats-section)'); // 排除 IP 统计的 section
     const skillsContainer = document.querySelector('.skills-icons');
     if (!skillsContainer) return;
 
