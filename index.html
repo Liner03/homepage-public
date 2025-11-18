@@ -1292,45 +1292,41 @@ function createSectionElement(section, data) {
 
         sectionElement.appendChild(iconWall);
     } else if (section.defaultTemplate === 'timeline') {
-        // 时间线布局 - 真正的 Apple 风格时间线
+        // 时间线布局 - 卡片式设计
         const timelineContainer = document.createElement('div');
-        timelineContainer.className = 'relative space-y-0';
+        timelineContainer.className = 'timeline-container relative pl-7';
 
         data.forEach((item, index) => {
             if (item.hidden) return;
 
-            const timelineItem = document.createElement('div');
-            timelineItem.className = 'relative flex items-start group';
+            const timelineItem = document.createElement('article');
+            timelineItem.className = 'timeline-item relative mb-5 last:mb-0';
 
             timelineItem.innerHTML = `
-                <!-- 左侧：时间（固定宽度，右对齐）-->
-                <div class="w-20 flex-shrink-0 text-right pr-6">
+                <!-- 时间线卡片 -->
+                <div class="ml-4 rounded-2xl border border-gray-200/80 dark:border-gray-800
+                            bg-white/90 dark:bg-gray-900/90
+                            shadow-[0_10px_30px_rgba(15,23,42,0.04)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.2)]
+                            px-4 py-3.5
+                            transition-all duration-300 ease-out
+                            hover:shadow-[0_20px_50px_rgba(15,23,42,0.08)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.4)]
+                            hover:border-blue-300/60 dark:hover:border-blue-700/60
+                            hover:-translate-y-0.5
+                            cursor-default">
+
                     ${item.date || item.description ? `
-                        <span class="text-xs font-medium text-gray-500 dark:text-gray-500 tabular-nums tracking-tight">${item.date || item.description}</span>
-                    ` : '<span class="text-xs text-gray-400">—</span>'}
-                </div>
-
-                <!-- 中间：时间轴 -->
-                <div class="relative flex flex-col items-center flex-shrink-0">
-                    <!-- 上方连接线 -->
-                    ${index !== 0 ? `
-                        <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 -mb-px"></div>
-                    ` : '<div class="h-6"></div>'}
-
-                    <!-- 节点圆点 -->
-                    <div class="w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400 ring-4 ring-white dark:ring-gray-900 transition-all duration-300 group-hover:w-2.5 group-hover:h-2.5 group-hover:ring-blue-100 dark:group-hover:ring-blue-900/50 z-10"></div>
-
-                    <!-- 下方连接线 -->
-                    ${index < data.filter(d => !d.hidden).length - 1 ? `
-                        <div class="w-px flex-1 bg-gray-300 dark:bg-gray-700 -mt-px"></div>
+                    <!-- 顶部：日期/时间 -->
+                    <header class="flex items-baseline justify-between gap-4 mb-1.5">
+                        <time class="text-xs font-medium text-gray-600 dark:text-gray-400 tabular-nums">
+                            ${item.date || item.description}
+                        </time>
+                    </header>
                     ` : ''}
-                </div>
 
-                <!-- 右侧：内容 -->
-                <div class="flex-1 pl-6 pb-6">
-                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100 leading-relaxed transition-colors duration-200 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                    <!-- 主要内容 -->
+                    <p class="text-sm leading-relaxed text-gray-900 dark:text-gray-100 transition-colors duration-200">
                         ${item.title}
-                    </div>
+                    </p>
                 </div>
             `;
 

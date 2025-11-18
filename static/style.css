@@ -882,6 +882,30 @@ body::before {
     color: var(--accent-blue);
 }
 
+/* 时间线容器 - 卡片式设计 */
+.timeline-container {
+    position: relative;
+}
+
+/* 左侧竖线（非常轻的线条）*/
+.timeline-container::before {
+    content: "";
+    position: absolute;
+    left: 0.75rem; /* 12px */
+    top: 0.25rem;  /* 4px */
+    bottom: 0.25rem; /* 4px */
+    width: 1px;
+    background: rgba(209, 213, 219, 0.4); /* gray-300 with opacity */
+    transition: background 0.3s ease;
+}
+
+/* 深色模式下的竖线 */
+@media (prefers-color-scheme: dark) {
+    .timeline-container::before {
+        background: rgba(107, 114, 128, 0.5); /* gray-500 with opacity */
+    }
+}
+
 /* 右侧内容区域 */
 .content-area {
     display: flex;
