@@ -11,6 +11,6 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "tailwindcss": "^3.4.0"
+    "@tailwindcss/cli": "^4.0.0-beta.9"
   }
 }

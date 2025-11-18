@@ -1,6 +1,13 @@
-# Tailwind CSS 构建说明
+# Tailwind CSS 4 构建说明
 
-本项目使用 Tailwind CSS 构建工具，而不是 CDN。
+本项目使用 **Tailwind CSS v4** 构建工具，采用现代化的 CSS 优先配置方式。
+
+## 🆕 Tailwind CSS 4 新特性
+
+- ✅ **CSS 优先配置**：使用 `@import` 和 `@theme` 指令
+- ✅ **无需 config.js**：所有配置都在 CSS 中完成
+- ✅ **更快的构建速度**：优化的编译引擎
+- ✅ **原生 CSS 变量**：完全基于自定义属性
 
 ## 📦 初始设置
 
@@ -31,28 +38,37 @@ npm run dev
 ```
 homepage-public/
 ├── src/
-│   └── input.css          # Tailwind 源文件（包含 @tailwind 指令）
+│   └── input.css          # Tailwind 4 源文件（使用 @import 和 @theme）
 ├── static/
 │   ├── tailwind.css       # 构建生成的文件（已忽略）
 │   └── style.css          # 自定义样式
-├── tailwind.config.js     # Tailwind 配置文件
 ├── package.json           # 前端依赖和构建脚本
 └── index.html             # 引用构建后的 CSS
 ```
 
-## ⚙️ Tailwind 配置
+## ⚙️ Tailwind 4 配置（CSS 优先）
 
-### 扫描路径（tailwind.config.js）
-```javascript
-content: [
-  "./index.html",
-  "./modules/**/*.{html,js}",
-  "./static/**/*.js"
-]
+在 `src/input.css` 中配置：
+
+```css
+/* 导入 Tailwind CSS 4 */
+@import "tailwindcss";
+
+/* 使用 @theme 指令配置主题 */
+@theme {
+  /* 自定义颜色 */
+  --color-primary: #3b82f6;
+
+  /* 自定义字体 */
+  --font-family-sans: system-ui, sans-serif;
+
+  /* 自定义间距 */
+  --spacing-custom: 2.5rem;
+}
 ```
 
 ### 深色模式
-使用系统深色模式：`darkMode: 'media'`
+Tailwind 4 自动支持 `dark:` 前缀，使用系统偏好设置。
 
 ## 🎨 样式加载顺序
 
@@ -75,9 +91,36 @@ content: [
    npm run build:css
    ```
 
-## 💡 提示
+## 💡 Tailwind 4 vs 3 差异
 
-- ✅ 使用 Tailwind 类名来快速开发 UI
+| 特性 | v3 | v4 |
+|------|----|----|
+| 配置方式 | tailwind.config.js | CSS 中的 @theme |
+| 导入方式 | @tailwind 指令 | @import "tailwindcss" |
+| 深色模式 | darkMode: 'class' | 内置支持 |
+| 自定义主题 | theme.extend {} | @theme { --var: value } |
+
+## 🔄 从 v3 迁移到 v4
+
+1. 删除 `tailwind.config.js`
+2. 更新 `src/input.css`：
+   ```css
+   /* 旧：Tailwind v3 */
+   @tailwind base;
+   @tailwind components;
+   @tailwind utilities;
+
+   /* 新：Tailwind v4 */
+   @import "tailwindcss";
+   @theme { /* 配置 */ }
+   ```
+3. 运行 `npm install` 和 `npm run build:css`
+
+## 💡 最佳实践
+
+- ✅ 使用 Tailwind 类名快速开发 UI
+- ✅ 在 `@theme` 中定义项目级别的主题变量
 - ✅ 自定义样式放在 `static/style.css`
 - ✅ 修改 HTML 后记得重新构建 CSS
 - ❌ 不要手动编辑 `static/tailwind.css`（会被覆盖）
+- ❌ 不要创建 `tailwind.config.js`（v4 不需要）
