@@ -1,0 +1,16 @@
+{
+  "name": "homepage-frontend",
+  "version": "1.0.0",
+  "description": "Frontend build tools for personal homepage",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/input.css -o ./static/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./src/input.css -o ./static/tailwind.css --watch",
+    "dev": "npm run watch:css"
+  },
+  "keywords": ["homepage", "tailwindcss"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}

@@ -11,6 +11,11 @@ Thumbs.db
 /config.js
 CUSTOM_SECTION_README.md
 
+# Frontend dependencies and build files
+node_modules/
+package-lock.json
+static/tailwind.css
+
 # Backend dependencies and data
 backend/node_modules/
 backend/data/*.json

@@ -1,0 +1,7 @@
+/* Tailwind CSS 基础样式 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 这里可以添加自定义样式 */
+/* 注意：保留现有的 style.css 中的自定义样式 */
