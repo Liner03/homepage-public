@@ -3851,12 +3851,18 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
         function showIconPicker(targetInputId) {
             const modal = document.getElementById('iconPickerModal');
             const grid = document.getElementById('iconPickerGrid');
+            const countElement = document.getElementById('iconCount');
 
             // 清空网格
             grid.innerHTML = '';
 
             // 获取所有可用的图标
             const icons = Object.keys(HeroIcons);
+
+            // 更新图标数量
+            if (countElement) {
+                countElement.textContent = icons.length;
+            }
 
             // 创建图标网格
             icons.forEach(iconName => {
@@ -3898,13 +3904,22 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
     <!-- 图标选择器 Modal -->
     <div id="iconPickerModal" class="modal" style="display: none;" onclick="if(event.target === this) closeIconPicker()">
-        <div class="modal-content" style="max-width: 900px; max-height: 80vh; overflow-y: auto;">
+        <div class="modal-content">
             <div class="modal-header">
-                <h3 style="margin: 0;">选择图标</h3>
-                <button onclick="closeIconPicker()" class="icon-btn" style="font-size: 20px;">×</button>
+                <h3>选择图标</h3>
+                <button onclick="closeIconPicker()" class="icon-btn" style="font-size: 24px; background: none; border: none; cursor: pointer; color: #6b7280;">×</button>
             </div>
             <div class="modal-body">
-                <p style="color: #666; margin-bottom: 20px;">点击图标即可选择。共 ${Object.keys(HeroIcons || {}).length} 个图标可用。</p>
+                <div class="icon-usage-guide">
+                    <h4>💡 如何使用 Heroicons</h4>
+                    <ol>
+                        <li><strong>从下方选择：</strong>点击任意图标即可自动填入图标名称</li>
+                        <li><strong>或访问官网：</strong>打开 <a href="https://heroicons.com" target="_blank" style="color: #007aff;">heroicons.com</a>，浏览所有图标</li>
+                        <li><strong>复制名称：</strong>点击官网的图标，复制 SVG 名称（如 <code>envelope</code>、<code>user</code>）</li>
+                        <li><strong>粘贴使用：</strong>直接输入名称即可，无需 <code>fa-</code> 前缀</li>
+                    </ol>
+                </div>
+                <p style="margin-bottom: 20px;">共 <strong><span id="iconCount">45+</span></strong> 个图标可用。点击图标即可选择。</p>
                 <div id="iconPickerGrid" class="icon-picker-grid"></div>
             </div>
         </div>
@@ -3922,13 +3937,18 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
             align-items: center;
             justify-content: center;
             z-index: 10000;
+            backdrop-filter: blur(4px);
         }
 
         .modal-content {
-            background: var(--bg);
+            background: #ffffff;
             border-radius: 12px;
             padding: 0;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            opacity: 1 !important;
+            max-width: 900px;
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .modal-header {
@@ -3936,11 +3956,22 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
             justify-content: space-between;
             align-items: center;
             padding: 20px 24px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid #e5e7eb;
+            background: #ffffff;
+        }
+
+        .modal-header h3 {
+            color: #111827;
+            margin: 0;
         }
 
         .modal-body {
             padding: 24px;
+            background: #ffffff;
+        }
+
+        .modal-body p {
+            color: #6b7280;
         }
 
         .icon-picker-grid {
@@ -3954,22 +3985,24 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
             flex-direction: column;
             align-items: center;
             padding: 16px;
-            border: 1px solid var(--border);
+            border: 1px solid #e5e7eb;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
+            background: #ffffff;
         }
 
         .icon-picker-item:hover {
-            background: var(--accent-bg);
-            border-color: var(--accent);
+            background: #f3f4f6;
+            border-color: #007aff;
             transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .icon-preview {
             width: 32px;
             height: 32px;
-            color: var(--text);
+            color: #111827;
             margin-bottom: 8px;
         }
 
@@ -3980,10 +4013,41 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 
         .icon-name {
             font-size: 11px;
-            color: var(--text-secondary);
+            color: #6b7280;
             text-align: center;
             word-break: break-all;
             font-family: 'Monaco', 'Courier New', monospace;
+        }
+
+        .icon-usage-guide {
+            background: #f3f4f6;
+            border-left: 3px solid #007aff;
+            padding: 16px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .icon-usage-guide h4 {
+            color: #111827;
+            margin: 0 0 12px 0;
+            font-size: 14px;
+        }
+
+        .icon-usage-guide ol {
+            margin: 0;
+            padding-left: 20px;
+            color: #374151;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .icon-usage-guide code {
+            background: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            color: #dc2626;
         }
 
         .icon-inline {
