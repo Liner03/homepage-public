@@ -139,10 +139,6 @@
                 </div>
             </section>
             <br>
-            <!-- 时间线 -->
-            <section class="timeline-section">
-                <!-- 时间线将由配置文件动态生成 -->
-            </section>
         </aside>
 
         <!-- 右侧内容区域 -->
@@ -1126,11 +1122,6 @@ function applyConfig() {
         updateTags(tags);
     }
 
-    // 更新时间线
-    if (timeline) {
-        updateTimeline(timeline);
-    }
-
     // 更新站点展示
     if (websites) {
         updateWebsites(websites);
@@ -1234,8 +1225,9 @@ function createSectionElement(section, data) {
 
     // 根据模板类型渲染内容
     if (section.defaultTemplate === 'card-grid') {
+        // 卡片网格布局
         const grid = document.createElement('div');
-        grid.className = 'sites-grid'; // 复用sites-grid样式
+        grid.className = 'sites-grid';
 
         data.forEach(item => {
             if (item.hidden) return;
@@ -1265,8 +1257,96 @@ function createSectionElement(section, data) {
         });
 
         sectionElement.appendChild(grid);
+    } else if (section.defaultTemplate === 'icon-wall') {
+        // 图标墙布局（类似标签云）
+        const iconWall = document.createElement('div');
+        iconWall.className = 'tags-section'; // 复用标签样式
+
+        data.forEach(item => {
+            if (item.hidden) return;
+
+            if (item.url) {
+                // 带链接的图标
+                const link = document.createElement('a');
+                link.href = item.url;
+                link.target = '_blank';
+                link.className = 'tag';
+                link.innerHTML = `
+                    ${item.icon && item.icon.startsWith('fa-') ? `<i class="fas ${item.icon}"></i> ` : ''}
+                    ${item.title}
+                `;
+                iconWall.appendChild(link);
+            } else {
+                // 纯展示的图标
+                const tag = document.createElement('span');
+                tag.className = 'tag';
+                tag.innerHTML = `
+                    ${item.icon && item.icon.startsWith('fa-') ? `<i class="fas ${item.icon}"></i> ` : ''}
+                    ${item.title}
+                `;
+                iconWall.appendChild(tag);
+            }
+        });
+
+        sectionElement.appendChild(iconWall);
+    } else if (section.defaultTemplate === 'timeline') {
+        // 时间线布局
+        const timelineContainer = document.createElement('div');
+        timelineContainer.className = 'timeline-section';
+
+        data.forEach(item => {
+            if (item.hidden) return;
+
+            const timelineItem = document.createElement('div');
+            timelineItem.className = 'timeline-item';
+
+            timelineItem.innerHTML = `
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="timeline-title">${item.title}</div>
+                    ${item.date || item.description ? `<div class="timeline-date">${item.date || item.description}</div>` : ''}
+                </div>
+            `;
+
+            timelineContainer.appendChild(timelineItem);
+        });
+
+        sectionElement.appendChild(timelineContainer);
+    } else if (section.defaultTemplate === 'list') {
+        // 列表布局
+        const list = document.createElement('div');
+        list.className = 'section-list';
+
+        data.forEach(item => {
+            if (item.hidden) return;
+
+            const itemElement = document.createElement('div');
+            itemElement.className = 'list-item';
+
+            if (item.url) {
+                // 带链接的列表项
+                const link = document.createElement('a');
+                link.href = item.url;
+                link.target = '_blank';
+                link.innerHTML = `
+                    <h3>${item.title}</h3>
+                    ${item.description ? `<p>${item.description}</p>` : ''}
+                `;
+                itemElement.appendChild(link);
+            } else {
+                // 纯展示的列表项
+                itemElement.innerHTML = `
+                    <h3>${item.title}</h3>
+                    ${item.description ? `<p>${item.description}</p>` : ''}
+                `;
+            }
+
+            list.appendChild(itemElement);
+        });
+
+        sectionElement.appendChild(list);
     } else {
-        // 其他模板类型的处理
+        // 默认使用列表布局
         const list = document.createElement('div');
         list.className = 'section-list';
 
@@ -1401,43 +1481,6 @@ function updateTags(tags) {
         tagElement.className = 'tag';
         tagElement.textContent = tag;
         tagsContainer.appendChild(tagElement);
-    });
-}
-
-function updateTimeline(timeline) {
-    const timelineContainer = document.querySelector('.timeline-section');
-    if (!timelineContainer) return;
-
-    // 检查栏目是否隐藏
-    if (isSectionHidden('timeline')) {
-        timelineContainer.style.display = 'none';
-        console.log('✅ 栏目 "时间线" 已隐藏');
-        return;
-    }
-
-    // 显示栏目
-    timelineContainer.style.display = 'block';
-
-    // 清空现有时间线
-    timelineContainer.innerHTML = '';
-
-    // 过滤掉隐藏的事件
-    const visibleTimeline = timeline.filter(event => !event.hidden);
-
-    // 添加配置的时间线事件
-    visibleTimeline.forEach(event => {
-        const timelineItem = document.createElement('div');
-        timelineItem.className = 'timeline-item';
-
-        timelineItem.innerHTML = `
-            <div class="timeline-dot"></div>
-            <div class="timeline-content">
-                <div class="timeline-title">${event.title}</div>
-                <div class="timeline-date">${event.date}</div>
-            </div>
-        `;
-
-        timelineContainer.appendChild(timelineItem);
     });
 }
 
