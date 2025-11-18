@@ -1154,6 +1154,135 @@ function applyConfig() {
     if (texts) {
         updateTexts(texts);
     }
+
+    // 渲染动态栏目
+    renderDynamicSections();
+}
+
+// 渲染动态栏目（根据position字段插入到不同位置）
+function renderDynamicSections() {
+    if (!sectionsConfig || sectionsConfig.length === 0) {
+        console.log('没有动态栏目配置');
+        return;
+    }
+
+    console.log('开始渲染动态栏目:', sectionsConfig);
+
+    // 获取插入位置
+    const contentArea = document.querySelector('.content-area');
+    const sidebar = document.querySelector('.sidebar');
+
+    if (!contentArea || !sidebar) {
+        console.error('找不到插入位置');
+        return;
+    }
+
+    // 遍历所有栏目配置
+    sectionsConfig.forEach(section => {
+        // 跳过隐藏的栏目
+        if (section.hidden) {
+            console.log(`跳过隐藏栏目: ${section.title}`);
+            return;
+        }
+
+        // 跳过已有的内置栏目（websites, projects, skills）
+        if (['websites', 'projects', 'skills'].includes(section.id)) {
+            console.log(`跳过内置栏目: ${section.title}`);
+            return;
+        }
+
+        // 获取栏目数据
+        const sectionData = CONFIG[section.field] || [];
+        if (sectionData.length === 0) {
+            console.log(`栏目 ${section.title} 无数据`);
+            return;
+        }
+
+        // 创建栏目HTML
+        const sectionElement = createSectionElement(section, sectionData);
+
+        // 根据position插入到不同位置
+        if (section.position === 'ip-below') {
+            // 插入到左侧边栏时间线之后
+            const timeline = sidebar.querySelector('.timeline-section');
+            if (timeline) {
+                timeline.after(sectionElement);
+                console.log(`✅ 已将栏目 "${section.title}" 插入到IP信息下方`);
+            }
+        } else {
+            // 默认插入到右侧内容区域底部
+            contentArea.appendChild(sectionElement);
+            console.log(`✅ 已将栏目 "${section.title}" 插入到内容下方`);
+        }
+    });
+}
+
+// 创建栏目元素
+function createSectionElement(section, data) {
+    const sectionElement = document.createElement('section');
+    sectionElement.className = `dynamic-section ${section.id}-section`;
+    sectionElement.id = `section-${section.id}`;
+
+    // 创建标题
+    const title = document.createElement('h2');
+    title.innerHTML = `<i class="fas ${section.icon}"></i> ${section.title}`;
+    sectionElement.appendChild(title);
+
+    // 根据模板类型渲染内容
+    if (section.defaultTemplate === 'card-grid') {
+        const grid = document.createElement('div');
+        grid.className = 'sites-grid'; // 复用sites-grid样式
+
+        data.forEach(item => {
+            if (item.hidden) return;
+
+            const link = document.createElement('a');
+            link.href = item.url || '#';
+            link.target = '_blank';
+            link.className = 'site-link btn-effect';
+
+            link.innerHTML = `
+                <div class="site-card">
+                    <div class="site-icon">
+                        ${item.icon ?
+                            (item.icon.startsWith('fa-') ?
+                                `<i class="fas ${item.icon}"></i>` :
+                                `<img src="${item.icon}" alt="${item.title}">`)
+                            : '<i class="fas fa-link"></i>'}
+                    </div>
+                    <div class="site-info">
+                        <h3>${item.title}</h3>
+                        ${item.description ? `<p>${item.description}</p>` : ''}
+                    </div>
+                </div>
+            `;
+
+            grid.appendChild(link);
+        });
+
+        sectionElement.appendChild(grid);
+    } else {
+        // 其他模板类型的处理
+        const list = document.createElement('div');
+        list.className = 'section-list';
+
+        data.forEach(item => {
+            if (item.hidden) return;
+
+            const itemElement = document.createElement('div');
+            itemElement.className = 'list-item';
+            itemElement.innerHTML = `
+                <h3>${item.title}</h3>
+                ${item.description ? `<p>${item.description}</p>` : ''}
+            `;
+
+            list.appendChild(itemElement);
+        });
+
+        sectionElement.appendChild(list);
+    }
+
+    return sectionElement;
 }
 
 function updateSocialLinks(social) {
@@ -1339,7 +1468,11 @@ function updateWebsites(websites) {
         siteLink.innerHTML = `
             <div class="site-card">
                 <div class="site-icon">
-                    <i class="fas fa-globe"></i>
+                    ${site.icon ?
+                        (site.icon.startsWith('fa-') ?
+                            `<i class="fas ${site.icon}"></i>` :
+                            `<img src="${site.icon}" alt="${site.title}">`)
+                        : '<i class="fas fa-globe"></i>'}
                 </div>
                 <div class="site-info">
                     <h3>${site.title}</h3>
@@ -1383,7 +1516,11 @@ function updateProjects(projects) {
         projectLink.innerHTML = `
             <div class="project-card">
                 <div class="project-icon">
-                    ${project.image ? `<img src="${project.image}" alt="${project.title}">` : '<i class="fas fa-code"></i>'}
+                    ${project.icon || project.image ?
+                        (project.icon && project.icon.startsWith('fa-') ?
+                            `<i class="fas ${project.icon}"></i>` :
+                            `<img src="${project.icon || project.image}" alt="${project.title}">`)
+                        : '<i class="fas fa-code"></i>'}
                 </div>
                 <div class="project-info">
                     <h3>${project.title}</h3>
