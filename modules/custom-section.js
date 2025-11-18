@@ -147,22 +147,19 @@ async function initDiaryStats() {
             consecutive_days: consecutive,
             total_days_with_entries: totalDays,
             total_entries: totalEntries,
-            latest_entry_date: latestDate,
-            current_streak_start: streakStart
+            latest_entry_date: latestDate
         } = data;
 
         setText('diary-consecutive', consecutive ?? '--');
         setText('diary-total-days', totalDays ?? '--');
         setText('diary-total-entries', totalEntries ?? '--');
         setText('diary-latest', latestDate ? formatDate(latestDate) : '--');
-        setText('diary-streak-start', streakStart ? formatDate(streakStart) : '--');
 
         console.log('日记统计数据加载成功:', {
             consecutive,
             totalDays,
             totalEntries,
             latestDate,
-            streakStart,
             cached: result.cached
         });
 
@@ -177,7 +174,6 @@ async function initDiaryStats() {
         setText('diary-total-days', '--');
         setText('diary-total-entries', '--');
         setText('diary-latest', '--');
-        setText('diary-streak-start', '--');
     }
 }
 
