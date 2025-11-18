@@ -498,56 +498,83 @@ app.get('/api/diary/stats', async (req, res) => {
   }
 });
 
-// RSS 解析辅助函数
+// RSS 获取和解析辅助函数
 async function fetchAndParseRSS(rssUrl) {
-  // 使用 node-fetch 获取 RSS 内容
-  const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+  // 使用 Node.js 内置模块获取 RSS 内容
+  const https = require('https');
+  const http = require('http');
+  const { URL } = require('url');
 
-  const response = await fetch(rssUrl, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; HomepageRSSBot/1.0)'
-    }
-  });
+  return new Promise((resolve, reject) => {
+    const parsedUrl = new URL(rssUrl);
+    const protocol = parsedUrl.protocol === 'https:' ? https : http;
 
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-  }
-
-  const xml = await response.text();
-
-  // 简单的 RSS/Atom 解析（提取日期和文章数）
-  const entries = [];
-
-  // 匹配 RSS <item> 或 Atom <entry>
-  const itemRegex = /<(?:item|entry)[\s\S]*?<\/(?:item|entry)>/gi;
-  const dateRegex = /<(?:pubDate|published|updated|dc:date)>([^<]+)<\/(?:pubDate|published|updated|dc:date)>/i;
-
-  let match;
-  while ((match = itemRegex.exec(xml)) !== null) {
-    const itemXml = match[0];
-    const dateMatch = itemXml.match(dateRegex);
-
-    if (dateMatch && dateMatch[1]) {
-      try {
-        const date = new Date(dateMatch[1]);
-        if (!isNaN(date.getTime())) {
-          entries.push({
-            date: date.toISOString().split('T')[0] // YYYY-MM-DD
-          });
-        }
-      } catch (e) {
-        // 忽略无效日期
+    const options = {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; HomepageRSSBot/1.0)'
       }
-    }
-  }
+    };
 
-  // 按日期排序（最新的在前）
-  entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+    protocol.get(rssUrl, options, (response) => {
+      // 处理重定向
+      if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+        fetchAndParseRSS(response.headers.location).then(resolve).catch(reject);
+        return;
+      }
 
-  // 计算统计数据
-  const stats = calculateStats(entries);
+      if (response.statusCode !== 200) {
+        reject(new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`));
+        return;
+      }
 
-  return stats;
+      let xml = '';
+      response.setEncoding('utf8');
+      response.on('data', (chunk) => {
+        xml += chunk;
+      });
+
+      response.on('end', () => {
+        try {
+          // 解析 RSS/Atom XML
+          const entries = [];
+
+          // 匹配 RSS <item> 或 Atom <entry>
+          const itemRegex = /<(?:item|entry)[\s\S]*?<\/(?:item|entry)>/gi;
+          const dateRegex = /<(?:pubDate|published|updated|dc:date)>([^<]+)<\/(?:pubDate|published|updated|dc:date)>/i;
+
+          let match;
+          while ((match = itemRegex.exec(xml)) !== null) {
+            const itemXml = match[0];
+            const dateMatch = itemXml.match(dateRegex);
+
+            if (dateMatch && dateMatch[1]) {
+              try {
+                const date = new Date(dateMatch[1]);
+                if (!isNaN(date.getTime())) {
+                  entries.push({
+                    date: date.toISOString().split('T')[0] // YYYY-MM-DD
+                  });
+                }
+              } catch (e) {
+                // 忽略无效日期
+              }
+            }
+          }
+
+          // 按日期排序（最新的在前）
+          entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+          // 计算统计数据
+          const stats = calculateStats(entries);
+          resolve(stats);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    }).on('error', (error) => {
+      reject(error);
+    });
+  });
 }
 
 // 计算统计数据
