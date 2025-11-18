@@ -1202,7 +1202,8 @@ function createSectionElement(section, data) {
     // 时间线模板不需要标题，其他模板添加标题
     if (section.defaultTemplate !== 'timeline') {
         const title = document.createElement('h2');
-        title.innerHTML = `<i class="fas ${section.icon}"></i> ${section.title}`;
+        const iconSvg = section.icon ? createIcon(section.icon.replace('fa-', '')) : '';
+        title.innerHTML = `${iconSvg} ${section.title}`;
         sectionElement.appendChild(title);
     }
 
@@ -1224,10 +1225,10 @@ function createSectionElement(section, data) {
                 <div class="site-card">
                     <div class="site-icon">
                         ${item.icon ?
-                            (item.icon.startsWith('fa-') ?
-                                `<i class="fas ${item.icon}"></i>` :
-                                `<img src="${item.icon}" alt="${item.title}">`)
-                            : '<i class="fas fa-link"></i>'}
+                            (item.icon.startsWith('http://') || item.icon.startsWith('https://') || item.icon.startsWith('/') || item.icon.startsWith('./') ?
+                                `<img src="${item.icon}" alt="${item.title}">` :
+                                createIcon(item.icon.replace('fa-', '')))
+                            : createIcon('link')}
                     </div>
                     <div class="site-info">
                         <h3>${item.title}</h3>
@@ -1255,7 +1256,7 @@ function createSectionElement(section, data) {
                 link.target = '_blank';
                 link.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-500 dark:hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 shadow-sm hover:shadow-md';
                 link.innerHTML = `
-                    ${item.icon && item.icon.startsWith('fa-') ? `<i class="fas ${item.icon}"></i>` : ''}
+                    ${item.icon ? createIcon(item.icon.replace('fa-', '')) : ''}
                     <span>${item.title}</span>
                 `;
                 iconWall.appendChild(link);
@@ -1264,7 +1265,7 @@ function createSectionElement(section, data) {
                 const tag = document.createElement('span');
                 tag.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 transition-colors duration-300';
                 tag.innerHTML = `
-                    ${item.icon && item.icon.startsWith('fa-') ? `<i class="fas ${item.icon}"></i>` : ''}
+                    ${item.icon ? createIcon(item.icon.replace('fa-', '')) : ''}
                     <span>${item.title}</span>
                 `;
                 iconWall.appendChild(tag);
@@ -1518,10 +1519,10 @@ function updateWebsites(websites) {
             <div class="site-card">
                 <div class="site-icon">
                     ${site.icon ?
-                        (site.icon.startsWith('fa-') ?
-                            `<i class="fas ${site.icon}"></i>` :
-                            `<img src="${site.icon}" alt="${site.title}">`)
-                        : '<i class="fas fa-globe"></i>'}
+                        (site.icon.startsWith('http://') || site.icon.startsWith('https://') || site.icon.startsWith('/') || site.icon.startsWith('./') ?
+                            `<img src="${site.icon}" alt="${site.title}">` :
+                            createIcon(site.icon.replace('fa-', '')))
+                        : createIcon('globe')}
                 </div>
                 <div class="site-info">
                     <h3>${site.title}</h3>
@@ -1566,10 +1567,10 @@ function updateProjects(projects) {
             <div class="project-card">
                 <div class="project-icon">
                     ${project.icon || project.image ?
-                        (project.icon && project.icon.startsWith('fa-') ?
-                            `<i class="fas ${project.icon}"></i>` :
-                            `<img src="${project.icon || project.image}" alt="${project.title}">`)
-                        : '<i class="fas fa-code"></i>'}
+                        ((project.icon && (project.icon.startsWith('http://') || project.icon.startsWith('https://') || project.icon.startsWith('/') || project.icon.startsWith('./'))) || project.image ?
+                            `<img src="${project.icon || project.image}" alt="${project.title}">` :
+                            createIcon(project.icon.replace('fa-', '')))
+                        : createIcon('code')}
                 </div>
                 <div class="project-info">
                     <h3>${project.title}</h3>
@@ -1611,12 +1612,12 @@ function updateSkills(skills) {
 
         // 支持 Heroicons 图标名称或图片 URL
         if (skill.icon) {
-            if (skill.icon.startsWith('fa-')) {
-                // Heroicons 图标
-                skillIcon.innerHTML = `<i class="fas ${skill.icon}"></i>`;
-            } else {
+            if (skill.icon.startsWith('http://') || skill.icon.startsWith('https://') || skill.icon.startsWith('/') || skill.icon.startsWith('./')) {
                 // 图片 URL
                 skillIcon.innerHTML = `<img src="${skill.icon}" alt="${skill.name}">`;
+            } else {
+                // Heroicons 图标
+                skillIcon.innerHTML = createIcon(skill.icon.replace('fa-', ''));
             }
         } else {
             // 没有图标时显示文字
