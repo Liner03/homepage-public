@@ -1223,7 +1223,7 @@
         </div>
 
         <!-- 项目编辑弹窗 -->
-        <div id="itemEditModal" class="modal">
+        <div id="itemEditModal" class="modal" style="display: none;">
             <div class="modal-content" style="max-width: 700px;">
                 <div class="modal-header">
                     <h2 id="itemEditModalTitle">编辑项目</h2>
@@ -1246,7 +1246,7 @@
         </div>
 
         <!-- 栏目编辑弹窗 -->
-        <div id="sectionEditModal" class="modal">
+        <div id="sectionEditModal" class="modal" style="display: none;">
             <div class="modal-content" style="max-width: 700px;">
                 <div class="modal-header">
                     <h2 id="sectionEditModalTitle">编辑栏目</h2>
@@ -3915,8 +3915,8 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
                     <ol>
                         <li><strong>从下方选择：</strong>点击任意图标即可自动填入图标名称</li>
                         <li><strong>或访问官网：</strong>打开 <a href="https://heroicons.com" target="_blank" style="color: #007aff;">heroicons.com</a>，浏览所有图标</li>
-                        <li><strong>复制名称：</strong>点击官网的图标，复制 SVG 名称（如 <code>envelope</code>、<code>user</code>）</li>
-                        <li><strong>粘贴使用：</strong>直接输入名称即可，无需 <code>fa-</code> 前缀</li>
+                        <li><strong>复制名称：</strong>点击官网的图标，复制图标名称（如 <code>envelope</code>、<code>user-circle</code>、<code>arrow-right</code>）</li>
+                        <li><strong>直接输入：</strong>在输入框中填入完整的图标名称即可使用</li>
                     </ol>
                 </div>
                 <p style="margin-bottom: 20px;">共 <strong><span id="iconCount">45+</span></strong> 个图标可用。点击图标即可选择。</p>
