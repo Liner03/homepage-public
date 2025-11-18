@@ -53,11 +53,15 @@ app.use(session({
   }
 }));
 
-// 静态文件服务（提供前端页面）
-app.use(express.static(path.join(__dirname, '..')));
+// 静态文件服务（按优先级顺序）
+// 1. 前端静态资源（CSS/字体）
+app.use('/static', express.static(path.join(__dirname, '..', 'static')));
 
-// 后台管理静态资源服务（优先级更高，提供 CSS/字体文件）
-app.use('/admin/static', express.static(path.join(__dirname, 'public/static')));
+// 2. 后台管理静态资源
+app.use('/admin/static', express.static(path.join(__dirname, 'public', 'static')));
+
+// 3. 其他静态文件（HTML/JS 等）
+app.use(express.static(path.join(__dirname, '..')));
 
 // 获取客户端 IP
 function getClientIP(req) {
