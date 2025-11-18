@@ -4,7 +4,7 @@
   "description": "Frontend build tools for personal homepage",
   "scripts": {
     "build:css": "tailwindcss -i ./src/input.css -o ./static/tailwind.css --minify && cp ./static/tailwind.css ./backend/public/static/tailwind.css",
-    "build:fontawesome": "cp -r node_modules/@fortawesome/fontawesome-free/css/all.min.css static/fontawesome.css && cp -r node_modules/@fortawesome/fontawesome-free/webfonts static/ && cp static/fontawesome.css backend/public/static/fontawesome.css && cp -r static/webfonts backend/public/static/",
+    "build:fontawesome": "cp -r node_modules/@fortawesome/fontawesome-free/css/all.min.css static/fontawesome.css && sed -i 's|../webfonts/|./webfonts/|g' static/fontawesome.css && cp -r node_modules/@fortawesome/fontawesome-free/webfonts static/ && cp static/fontawesome.css backend/public/static/fontawesome.css && cp -r static/webfonts backend/public/static/",
     "build": "npm run build:fontawesome && npm run build:css",
     "watch:css": "tailwindcss -i ./src/input.css -o ./static/tailwind.css --watch",
     "dev": "npm run watch:css",

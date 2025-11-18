@@ -898,7 +898,7 @@ body::before {
 
 /* 时间线卡片 */
 .timeline-card {
-    margin-left: 16px;
+    margin-left: 8px;
     border-radius: 16px;
     border: 1px solid var(--border-primary);
     background: var(--bg-card);
@@ -924,28 +924,16 @@ body::before {
 .timeline-card-time {
     font-size: 12px;
     font-weight: 500;
-    color: #6b7280;
+    color: var(--text-secondary);
     font-variant-numeric: tabular-nums;
-}
-
-@media (prefers-color-scheme: dark) {
-    .timeline-card-time {
-        color: #9ca3af;
-    }
 }
 
 /* 卡片内容 */
 .timeline-card-content {
     font-size: 14px;
     line-height: 1.6;
-    color: #1f2937;
+    color: var(--text-primary);
     margin: 0;
-}
-
-@media (prefers-color-scheme: dark) {
-    .timeline-card-content {
-        color: #f3f4f6;
-    }
 }
 
 /* 右侧内容区域 */
