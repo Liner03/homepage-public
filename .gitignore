@@ -17,6 +17,7 @@ package-lock.json
 static/tailwind.css
 static/fontawesome.css
 static/webfonts/
+backend/public/static/
 
 # Backend dependencies and data
 backend/node_modules/

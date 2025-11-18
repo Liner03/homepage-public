@@ -4,32 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理后台</title>
-    <!-- Font Awesome CDN - 完整图标库 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
-    <!-- Tailwind CSS v4 (via CDN Play) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Tailwind CSS 配置（使用 CSS 变量整合现有设计系统）
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: 'var(--bg-primary)',
-                        secondary: 'var(--bg-secondary)',
-                        accent: 'var(--accent)',
-                        'accent-hover': 'var(--accent-hover)',
-                        success: 'var(--success)',
-                        warning: 'var(--warning)',
-                        danger: 'var(--danger)',
-                    },
-                    fontFamily: {
-                        apple: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
+    <!-- Font Awesome (npm 管理) -->
+    <link rel="stylesheet" href="../static/fontawesome.css">
+    <!-- Tailwind CSS v4 (npm 管理) -->
+    <link rel="stylesheet" href="../static/tailwind.css">
     <style>
         /* ========== Apple 官方设计系统 ========== */
         :root {
