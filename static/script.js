@@ -875,6 +875,8 @@ function updateGitHubDisplay(data) {
     const languageTag = document.querySelector('.language-tag');
     if (languageTag && languageTag.parentElement) {
         const languageContainer = languageTag.parentElement;
+        // 找到整个 stats-line 区域（包含"主要语言："标题）
+        const statsLine = languageTag.closest('.stats-line');
 
         if (data.languages && data.languages.length > 0) {
             // 有语言数据，显示并更新
@@ -884,11 +886,17 @@ function updateGitHubDisplay(data) {
             }).join('');
 
             languageContainer.innerHTML = languageHTML;
-            languageContainer.style.display = '';
+
+            // 显示整个 stats-line 区域
+            if (statsLine) {
+                statsLine.style.display = '';
+            }
         } else {
-            // 没有语言数据，隐藏整个区域
-            languageContainer.style.display = 'none';
-            console.log('语言标签数据为空，已隐藏主要语言区域');
+            // 没有语言数据，隐藏整个 stats-line 区域（包括标题）
+            if (statsLine) {
+                statsLine.style.display = 'none';
+                console.log('语言标签数据为空，已隐藏整个主要语言区域');
+            }
         }
     }
 }
