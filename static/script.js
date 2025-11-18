@@ -1895,8 +1895,8 @@ function fetchVisitorIP() {
         }
     }
 
-    // 执行获取
-    fetchWithFallback();
+    // 执行获取并返回 Promise
+    return fetchWithFallback();
 }
 
 // 时间线增强动画
@@ -2002,48 +2002,72 @@ function createParticles() {
     document.head.appendChild(style);
 }
 
+// 隐藏全局 loading 并显示内容
+function hideGlobalLoading() {
+    const loadingEl = document.getElementById('global-loading');
+    const mainContainer = document.querySelector('.main-container');
+
+    if (loadingEl) {
+        loadingEl.classList.add('hide');
+        // 等待动画完成后移除元素
+        setTimeout(() => {
+            loadingEl.remove();
+        }, 500);
+    }
+
+    if (mainContainer) {
+        // 显示主容器
+        mainContainer.style.transition = 'opacity 0.5s ease';
+        mainContainer.style.opacity = '1';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async function() {
-    addAnimationStyles();
-    addPulseAnimation();
+    try {
+        addAnimationStyles();
+        addPulseAnimation();
 
-    // 初始化语言配置（优先加载）
-    await fetchLanguageConfig();
+        // 并行加载所有关键数据
+        await Promise.all([
+            // 初始化语言配置
+            fetchLanguageConfig(),
+            // 获取真实GitHub数据（包含语言标签）
+            fetchGitHubContributions(GITHUB_USERNAME),
+            // 初始化访客IP
+            fetchVisitorIP(),
+            // 初始化签到
+            initCheckin()
+        ]);
 
-    // 初始化自定义栏目（替代原日记统计）
-    if (typeof initCustomSection === 'function') {
-        initCustomSection();
-    }
-    // 获取真实GitHub数据
-    fetchVisitorIP()
-    fetchGitHubContributions(GITHUB_USERNAME);
+        // 初始化自定义栏目（替代原日记统计）
+        if (typeof initCustomSection === 'function') {
+            initCustomSection();
+        }
 
-    // 初始化签到
-    initCheckin();
+        // 检测是否为移动设备
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
 
-    // 检测是否为移动设备
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        if (!isMobile) {
+            // 只在非移动设备上加载动画
+            initSkillIcons();
+            initCardEffects();
+            initScrollAnimations();
+            initTypewriterEffect();
+            createParticles();
+            initSocialLinks();
+            initTimelineAnimation();
+        }
 
-    if (!isMobile) {
-        // 只在非移动设备上加载动画
-        initSkillIcons();
-        initCardEffects();
-        initScrollAnimations();
-        initTypewriterEffect();
-        createParticles();
-        initSocialLinks();
-        initTimelineAnimation();
+        // 所有数据加载完成，隐藏 loading
+        hideGlobalLoading();
+    } catch (error) {
+        console.error('初始化失败:', error);
+        // 即使出错也要隐藏 loading
+        hideGlobalLoading();
     }
 });
 
-// 添加页面加载动画
-window.addEventListener('load', () => {
-    document.body.style.opacity = '0';
-    document.body.style.transition = 'opacity 0.5s ease';
-
-    setTimeout(() => {
-        document.body.style.opacity = '1';
-    }, 100);
-});
+// 页面加载动画已由全局 loading 接管
 
 // 添加开发者工具检测和信息提示
 function detectDevTools() {
