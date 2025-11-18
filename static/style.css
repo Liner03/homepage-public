@@ -633,31 +633,6 @@ body::before {
     transition: all 0.3s ease;
 }
 
-/* 时间线 */
-.timeline-section {
-    border-left: 2px solid var(--border-secondary);
-    padding-left: 20px;
-    margin-left: 10px;
-    transition: border-color 0.3s ease;
-}
-
-.timeline-item {
-    position: relative;
-    margin-bottom: 20px;
-}
-
-.timeline-dot {
-    position: absolute;
-    left: -26px;
-    top: 3px;
-    width: 8px;
-    height: 8px;
-    background: var(--accent-blue);
-    border-radius: 50%;
-    border: 2px solid var(--border-secondary);
-    transition: all 0.3s ease;
-}
-
 /* 统计/日历视图切换 */
 .stats-toggle {
     display: flex;
@@ -880,6 +855,11 @@ body::before {
 
 .list-item a:hover h3 {
     color: var(--accent-blue);
+}
+
+/* IP 统计区域下边距 */
+.ip-stats-section {
+    margin-bottom: 20px;
 }
 
 /* 时间线容器 - 卡片式设计 */

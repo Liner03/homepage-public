@@ -1313,18 +1313,14 @@ function createSectionElement(section, data) {
                             hover:border-blue-300/60 dark:hover:border-blue-700/60
                             hover:-translate-y-0.5
                             cursor-default">
-
                     ${item.date || item.description ? `
-                    <!-- 顶部：日期/时间 -->
-                    <header class="flex items-baseline justify-between gap-4 mb-1.5">
-                        <time class="text-xs font-medium text-gray-600 dark:text-gray-400 tabular-nums">
+                    <header class="mb-1">
+                        <time class="text-xs font-medium text-gray-500 dark:text-gray-400 tabular-nums">
                             ${item.date || item.description}
                         </time>
                     </header>
                     ` : ''}
-
-                    <!-- 主要内容 -->
-                    <p class="text-sm leading-relaxed text-gray-900 dark:text-gray-100 transition-colors duration-200">
+                    <p class="text-sm leading-relaxed text-gray-800 dark:text-gray-100">
                         ${item.title}
                     </p>
                 </div>
