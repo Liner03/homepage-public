@@ -18,32 +18,19 @@ const HeroIcons = {
 
   google: `<svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>`,
 
+  // ========== UI 图标 (Heroicons) ==========
   envelope: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>`,
 
-  'chat-bubble-left': `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>`,
-
-  // WeChat 使用对话气泡代替
-  wechat: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>`,
-
-  // 其他社交平台 - 使用通用图标
   link: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>`,
 
   globe: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" /></svg>`,
 
-  // UI 图标
   'x-mark': `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>`,
-
-  bars3: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>`,
 
   sun: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>`,
 
   moon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>`,
 
-  'chevron-right': `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>`,
-
-  'chevron-down': `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>`,
-
-  // 管理后台图标
   'chart-bar': `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>`,
 
   'document-text': `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>`,
@@ -66,7 +53,7 @@ const HeroIcons = {
 
   'exclamation-circle': `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>`,
 
-  calendar: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0121 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>`,
+  calendar: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>`,
 
   save: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6A2.25 2.25 0 016 3.75h1.5m9 0h-9" /></svg>`,
 
@@ -106,164 +93,4 @@ function createIcon(name, className = '') {
   }
 
   return svg;
-}
-
-/**
- * 兼容 Font Awesome 的图标名称映射
- */
-const FontAwesomeCompat = {
-  'fab fa-github': 'github',
-  'fas fa-envelope': 'envelope',
-  'fab fa-weixin': 'wechat',
-  'fas fa-link': 'link',
-  'fas fa-globe': 'globe',
-  'fas fa-times': 'x-mark',
-  'fas fa-bars': 'bars3',
-  'fas fa-sun': 'sun',
-  'fas fa-moon': 'moon',
-  'fas fa-chevron-right': 'chevron-right',
-  'fas fa-chevron-down': 'chevron-down',
-  'fas fa-chart-bar': 'chart-bar',
-  'fas fa-chart-line': 'chart-bar-square',
-  'fas fa-file-alt': 'document-text',
-  'fas fa-cog': 'cog',
-  'fas fa-user': 'user',
-  'fas fa-home': 'home',
-  'fas fa-edit': 'pencil',
-  'fas fa-trash': 'trash',
-  'fas fa-plus': 'plus',
-  'fas fa-arrow-left': 'arrow-left',
-  'fas fa-check': 'check',
-  'fas fa-exclamation-circle': 'exclamation-circle',
-  'fas fa-calendar': 'calendar',
-  'fas fa-save': 'save',
-  'fas fa-sign-out-alt': 'arrow-right-on-rectangle',
-  'fas fa-palette': 'swatch',
-  'fas fa-th-large': 'squares-2x2',
-  'fas fa-info-circle': 'information-circle',
-  'fas fa-spinner fa-spin': 'arrow-path',
-  'fas fa-check-circle': 'check-circle',
-  'fas fa-exclamation-triangle': 'exclamation-triangle',
-  'fas fa-book': 'book',
-  'fas fa-rss': 'newspaper',
-  'fas fa-pen': 'pencil',
-};
-
-/**
- * 创建图标元素
- * @param {string} name - 图标名称（如 'github', 'envelope'）
- * @param {string} className - 额外的 CSS 类名
- * @returns {string} SVG HTML 字符串
- */
-function createIcon(name, className = '') {
-  const svg = HeroIcons[name] || HeroIcons.link; // 默认使用 link 图标
-
-  // 为 SVG 添加类名
-  if (className) {
-    return svg.replace('<svg', `<svg class="${className}"`);
-  }
-
-  return svg;
-}
-
-/**
- * 兼容 Font Awesome 的图标名称映射
- */
-const FontAwesomeCompat = {
-  'fab fa-github': 'github',
-  'fas fa-envelope': 'envelope',
-  'fab fa-weixin': 'wechat',
-  'fas fa-link': 'link',
-  'fas fa-globe': 'globe',
-  'fas fa-times': 'x-mark',
-  'fas fa-bars': 'bars3',
-  'fas fa-sun': 'sun',
-  'fas fa-moon': 'moon',
-  'fas fa-chevron-right': 'chevron-right',
-  'fas fa-chevron-down': 'chevron-down',
-  'fas fa-chart-bar': 'chart-bar',
-  'fas fa-file-alt': 'document-text',
-  'fas fa-cog': 'cog',
-  'fas fa-user': 'user',
-  'fas fa-home': 'home',
-  'fas fa-edit': 'pencil',
-  'fas fa-trash': 'trash',
-  'fas fa-plus': 'plus',
-  'fas fa-arrow-left': 'arrow-left',
-  'fas fa-check': 'check',
-  'fas fa-exclamation-circle': 'exclamation-circle',
-  'fas fa-calendar': 'calendar',
-};
-
-/**
- * 从 Font Awesome 类名转换为 Heroicon 名称
- * @param {string} faClass - Font Awesome 类名（如 'fab fa-github'）
- * @returns {string} Heroicon 名称
- */
-function faToHeroicon(faClass) {
-  return FontAwesomeCompat[faClass] || 'link';
-}
-
-/**
- * 自动替换页面中所有 Font Awesome 图标为 Heroicons SVG
- * 应该在 DOMContentLoaded 后调用
- */
-function replaceAllFontAwesomeIcons() {
-  // 查找所有 <i> 标签
-  const icons = document.querySelectorAll('i[class*="fa-"]');
-
-  icons.forEach(icon => {
-    // 获取所有类名
-    const classList = Array.from(icon.classList);
-
-    // 提取 Font Awesome 类名
-    const faClasses = classList.filter(c => c.startsWith('fa'));
-    const faClassString = faClasses.join(' ');
-
-    // 获取对应的 Heroicon 名称
-    const heroiconName = faToHeroicon(faClassString);
-
-    // 保留其他类名（非 fa- 开头的）
-    const otherClasses = classList.filter(c => !c.startsWith('fa'));
-
-    // 创建临时容器来解析 SVG
-    const temp = document.createElement('div');
-    temp.innerHTML = createIcon(heroiconName);
-    const svg = temp.firstChild;
-
-    // 添加原来的类名到 SVG
-    if (otherClasses.length > 0) {
-      svg.classList.add(...otherClasses);
-    }
-
-    // 复制内联样式
-    if (icon.style.cssText) {
-      svg.style.cssText = icon.style.cssText;
-    }
-
-    // 设置统一的图标大小
-    if (!svg.style.width) {
-      svg.style.width = '1em';
-    }
-    if (!svg.style.height) {
-      svg.style.height = '1em';
-    }
-    if (!svg.style.verticalAlign) {
-      svg.style.verticalAlign = 'middle';
-    }
-    svg.style.display = 'inline-block';
-
-    // 替换原图标
-    icon.parentNode.replaceChild(svg, icon);
-  });
-}
-
-// 如果在浏览器环境中，自动执行替换
-if (typeof document !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', replaceAllFontAwesomeIcons);
-  } else {
-    // 如果脚本是异步加载的，DOM 可能已经准备好了
-    replaceAllFontAwesomeIcons();
-  }
 }

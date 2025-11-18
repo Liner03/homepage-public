@@ -1399,13 +1399,8 @@ function updateSocialLinks(social) {
         // 确定使用哪个图标
         let iconName;
         if (customIcon) {
-            // 如果是 Font Awesome 格式（如 "fab fa-github"），转换为 Heroicons
-            if (customIcon.includes('fa-')) {
-                iconName = faToHeroicon(customIcon);
-            } else {
-                // 直接使用 Heroicons 名称
-                iconName = customIcon;
-            }
+            // 直接使用 Heroicons 名称
+            iconName = customIcon;
         } else {
             // 使用默认映射
             iconName = iconMap[platform] || 'link';
