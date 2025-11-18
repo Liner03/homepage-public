@@ -1374,11 +1374,21 @@ function updateSocialLinks(social) {
     };
 
     // 添加配置的社交链接
-    Object.entries(social).forEach(([platform, url]) => {
+    Object.entries(social).forEach(([platform, urlOrObj]) => {
+        if (!urlOrObj) return;
+
+        // 兼容两种格式：字符串 或 {url: "...", icon: "..."}
+        const url = typeof urlOrObj === 'string' ? urlOrObj : urlOrObj.url;
+        const customIcon = typeof urlOrObj === 'object' ? urlOrObj.icon : null;
+
         if (!url) return;
 
         const link = document.createElement('a');
-        link.innerHTML = `<i class="${iconMap[platform] || 'fas fa-link'}"></i>`;
+        // 优先使用自定义图标，否则使用默认映射
+        const iconClass = customIcon ?
+            (customIcon.startsWith('fa-') ? `fab ${customIcon}` : customIcon) :
+            (iconMap[platform] || 'fas fa-link');
+        link.innerHTML = `<i class="${iconClass}"></i>`;
 
         // 邮箱/微信 采用一键复制
         if (platform === 'email' || platform === 'wechat') {
