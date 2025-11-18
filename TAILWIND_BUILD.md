@@ -1,12 +1,12 @@
 # 前端构建说明
 
-本项目使用 **npm** 统一管理前端依赖，包括 **Tailwind CSS v4** 和 **Font Awesome**，无需依赖外部 CDN。
+本项目使用 **npm** 统一管理前端依赖，包括 **Tailwind CSS v4** 和 **Heroicons** 图标库，无需依赖外部 CDN。
 
 ## 📦 依赖管理
 
-本项目通过 npm 管理以下前端资源：
+本项目通过 npm 和内置 SVG 图标管理以下前端资源：
 - **Tailwind CSS v4** - 现代化 CSS 框架
-- **Font Awesome** - 完整图标库
+- **Heroicons** - 轻量级 SVG 图标库（无需 npm，内置于项目中）
 
 ## 🆕 Tailwind CSS 4 新特性
 
@@ -29,19 +29,13 @@ npm install
 ```bash
 npm run build
 ```
-构建所有资源（Tailwind CSS + Font Awesome）
+构建 Tailwind CSS 资源
 
 ### 单独构建 Tailwind CSS
 ```bash
 npm run build:css
 ```
 生成压缩的 CSS 文件到 `static/tailwind.css`
-
-### 单独构建 Font Awesome
-```bash
-npm run build:fontawesome
-```
-复制 Font Awesome CSS 和字体文件到 `static/`
 
 ### 开发环境监听（自动重新构建）
 ```bash
@@ -59,9 +53,8 @@ homepage-public/
 │   └── input.css          # Tailwind 4 源文件（使用 @import 和 @theme）
 ├── static/
 │   ├── tailwind.css       # 构建生成的文件（已忽略）
-│   ├── fontawesome.css    # Font Awesome CSS（已忽略）
-│   ├── webfonts/          # Font Awesome 字体文件（已忽略）
-│   └── style.css          # 自定义样式
+│   ├── style.css          # 自定义样式
+│   └── icons.js           # Heroicons SVG 图标库
 ├── package.json           # 前端依赖和构建脚本
 └── index.html             # 引用构建后的 CSS
 ```
@@ -95,34 +88,73 @@ Tailwind 4 自动支持 `dark:` 前缀，使用系统偏好设置。
 在 `index.html` 中：
 1. **Tailwind CSS** (`./static/tailwind.css`) - 基础样式
 2. **自定义样式** (`./static/style.css`) - 覆盖和扩展
-3. **Font Awesome** (`./static/fontawesome.css`) - 图标库
+3. **Heroicons** (`./static/icons.js`) - SVG 图标库
 
-## 🎯 Font Awesome 使用
+## 🎯 Heroicons 使用
 
-### 安装和构建
-Font Awesome 通过 npm 包 `@fortawesome/fontawesome-free` 管理：
+### 特点
+- ✅ **纯 SVG**：无字体文件依赖，避免加载问题
+- ✅ **轻量级**：按需加载，极小体积
+- ✅ **自动替换**：自动将 Font Awesome 格式转换为 SVG
+- ✅ **品牌图标**：包含 GitHub、Twitter 等社交媒体图标
 
-```bash
-# 安装（已包含在 package.json 中）
-npm install
+### JavaScript API
 
-# 构建会自动复制 Font Awesome 文件
-npm run build
+```javascript
+// 创建图标
+const githubIcon = createIcon('github');
+
+// 创建带类名的图标
+const iconWithClass = createIcon('envelope', 'custom-class');
 ```
 
-### 使用图标
-在 HTML 中直接使用 Font Awesome 图标：
+### 在 config.js 中使用
 
-```html
-<i class="fas fa-heart"></i>
-<i class="fab fa-github"></i>
-<i class="far fa-star"></i>
+```javascript
+social: {
+  github: {
+    url: "https://github.com/username",
+    icon: "github"  // Heroicon 名称
+  },
+  email: {
+    url: "admin@example.com",
+    icon: "envelope"
+  }
+}
 ```
 
-### 图标类型
-- `fas` - Solid 实心图标
-- `far` - Regular 常规图标
-- `fab` - Brands 品牌图标
+### 常用图标
+
+#### 社交媒体（品牌图标）
+- `github` - GitHub
+- `wechat` - 微信
+- `telegram` - Telegram
+- `twitter` - Twitter (X)
+- `linkedin` - LinkedIn
+- `google` - Google
+
+#### UI 图标（Heroicons）
+- `envelope` - 邮件
+- `user` - 用户
+- `cog` - 设置
+- `home` - 主页
+- `pencil` - 编辑
+- `trash` - 删除
+- `plus` - 添加
+- `x-mark` - 关闭
+- `check` - 确认
+- `calendar` - 日历
+
+[查看完整图标列表](https://heroicons.com)
+
+### 自动替换 Font Awesome
+
+如果你的代码中使用了 Font Awesome 格式（如 `<i class="fas fa-home"></i>`），图标库会自动将其替换为对应的 Heroicons SVG。
+
+支持的格式：
+- `fas fa-icon-name` → Heroicon SVG
+- `fab fa-icon-name` → 品牌图标 SVG
+- `far fa-icon-name` → Heroicon SVG
 
 ## 🚀 部署流程
 
@@ -133,8 +165,7 @@ npm run build
 
 2. 提交代码（不包括生成的文件，它们在 .gitignore 中）：
    - `static/tailwind.css`
-   - `static/fontawesome.css`
-   - `static/webfonts/`
+   - `backend/public/static/`
 
 3. 服务器部署时自动运行构建：
    ```bash
@@ -166,14 +197,52 @@ npm run build
    ```
 3. 运行 `npm install` 和 `npm run build:css`
 
+## 🎨 从 Font Awesome 迁移到 Heroicons
+
+### 为什么迁移？
+- ❌ Font Awesome 使用字体文件，可能出现加载问题
+- ❌ 需要额外的构建步骤和依赖
+- ❌ 文件体积较大
+
+- ✅ Heroicons 使用纯 SVG，稳定可靠
+- ✅ 无需构建，直接使用
+- ✅ 轻量级，按需加载
+
+### 迁移步骤
+
+本项目已完成迁移，无需额外操作。如果你要手动迁移：
+
+1. 移除 Font Awesome 依赖：
+   ```bash
+   npm uninstall @fortawesome/fontawesome-free
+   ```
+
+2. 引入 Heroicons 图标库：
+   ```html
+   <script src="./static/icons.js"></script>
+   ```
+
+3. **无需修改代码**：图标库会自动替换所有 `<i class="fa* fa-*">` 为 SVG
+
+4. （可选）手动使用新API：
+   ```javascript
+   // 旧：Font Awesome
+   <i class="fas fa-github"></i>
+
+   // 新：Heroicons（自动替换）
+   createIcon('github')
+   ```
+
 ## 💡 最佳实践
 
 - ✅ 使用 Tailwind 类名快速开发 UI
 - ✅ 在 `@theme` 中定义项目级别的主题变量
 - ✅ 自定义样式放在 `static/style.css`
-- ✅ 使用 npm 管理所有前端依赖，避免 CDN
+- ✅ 使用 Heroicons 图标，避免字体文件加载问题
+- ✅ 使用 npm 管理前端依赖，避免 CDN
 - ✅ 修改 HTML 后记得重新构建：`npm run build`
 - ✅ `npm install` 会自动触发构建（postinstall 钩子）
 - ❌ 不要手动编辑生成的文件（会被覆盖）
 - ❌ 不要创建 `tailwind.config.js`（v4 不需要）
 - ❌ 不要使用 CDN 引用（已改为本地构建）
+- ❌ 不要使用 Font Awesome（已迁移到 Heroicons）

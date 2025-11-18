@@ -9,14 +9,27 @@
     <!-- 自定义样式 (覆盖 Tailwind) -->
     <link rel="stylesheet" href="./static/style.css">
     <link rel="shortcut icon" href="./static/f2.png">
-    <!-- Font Awesome (npm 管理) -->
-    <link rel="stylesheet" href="./static/fontawesome.css">
     <!-- 自定义栏目样式 -->
     <link rel="stylesheet" href="./modules/custom-section.css">
     <!-- 引入配置文件 -->
     <script src="./config.js"></script>
     <!-- 自定义栏目配置 -->
     <script src="./modules/custom-section-config.js"></script>
+    <!-- Heroicons 图标库 -->
+    <script src="./static/icons.js"></script>
+    <style>
+        /* 图标样式 - 统一大小和对齐 */
+        .social-links a svg {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
 
     <!-- 防止主题色闪烁：立即应用保存的主题色和背景 -->
     <script>
@@ -1359,16 +1372,16 @@ function updateSocialLinks(social) {
     // 清空现有链接
     socialContainer.innerHTML = '';
 
-    // 社交平台图标映射
+    // 社交平台图标映射（使用 Heroicons 名称）
     const iconMap = {
-        github: 'fab fa-github',
-        email: 'fas fa-envelope',
-        wechat: 'fab fa-weixin',
-        telegram: 'fab fa-telegram',
-        twitter: 'fab fa-twitter',
-        linkedin: 'fab fa-linkedin',
-        blog: 'fas fa-blog',
-        google: 'fab fa-google'
+        github: 'github',
+        email: 'envelope',
+        wechat: 'wechat',
+        telegram: 'telegram',
+        twitter: 'twitter',
+        linkedin: 'linkedin',
+        blog: 'globe',
+        google: 'google'
     };
 
     // 添加配置的社交链接
@@ -1382,26 +1395,24 @@ function updateSocialLinks(social) {
         if (!url) return;
 
         const link = document.createElement('a');
-        // 优先使用自定义图标，否则使用默认映射
-        let iconClass;
+
+        // 确定使用哪个图标
+        let iconName;
         if (customIcon) {
-            // 如果自定义图标已经包含 fa- 前缀（如 fa-envelope, fa-github），
-            // 检查是否已经有 fas/fab/far 前缀
-            if (customIcon.includes(' ')) {
-                // 已经有完整的类名（如 "fas fa-envelope"）
-                iconClass = customIcon;
-            } else if (customIcon.startsWith('fa-')) {
-                // 只有图标名（如 "fa-envelope"），默认使用 fas
-                iconClass = `fas ${customIcon}`;
+            // 如果是 Font Awesome 格式（如 "fab fa-github"），转换为 Heroicons
+            if (customIcon.includes('fa-')) {
+                iconName = faToHeroicon(customIcon);
             } else {
-                // 其他情况，直接使用
-                iconClass = customIcon;
+                // 直接使用 Heroicons 名称
+                iconName = customIcon;
             }
         } else {
             // 使用默认映射
-            iconClass = iconMap[platform] || 'fas fa-link';
+            iconName = iconMap[platform] || 'link';
         }
-        link.innerHTML = `<i class="${iconClass}"></i>`;
+
+        // 使用 createIcon 函数生成 SVG
+        link.innerHTML = createIcon(iconName);
 
         // 邮箱/微信 采用一键复制
         if (platform === 'email' || platform === 'wechat') {
