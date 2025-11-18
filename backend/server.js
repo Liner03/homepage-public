@@ -565,6 +565,108 @@ app.post('/api/language-config/reset', (req, res) => {
   }
 });
 
+// ==================== 语言标签管理 API ====================
+
+// 13. 获取语言标签 - GET（公开API，前端使用）
+app.get('/api/language-tags', (req, res) => {
+  try {
+    let languageTags = dataStorage.get('language-tags');
+
+    // 如果没有配置，返回默认标签
+    if (!languageTags) {
+      languageTags = [
+        { lang: 'JavaScript', percent: 35 },
+        { lang: 'Python', percent: 25 },
+        { lang: 'TypeScript', percent: 20 },
+        { lang: 'CSS', percent: 20 }
+      ];
+      dataStorage.set('language-tags', languageTags);
+    }
+
+    res.json({
+      success: true,
+      data: languageTags
+    });
+  } catch (error) {
+    console.error('获取语言标签失败:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// 14. 保存语言标签 - POST（需要认证，后台管理使用）
+app.post('/api/language-tags', (req, res) => {
+  try {
+    const newTags = req.body;
+
+    // 验证数据格式
+    if (!Array.isArray(newTags)) {
+      return res.status(400).json({
+        success: false,
+        message: '无效的数据格式'
+      });
+    }
+
+    // 验证每个标签
+    for (const tag of newTags) {
+      if (!tag.lang || typeof tag.lang !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: '语言名称不能为空'
+        });
+      }
+      if (typeof tag.percent !== 'number' || tag.percent < 0 || tag.percent > 100) {
+        return res.status(400).json({
+          success: false,
+          message: `"${tag.lang}" 的百分比必须在 0-100 之间`
+        });
+      }
+    }
+
+    // 保存标签
+    dataStorage.set('language-tags', newTags);
+
+    res.json({
+      success: true,
+      message: '语言标签保存成功'
+    });
+  } catch (error) {
+    console.error('保存语言标签失败:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// 15. 重置语言标签为默认值 - POST
+app.post('/api/language-tags/reset', (req, res) => {
+  try {
+    const defaultTags = [
+      { lang: 'JavaScript', percent: 35 },
+      { lang: 'Python', percent: 25 },
+      { lang: 'TypeScript', percent: 20 },
+      { lang: 'CSS', percent: 20 }
+    ];
+
+    dataStorage.set('language-tags', defaultTags);
+
+    res.json({
+      success: true,
+      message: '语言标签已重置为默认值',
+      data: defaultTags
+    });
+  } catch (error) {
+    console.error('重置语言标签失败:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 // ==================== 日记配置 API ====================
 
 // 8. 获取日记配置 - GET（公开API）

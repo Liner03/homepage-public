@@ -319,8 +319,8 @@ async function fetchGitHubContributions(username, forceRefresh = false) {
             events = [];
         }
 
-        // 使用GitHub用户数据进行统计（可能是降级后的数据）
-        const githubStats = calculateGitHubStats(userData, repos, events);
+        // 获取语言标签（从后台配置）
+        const languageTags = await fetchLanguageTags();
 
         // 2) 渲染贡献日历：使用第三方API获取完整数据
         let calendarData = null;
@@ -340,7 +340,7 @@ async function fetchGitHubContributions(username, forceRefresh = false) {
             currentStreak: statsFromCalendar.currentStreak,
             activeDays: statsFromCalendar.activeDays,
             activeRate: statsFromCalendar.activeRate,
-            languages: githubStats.languages
+            languages: languageTags
         });
         renderContribCalendar(calendarData);
 
@@ -872,14 +872,24 @@ function updateGitHubDisplay(data) {
     }
 
     // 更新语言统计
-    if (data.languages && data.languages.length > 0) {
-        const languageContainer = document.querySelector('.language-tag').parentElement;
-        const languageHTML = data.languages.map(({ lang, percent }) => {
-            const className = getLanguageClass(lang);
-            return `<span class="language-tag ${className}">${lang} (${percent}%)</span>`;
-        }).join('');
+    const languageTag = document.querySelector('.language-tag');
+    if (languageTag && languageTag.parentElement) {
+        const languageContainer = languageTag.parentElement;
 
-        languageContainer.innerHTML = languageHTML;
+        if (data.languages && data.languages.length > 0) {
+            // 有语言数据，显示并更新
+            const languageHTML = data.languages.map(({ lang, percent }) => {
+                const className = getLanguageClass(lang);
+                return `<span class="language-tag ${className}">${lang} (${percent}%)</span>`;
+            }).join('');
+
+            languageContainer.innerHTML = languageHTML;
+            languageContainer.style.display = '';
+        } else {
+            // 没有语言数据，隐藏整个区域
+            languageContainer.style.display = 'none';
+            console.log('语言标签数据为空，已隐藏主要语言区域');
+        }
     }
 }
 
@@ -1192,6 +1202,26 @@ function getLanguageClass(language) {
     };
 
     return defaultMap[language] || 'py';
+}
+
+// 获取语言标签（从后台API）
+async function fetchLanguageTags() {
+    try {
+        const response = await fetch('/api/language-tags');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        const result = await response.json();
+        if (result.success && result.data && result.data.length > 0) {
+            return result.data;
+        }
+        // 如果没有数据，返回 null，不渲染语言区域
+        return null;
+    } catch (error) {
+        console.warn('获取语言标签失败，不渲染主要语言区域:', error);
+        // 返回 null，不渲染语言区域
+        return null;
+    }
 }
 
 // 数字动画函数

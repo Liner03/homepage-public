@@ -944,6 +944,44 @@
                 </div>
             </div>
 
+            <!-- 语言标签卡片 -->
+            <div class="card" style="margin-bottom: 30px;">
+                <div class="card-header">
+                    <h2>🏷️ 语言标签</h2>
+                    <button class="btn btn-primary" onclick="window.location.href='language-tags'">
+                        <i class="fas fa-tags"></i> 管理标签
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                        <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
+                            <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">标签数量</h3>
+                            <div id="languageTagsCount" style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                                <div class="loading">加载中...</div>
+                            </div>
+                        </div>
+                        <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
+                            <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">百分比总和</h3>
+                            <div id="languageTagsTotal" style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                                <div class="loading">加载中...</div>
+                            </div>
+                        </div>
+                        <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
+                            <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">状态</h3>
+                            <div id="languageTagsStatus" style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                                <div class="loading">加载中...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; padding: 15px; background: rgba(252, 163, 17, 0.05); border-radius: 10px; border-left: 4px solid #fca311;">
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">
+                            <i class="fas fa-info-circle" style="color: #fca311; margin-right: 8px;"></i>
+                            管理GitHub统计中显示的语言标签及其百分比。手动配置语言分布，无需复杂的GitHub API统计。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <!-- 日记配置卡片 -->
             <div class="card" style="margin-bottom: 30px;">
                 <div class="card-header">
@@ -1688,6 +1726,47 @@
                 console.error('加载语言配置失败:', error);
                 countEl.innerHTML = '<span style="color: #999;">加载失败</span>';
                 classesEl.innerHTML = '<span style="color: #999;">加载失败</span>';
+                statusEl.innerHTML = '<span style="color: #f56565;">● 错误</span>';
+            }
+        }
+
+        // 刷新语言标签状态
+        async function refreshLanguageTags() {
+            const countEl = document.getElementById('languageTagsCount');
+            const totalEl = document.getElementById('languageTagsTotal');
+            const statusEl = document.getElementById('languageTagsStatus');
+
+            if (!countEl || !totalEl || !statusEl) return;
+
+            countEl.innerHTML = '<div class="loading">加载中...</div>';
+            totalEl.innerHTML = '<div class="loading">加载中...</div>';
+            statusEl.innerHTML = '<div class="loading">加载中...</div>';
+
+            try {
+                const response = await fetch('/api/language-tags');
+                const data = await response.json();
+
+                if (data.success && data.data && data.data.length > 0) {
+                    const tags = data.data;
+                    const totalPercent = tags.reduce((sum, tag) => sum + tag.percent, 0);
+                    const isValid = totalPercent === 100;
+
+                    countEl.innerHTML = `${tags.length} 个标签`;
+                    totalEl.innerHTML = isValid
+                        ? `<span style="color: #48bb78;">${totalPercent}%</span>`
+                        : `<span style="color: #f56565;">${totalPercent}%</span>`;
+                    statusEl.innerHTML = isValid
+                        ? '<span style="color: #48bb78;">● 有效</span>'
+                        : '<span style="color: #f56565;">● 无效</span>';
+                } else {
+                    countEl.innerHTML = '0 个标签';
+                    totalEl.innerHTML = '0%';
+                    statusEl.innerHTML = '<span style="color: #f56565;">● 未配置</span>';
+                }
+            } catch (error) {
+                console.error('加载语言标签失败:', error);
+                countEl.innerHTML = '<span style="color: #999;">加载失败</span>';
+                totalEl.innerHTML = '<span style="color: #999;">-</span>';
                 statusEl.innerHTML = '<span style="color: #f56565;">● 错误</span>';
             }
         }
@@ -3958,6 +4037,7 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
             refreshTheme();
             refreshSystemInfo();
             refreshLanguageConfig();
+            refreshLanguageTags();
             refreshDiaryStatus();
         });
 

@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>语言标签管理 - 管理后台</title>
+    <!-- Heroicons 图标库 -->
+    <script src="/static/icons.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --apple-blue: #007AFF;
+            --apple-blue-hover: #0051D5;
+            --apple-green: #34C759;
+            --apple-red: #FF3B30;
+            --apple-orange: #FF9500;
+
+            --bg-primary: #F5F5F7;
+            --bg-secondary: #FFFFFF;
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --input-bg: rgba(0, 0, 0, 0.03);
+            --input-border: rgba(0, 0, 0, 0.15);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+
+            --ease-out: cubic-bezier(0, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--apple-blue);
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 16px;
+            transition: var(--ease-out) 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--apple-blue-hover);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            letter-spacing: -0.3px;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s var(--ease-out);
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--apple-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--apple-blue-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--input-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--input-border);
+        }
+
+        .btn-danger {
+            background: var(--apple-red);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #cc2f26;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        .status-message {
+            padding: 14px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: rgba(52, 199, 89, 0.1);
+            border: 1px solid rgba(52, 199, 89, 0.2);
+            color: var(--apple-green);
+        }
+
+        .status-message.error {
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid rgba(255, 59, 48, 0.2);
+            color: var(--apple-red);
+        }
+
+        .status-message.show {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tag-list {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .tag-item {
+            display: grid;
+            grid-template-columns: 1fr 100px auto;
+            gap: 16px;
+            align-items: center;
+            padding: 16px 20px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            transition: all 0.2s var(--ease-out);
+        }
+
+        .tag-item:hover {
+            background: var(--bg-secondary);
+            border-color: var(--apple-blue);
+        }
+
+        .tag-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .tag-percent {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tag-percent input {
+            width: 60px;
+            padding: 6px 10px;
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .tag-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .add-tag-form {
+            display: grid;
+            grid-template-columns: 1fr 120px auto;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 10px;
+            font-size: 15px;
+            color: var(--text-primary);
+            transition: all 0.2s var(--ease-out);
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            background: var(--bg-secondary);
+            border-color: var(--apple-blue);
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .percent-bar {
+            margin-top: 12px;
+            background: var(--input-bg);
+            border-radius: 6px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .percent-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--apple-blue), var(--apple-green));
+            transition: width 0.3s var(--ease-out);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .card {
+            animation: slideIn 0.4s var(--ease-out);
+        }
+
+        .total-percent {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--input-bg);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .total-percent.valid {
+            color: var(--apple-green);
+            background: rgba(52, 199, 89, 0.1);
+        }
+
+        .total-percent.invalid {
+            color: var(--apple-red);
+            background: rgba(255, 59, 48, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/admin/dashboard" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 12L6 8l4-4"/>
+            </svg>
+            返回仪表板
+        </a>
+
+        <div class="header">
+            <h1>🏷️ 语言标签管理</h1>
+            <p>手动添加和管理前台显示的编程语言标签及百分比</p>
+        </div>
+
+        <!-- 使用说明 -->
+        <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+            <div class="card-title" style="color: white;">📚 使用说明</div>
+            <div style="line-height: 1.8; font-size: 14px;">
+                <p style="margin-bottom: 12px;">这个页面让你手动配置前台显示的编程语言标签，就像添加 tag 一样简单。</p>
+
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 16px; border-radius: 10px; margin: 16px 0;">
+                    <strong>💡 使用步骤：</strong><br>
+                    1. 在下方输入语言名称（如 JavaScript）<br>
+                    2. 输入百分比（0-100）<br>
+                    3. 点击"添加标签"<br>
+                    4. 确保所有标签的百分比总和为 100%<br>
+                    5. 点击"保存所有标签"
+                </div>
+
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 16px; border-radius: 10px;">
+                    <strong>⚠️ 注意事项：</strong><br>
+                    • 百分比总和必须等于 100%<br>
+                    • 语言名称需要在"语言配置"页面中有对应的 CSS 类名<br>
+                    • 修改后记得点击"保存所有标签"
+                </div>
+            </div>
+        </div>
+
+        <!-- 添加标签表单 -->
+        <div class="card">
+            <div class="card-title">添加新标签</div>
+            <div id="status-message" class="status-message"></div>
+
+            <div class="add-tag-form">
+                <div class="form-group">
+                    <input type="text" id="new-lang" placeholder="语言名称（例如：JavaScript）" />
+                </div>
+                <div class="form-group">
+                    <input type="number" id="new-percent" placeholder="百分比" min="0" max="100" />
+                </div>
+                <button class="btn btn-primary" onclick="addTag()">添加标签</button>
+            </div>
+        </div>
+
+        <!-- 标签列表 -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div class="card-title" style="margin: 0;">已配置的标签</div>
+                <div class="total-percent" id="total-percent">
+                    总计: 0%
+                </div>
+            </div>
+
+            <div id="tag-list" class="tag-list">
+                <!-- 标签列表将通过 JavaScript 动态生成 -->
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-secondary" onclick="loadTags()">刷新</button>
+                <button class="btn btn-danger" onclick="resetToDefault()">重置为默认</button>
+                <button class="btn btn-primary" onclick="saveTags()">保存所有标签</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTags = [];
+
+        // 页面加载时获取标签
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTags();
+        });
+
+        // 加载标签
+        async function loadTags() {
+            try {
+                const response = await fetch('/api/language-tags');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const result = await response.json();
+                if (result.success && result.data) {
+                    currentTags = result.data;
+                    renderTags();
+                }
+            } catch (error) {
+                console.error('加载标签失败:', error);
+                showMessage('加载标签失败', 'error');
+            }
+        }
+
+        // 渲染标签列表
+        function renderTags() {
+            const listContainer = document.getElementById('tag-list');
+
+            if (currentTags.length === 0) {
+                listContainer.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
+                        <div style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">🏷️</div>
+                        <p>暂无标签</p>
+                        <p style="font-size: 13px; margin-top: 8px;">请添加新的语言标签</p>
+                    </div>
+                `;
+                updateTotalPercent();
+                return;
+            }
+
+            const html = currentTags.map((tag, index) => `
+                <div class="tag-item">
+                    <div class="tag-name">${tag.lang}</div>
+                    <div class="tag-percent">
+                        <input type="number" value="${tag.percent}" min="0" max="100"
+                               onchange="updateTagPercent(${index}, this.value)" />
+                        <span>%</span>
+                    </div>
+                    <div class="tag-actions">
+                        <button class="btn btn-danger btn-small" onclick="removeTag(${index})">删除</button>
+                    </div>
+                </div>
+            `).join('');
+
+            listContainer.innerHTML = html;
+            updateTotalPercent();
+        }
+
+        // 添加标签
+        function addTag() {
+            const lang = document.getElementById('new-lang').value.trim();
+            const percent = parseInt(document.getElementById('new-percent').value);
+
+            if (!lang) {
+                showMessage('请输入语言名称', 'error');
+                return;
+            }
+
+            if (isNaN(percent) || percent < 0 || percent > 100) {
+                showMessage('百分比必须在 0-100 之间', 'error');
+                return;
+            }
+
+            // 检查是否已存在
+            if (currentTags.some(t => t.lang === lang)) {
+                showMessage(`语言 "${lang}" 已存在`, 'error');
+                return;
+            }
+
+            currentTags.push({ lang, percent });
+
+            document.getElementById('new-lang').value = '';
+            document.getElementById('new-percent').value = '';
+
+            renderTags();
+            showMessage('标签已添加，请点击"保存所有标签"保存', 'success');
+        }
+
+        // 更新标签百分比
+        function updateTagPercent(index, value) {
+            const percent = parseInt(value);
+            if (isNaN(percent) || percent < 0 || percent > 100) {
+                showMessage('百分比必须在 0-100 之间', 'error');
+                renderTags();
+                return;
+            }
+
+            currentTags[index].percent = percent;
+            updateTotalPercent();
+        }
+
+        // 删除标签
+        function removeTag(index) {
+            if (!confirm(`确定要删除 "${currentTags[index].lang}" 吗？`)) {
+                return;
+            }
+
+            currentTags.splice(index, 1);
+            renderTags();
+            showMessage('标签已删除，请点击"保存所有标签"保存', 'success');
+        }
+
+        // 更新总百分比显示
+        function updateTotalPercent() {
+            const total = currentTags.reduce((sum, tag) => sum + tag.percent, 0);
+            const el = document.getElementById('total-percent');
+            el.textContent = `总计: ${total}%`;
+
+            if (total === 100) {
+                el.className = 'total-percent valid';
+            } else {
+                el.className = 'total-percent invalid';
+            }
+        }
+
+        // 保存所有标签
+        async function saveTags() {
+            const total = currentTags.reduce((sum, tag) => sum + tag.percent, 0);
+
+            if (total !== 100) {
+                showMessage(`百分比总和必须为 100%（当前：${total}%）`, 'error');
+                return;
+            }
+
+            if (currentTags.length === 0) {
+                showMessage('至少需要添加一个标签', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/language-tags', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(currentTags)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showMessage('保存成功！刷新前台页面即可看到效果', 'success');
+                } else {
+                    showMessage(result.message || '保存失败', 'error');
+                }
+            } catch (error) {
+                console.error('保存失败:', error);
+                showMessage('保存失败', 'error');
+            }
+        }
+
+        // 重置为默认
+        async function resetToDefault() {
+            if (!confirm('确定要重置为默认标签吗？')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/language-tags/reset', {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showMessage('重置成功', 'success');
+                    loadTags();
+                } else {
+                    showMessage(result.message || '重置失败', 'error');
+                }
+            } catch (error) {
+                console.error('重置失败:', error);
+                showMessage('重置失败', 'error');
+            }
+        }
+
+        // 显示消息
+        function showMessage(message, type = 'success') {
+            const messageEl = document.getElementById('status-message');
+            messageEl.textContent = message;
+            messageEl.className = `status-message ${type} show`;
+
+            setTimeout(() => {
+                messageEl.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
