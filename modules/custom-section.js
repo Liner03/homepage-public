@@ -115,34 +115,16 @@ function updateTabTitle() {
 }
 
 /**
- * 日记统计功能（原有功能）
+ * 日记统计功能（使用本地 RSS 代理 API）
  */
 async function initDiaryStats() {
     try {
-        const cfg = customSectionConfig.config || {};
-        let endpoint = cfg.endpoint || '/api/stats';
-        const apiKey = cfg.apiKey;
-        const authType = (cfg.authType || 'x-api-key').toLowerCase();
-        const headers = {};
-
-        // 构建鉴权
-        if (apiKey) {
-            if (authType === 'bearer') headers['Authorization'] = `Bearer ${apiKey}`;
-            else if (authType === 'x-api-key') headers['X-API-Key'] = apiKey;
-            else if (authType === 'query') {
-                const sep = endpoint.includes('?') ? '&' : '?';
-                endpoint = `${endpoint}${sep}api_key=${encodeURIComponent(apiKey)}`;
-            } else {
-                headers['X-API-Key'] = apiKey;
-            }
-        } else {
-            console.log('日记API密钥未配置，使用无认证访问模式');
-        }
+        // 使用本地 API 端点（后端会代理 RSS 并缓存）
+        const endpoint = '/api/diary/stats';
 
         console.log('正在请求日记API:', endpoint);
-        console.log('请求头:', headers);
 
-        const response = await fetch(endpoint, { headers });
+        const response = await fetch(endpoint);
         console.log('API响应状态:', response.status, response.statusText);
 
         if (!response.ok) {
@@ -156,8 +138,8 @@ async function initDiaryStats() {
 
         // 检查API响应格式
         if (!result.success) {
-            console.error('API返回错误:', result.error, result.message);
-            throw new Error(result.error || '获取日记统计失败');
+            console.error('API返回错误:', result.message);
+            throw new Error(result.message || '获取日记统计失败');
         }
 
         const data = result.data;
@@ -180,11 +162,17 @@ async function initDiaryStats() {
             totalDays,
             totalEntries,
             latestDate,
-            streakStart
+            streakStart,
+            cached: result.cached
         });
+
+        // 如果数据来自缓存，在控制台提示
+        if (result.cached) {
+            console.log('📦 数据来自缓存');
+        }
     } catch (e) {
         console.warn('加载日记统计失败：', e);
-        console.warn('注意：日记功能需要远程API支持，请检查网络连接和API配置');
+        console.warn('请确保已在后台配置页面设置 RSS 订阅地址');
         setText('diary-consecutive', '--');
         setText('diary-total-days', '--');
         setText('diary-total-entries', '--');

@@ -358,6 +358,267 @@ app.get('/api/sections', (req, res) => {
   }
 });
 
+// ==================== 日记配置 API ====================
+
+// 8. 获取日记配置 - GET（公开API）
+app.get('/api/diary/config', async (req, res) => {
+  try {
+    const config = await dataStorage.get('diary-config');
+    res.json({
+      success: true,
+      config: config || {
+        enabled: true,
+        type: 'diary',
+        title: '日记',
+        icon: 'fas fa-book',
+        config: {
+          rssUrl: '',
+          cacheTime: 30
+        }
+      }
+    });
+  } catch (error) {
+    console.error('获取日记配置失败:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// 9. 保存日记配置 - POST（需要认证）
+app.post('/api/diary/config', async (req, res) => {
+  try {
+    const newConfig = req.body;
+
+    // 验证配置
+    if (!newConfig || typeof newConfig !== 'object') {
+      return res.status(400).json({
+        success: false,
+        message: '无效的配置数据'
+      });
+    }
+
+    // 保存配置
+    await dataStorage.set('diary-config', newConfig);
+
+    // 同时更新 custom-section-config.js 文件
+    const ConfigManager = require('./utils/config-manager');
+    const configManager = new ConfigManager(path.join(__dirname, '..'));
+    configManager.updateDiaryConfig(newConfig);
+
+    res.json({
+      success: true,
+      message: '配置保存成功'
+    });
+  } catch (error) {
+    console.error('保存日记配置失败:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// 10. RSS 统计数据 - POST（用于测试）
+app.post('/api/diary/rss-stats', async (req, res) => {
+  try {
+    const { rssUrl } = req.body;
+
+    if (!rssUrl) {
+      return res.status(400).json({
+        success: false,
+        message: 'RSS URL 不能为空'
+      });
+    }
+
+    // 获取并解析 RSS
+    const stats = await fetchAndParseRSS(rssUrl);
+
+    res.json({
+      success: true,
+      data: stats
+    });
+  } catch (error) {
+    console.error('获取 RSS 统计失败:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// 11. 日记统计数据 - GET（前端使用，带缓存）
+app.get('/api/diary/stats', async (req, res) => {
+  try {
+    // 获取配置
+    const config = await dataStorage.get('diary-config');
+
+    if (!config || !config.enabled || !config.config || !config.config.rssUrl) {
+      return res.status(404).json({
+        success: false,
+        message: '日记功能未配置或未启用'
+      });
+    }
+
+    const rssUrl = config.config.rssUrl;
+    const cacheTime = (config.config.cacheTime || 30) * 60 * 1000; // 转换为毫秒
+    const cacheKey = 'diary-rss-cache';
+
+    // 检查缓存
+    const cached = await dataStorage.get(cacheKey);
+    if (cached && cached.timestamp && (Date.now() - cached.timestamp < cacheTime)) {
+      return res.json({
+        success: true,
+        data: cached.data,
+        cached: true
+      });
+    }
+
+    // 获取最新数据
+    const stats = await fetchAndParseRSS(rssUrl);
+
+    // 更新缓存
+    await dataStorage.set(cacheKey, {
+      data: stats,
+      timestamp: Date.now()
+    });
+
+    res.json({
+      success: true,
+      data: stats,
+      cached: false
+    });
+  } catch (error) {
+    console.error('获取日记统计失败:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// RSS 解析辅助函数
+async function fetchAndParseRSS(rssUrl) {
+  // 使用 node-fetch 获取 RSS 内容
+  const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
+  const response = await fetch(rssUrl, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; HomepageRSSBot/1.0)'
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  const xml = await response.text();
+
+  // 简单的 RSS/Atom 解析（提取日期和文章数）
+  const entries = [];
+
+  // 匹配 RSS <item> 或 Atom <entry>
+  const itemRegex = /<(?:item|entry)[\s\S]*?<\/(?:item|entry)>/gi;
+  const dateRegex = /<(?:pubDate|published|updated|dc:date)>([^<]+)<\/(?:pubDate|published|updated|dc:date)>/i;
+
+  let match;
+  while ((match = itemRegex.exec(xml)) !== null) {
+    const itemXml = match[0];
+    const dateMatch = itemXml.match(dateRegex);
+
+    if (dateMatch && dateMatch[1]) {
+      try {
+        const date = new Date(dateMatch[1]);
+        if (!isNaN(date.getTime())) {
+          entries.push({
+            date: date.toISOString().split('T')[0] // YYYY-MM-DD
+          });
+        }
+      } catch (e) {
+        // 忽略无效日期
+      }
+    }
+  }
+
+  // 按日期排序（最新的在前）
+  entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  // 计算统计数据
+  const stats = calculateStats(entries);
+
+  return stats;
+}
+
+// 计算统计数据
+function calculateStats(entries) {
+  if (!entries || entries.length === 0) {
+    return {
+      consecutive_days: 0,
+      total_days_with_entries: 0,
+      total_entries: 0,
+      latest_entry_date: null,
+      current_streak_start: null
+    };
+  }
+
+  const total_entries = entries.length;
+  const latest_entry_date = entries[0].date;
+
+  // 统计每天的文章数
+  const dateMap = new Map();
+  for (const entry of entries) {
+    dateMap.set(entry.date, (dateMap.get(entry.date) || 0) + 1);
+  }
+
+  const total_days_with_entries = dateMap.size;
+
+  // 获取所有日期并排序
+  const dates = Array.from(dateMap.keys()).sort((a, b) => new Date(b) - new Date(a));
+
+  // 计算连续天数
+  let consecutive_days = 0;
+  let current_streak_start = null;
+
+  if (dates.length > 0) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let currentDate = new Date(dates[0]);
+    currentDate.setHours(0, 0, 0, 0);
+
+    // 检查最新文章是否在今天或昨天
+    const dayDiff = Math.floor((today - currentDate) / (1000 * 60 * 60 * 24));
+
+    if (dayDiff <= 1) {
+      consecutive_days = 1;
+      current_streak_start = dates[0];
+
+      // 向后查找连续日期
+      for (let i = 1; i < dates.length; i++) {
+        const prevDate = new Date(dates[i - 1]);
+        const currDate = new Date(dates[i]);
+        const diff = Math.floor((prevDate - currDate) / (1000 * 60 * 60 * 24));
+
+        if (diff === 1) {
+          consecutive_days++;
+          current_streak_start = dates[i];
+        } else {
+          break;
+        }
+      }
+    }
+  }
+
+  return {
+    consecutive_days,
+    total_days_with_entries,
+    total_entries,
+    latest_entry_date,
+    current_streak_start
+  };
+}
+
 // OPTIONS 预检请求处理
 app.options('*', cors(config.cors));
 

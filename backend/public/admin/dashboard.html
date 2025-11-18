@@ -911,6 +911,22 @@
                     </div>
                 </div>
 
+                <!-- 日记配置 -->
+                <div class="mini-card">
+                    <h3>📖 日记配置</h3>
+                    <div style="margin: 15px 0; font-size: 14px; color: var(--text-secondary);">
+                        <p style="margin-bottom: 10px;">配置日记 RSS 订阅源</p>
+                        <div id="diaryStatus" style="padding: 8px 12px; background: var(--bg-secondary); border-radius: 8px; font-size: 13px;">
+                            <div class="loading">加载中...</div>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="window.location.href='diary-config'">
+                            <i class="fas fa-cog"></i> 配置
+                        </button>
+                    </div>
+                </div>
+
                 <!-- 系统信息 -->
                 <div class="mini-card">
                     <h3>⚙️ 系统信息</h3>
@@ -1558,6 +1574,34 @@
                 `;
             } catch (error) {
                 info.innerHTML = '<div style="color: #999; font-size: 13px;">加载失败</div>';
+            }
+        }
+
+        async function refreshDiaryStatus() {
+            const diaryStatusDiv = document.getElementById('diaryStatus');
+            diaryStatusDiv.innerHTML = '<div class="loading">加载中...</div>';
+
+            try {
+                const response = await fetch('/api/diary/config');
+                const data = await response.json();
+
+                if (data.success && data.config) {
+                    const config = data.config;
+                    const enabled = config.enabled ? '✓ 已启用' : '✗ 已禁用';
+                    const rssUrl = config.config && config.config.rssUrl ? '已配置' : '未配置';
+                    const color = config.enabled && config.config && config.config.rssUrl ? '#34C759' : '#FF9500';
+
+                    diaryStatusDiv.innerHTML = `
+                        <div style="line-height: 1.8;">
+                            <div><strong>状态：</strong><span style="color: ${color};">${enabled}</span></div>
+                            <div><strong>RSS：</strong>${rssUrl}</div>
+                        </div>
+                    `;
+                } else {
+                    diaryStatusDiv.innerHTML = `<div style="color: #999;">未配置</div>`;
+                }
+            } catch (error) {
+                diaryStatusDiv.innerHTML = `<div style="color: #FF3B30;">加载失败</div>`;
             }
         }
 
@@ -3777,6 +3821,7 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
             refreshVisitStats();
             refreshTheme();
             refreshSystemInfo();
+            refreshDiaryStatus();
         });
     </script>
 </body>

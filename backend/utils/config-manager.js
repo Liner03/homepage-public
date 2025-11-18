@@ -219,6 +219,46 @@ class ConfigManager {
       throw error;
     }
   }
+
+  // ==================== 日记配置管理 ====================
+
+  /**
+   * 更新日记配置文件
+   */
+  updateDiaryConfig(diaryConfig) {
+    try {
+      const configPath = path.join(this.projectRoot, 'modules', 'custom-section-config.js');
+
+      if (!fs.existsSync(configPath)) {
+        console.warn('custom-section-config.js 不存在，跳过更新');
+        return false;
+      }
+
+      // 读取现有文件
+      let content = fs.readFileSync(configPath, 'utf8');
+
+      // 构建新的配置对象字符串
+      const newConfigStr = `const CUSTOM_SECTION_CONFIG = ${JSON.stringify(diaryConfig, null, 4)};`;
+
+      // 替换配置对象
+      const configRegex = /const\s+CUSTOM_SECTION_CONFIG\s*=\s*\{[\s\S]*?\};/;
+
+      if (configRegex.test(content)) {
+        content = content.replace(configRegex, newConfigStr);
+      } else {
+        // 如果找不到配置对象，在文件开头插入
+        content = newConfigStr + '\n\n' + content;
+      }
+
+      // 保存文件
+      fs.writeFileSync(configPath, content, 'utf8');
+      console.log('✅ custom-section-config.js 已更新');
+      return true;
+    } catch (error) {
+      console.error('更新 custom-section-config.js 失败:', error);
+      return false;
+    }
+  }
 }
 
 module.exports = ConfigManager;
