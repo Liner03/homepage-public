@@ -2665,6 +2665,13 @@
             }
         }
 
+        // 生成配置代码
+        function generateConfigCode(configObj) {
+            return `// Copy to config.js and edit your own info
+const CONFIG = ${JSON.stringify(configObj, null, 2)};
+`;
+        }
+
         // 保存栏目数据到后端
         async function saveSectionData() {
             console.group('💾 [栏目管理] 开始保存数据');
