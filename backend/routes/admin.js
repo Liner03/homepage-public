@@ -142,14 +142,8 @@ function createAdminRouter(config, dataStorage, visitStorage) {
             daily: visitData.daily || {},
             total: visitData.total || 0
           },
-          // 所有配置数据
-          config: {
-            theme: allData.theme || null,
-            'language-config': allData['language-config'] || null,
-            'language-tags': allData['language-tags'] || null,
-            'diary-config': allData['diary-config'] || null,
-            sections: allData.sections || null
-          }
+          // 所有配置数据（导出 data.json 中的所有字段）
+          config: allData || {}
         }
       };
 
@@ -201,34 +195,21 @@ function createAdminRouter(config, dataStorage, visitStorage) {
         const configData = importedData.config;
 
         if (mode === 'replace') {
-          // 替换模式：完全覆盖配置
-          const newData = {
-            theme: configData.theme || null,
-            'language-config': configData['language-config'] || null,
-            'language-tags': configData['language-tags'] || null,
-            'diary-config': configData['diary-config'] || null,
-            sections: configData.sections || null
-          };
-          dataStorage.saveData(newData);
+          // 替换模式：完全覆盖配置（使用导入的所有字段）
+          dataStorage.saveData(configData);
           results.push('配置数据: 已替换');
         } else {
           // 合并模式：合并配置（导入的数据覆盖现有数据）
-          if (configData.theme !== null && configData.theme !== undefined) {
-            currentData.theme = configData.theme;
+          const mergedData = { ...currentData };
+
+          // 遍历导入的所有字段，覆盖到现有数据
+          for (const [key, value] of Object.entries(configData)) {
+            if (value !== null && value !== undefined) {
+              mergedData[key] = value;
+            }
           }
-          if (configData['language-config']) {
-            currentData['language-config'] = configData['language-config'];
-          }
-          if (configData['language-tags']) {
-            currentData['language-tags'] = configData['language-tags'];
-          }
-          if (configData['diary-config']) {
-            currentData['diary-config'] = configData['diary-config'];
-          }
-          if (configData.sections) {
-            currentData.sections = configData.sections;
-          }
-          dataStorage.saveData(currentData);
+
+          dataStorage.saveData(mergedData);
           results.push('配置数据: 已合并');
         }
       }
