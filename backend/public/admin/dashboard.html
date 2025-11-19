@@ -906,44 +906,6 @@
         <div id="tab-frontend" class="tab-pane">
             <div id="frontendAlert" class="alert"></div>
 
-            <!-- 语言配置卡片 -->
-            <div class="card" style="margin-bottom: 30px;">
-                <div class="card-header">
-                    <h2>🌐 语言配置</h2>
-                    <button class="btn btn-primary" onclick="window.location.href='language-config'">
-                        <i class="fas fa-cog"></i> 配置语言标签
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-                        <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
-                            <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">配置的语言</h3>
-                            <div id="languageConfigCount" style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
-                                <div class="loading">加载中...</div>
-                            </div>
-                        </div>
-                        <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
-                            <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">CSS 类名</h3>
-                            <div id="languageConfigClasses" style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
-                                <div class="loading">加载中...</div>
-                            </div>
-                        </div>
-                        <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
-                            <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">状态</h3>
-                            <div id="languageConfigStatus" style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
-                                <div class="loading">加载中...</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="margin-top: 20px; padding: 15px; background: rgba(102, 126, 234, 0.05); border-radius: 10px; border-left: 4px solid #667eea;">
-                        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">
-                            <i class="fas fa-info-circle" style="color: #667eea; margin-right: 8px;"></i>
-                            配置编程语言到CSS类名的映射关系，用于GitHub统计中的"主要语言"标签显示。支持动态增删改。
-                        </p>
-                    </div>
-                </div>
-            </div>
-
             <!-- 语言标签卡片 -->
             <div class="card" style="margin-bottom: 30px;">
                 <div class="card-header">
@@ -1020,12 +982,12 @@
                 </div>
             </div>
 
-            <!-- 前端配置卡片 -->
+            <!-- 更多配置卡片 -->
             <div class="card" style="margin-bottom: 30px;">
                 <div class="card-header">
-                    <h2>🎨 前端配置</h2>
+                    <h2>⚙️ 更多配置</h2>
                     <button class="btn btn-primary" onclick="window.location.href='config.html'">
-                        <i class="fas fa-cog"></i> 配置前端
+                        <i class="fas fa-cog"></i> 编辑配置
                     </button>
                 </div>
                 <div class="card-body">
