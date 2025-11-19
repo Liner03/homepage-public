@@ -1101,10 +1101,36 @@ body::before {
 }
 
 /* 栏目标题中的 SVG 图标样式 */
-section h2 svg {
+section h2 svg,
+.checkin-title svg {
     width: 20px;
     height: 20px;
     flex-shrink: 0;
+}
+
+/* 固定标题图标样式 */
+.section-title-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.section-title-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* 位置和职位信息图标 */
+.info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 4px;
+}
+
+.info-icon svg {
+    width: 14px;
+    height: 14px;
 }
 
 .sites-grid, .projects-grid {

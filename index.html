@@ -107,11 +107,11 @@
 
                     <div class="location-info">
                         <div class="location">
-                            <i class="fa fa-map-marker"></i>
+                            <span class="info-icon"></span>
                             <span>加载中...</span>
                         </div>
                         <div class="name">
-                            <i class="fas fa-briefcase"></i>
+                            <span class="info-icon"></span>
                             <span>加载中...</span>
                         </div>
                     </div>
@@ -125,7 +125,7 @@
 
             <!-- IP 统计展示 -->
             <section class="skills-section ip-stats-section">
-                <h2><i class="fas fa-heart"></i> <span id="welcome-title">加载中...</span></h2>
+                <h2><span class="section-title-icon"></span> <span id="welcome-title">加载中...</span></h2>
                 <div class="stat-item">
                     <span class="stat-label" id="visitor-ip-label">加载中...</span>
                     <span class="stat-number blur-effect" id="visitor-ip">获取中...</span>
@@ -192,7 +192,7 @@
 
                 <!-- 签到模块 -->
                 <div class="checkin" id="checkin">
-                    <h3 class="checkin-title"><i class="fas fa-eye"></i> 访问次数</h3>
+                    <h3 class="checkin-title"><span class="section-title-icon"></span> 访问次数</h3>
                     <div class="checkin-status">
                         <span id="visit-today-status">今日访问 0 次</span>
                         <span class="checkin-streak">累计访问 <span id="visit-total">0</span> 次</span>
@@ -202,7 +202,7 @@
                     </div>
             <!-- 日记统计 -->
             <section class="stats-section diary-stats">
-                <h2><i class="fas fa-book"></i> 日记统计</h2>
+                <h2><span class="section-title-icon"></span> 日记统计</h2>
                 <div class="diary-stats-grid">
                     <div class="stat-item"><span class="stat-label">连续天数</span><span class="stat-number" id="diary-consecutive">--</span></div>
                     <div class="stat-item"><span class="stat-label">记录天数</span><span class="stat-number" id="diary-total-days">--</span></div>
@@ -216,7 +216,7 @@
 
             <!-- 站点展示 -->
             <section class="sites-section">
-                <h2><i class="fas fa-globe"></i> <span id="websites-title">加载中...</span></h2>
+                <h2><span class="section-title-icon"></span> <span id="websites-title">加载中...</span></h2>
                 <div class="sites-grid">
                     <!-- 站点将由配置文件动态生成 -->
                 </div>
@@ -224,7 +224,7 @@
 
             <!-- 项目展示 -->
             <section class="projects-section">
-                <h2><i class="fas fa-code"></i> <span id="projects-title">加载中...</span></h2>
+                <h2><span class="section-title-icon"></span> <span id="projects-title">加载中...</span></h2>
                 <div class="projects-grid">
                     <!-- 项目将由配置文件动态生成 -->
                 </div>
@@ -246,6 +246,9 @@
 <script>
 // 应用配置到页面
 document.addEventListener('DOMContentLoaded', async function() {
+    // 初始化固定图标
+    initializeIcons();
+
     // 先加载栏目配置
     await loadSectionsConfig();
 
@@ -259,6 +262,45 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.error('❌ CONFIG 未定义，请检查 config.js 文件');
     }
 });
+
+// 初始化固定图标
+function initializeIcons() {
+    // 位置和职位图标
+    const locationIcons = document.querySelectorAll('.location .info-icon, .name .info-icon');
+    locationIcons.forEach((icon, index) => {
+        icon.innerHTML = createIcon(index === 0 ? 'home' : 'user'); // 位置用 home，职位用 user
+    });
+
+    // 欢迎标题图标（IP统计）
+    const welcomeIcon = document.querySelector('.ip-stats-section .section-title-icon');
+    if (welcomeIcon) {
+        welcomeIcon.innerHTML = createIcon('heart');
+    }
+
+    // 访问次数图标
+    const checkinIcon = document.querySelector('.checkin-title .section-title-icon');
+    if (checkinIcon) {
+        checkinIcon.innerHTML = createIcon('eye');
+    }
+
+    // 日记统计图标
+    const diaryIcon = document.querySelector('.diary-stats .section-title-icon');
+    if (diaryIcon) {
+        diaryIcon.innerHTML = createIcon('book');
+    }
+
+    // 站点展示图标
+    const websitesIcon = document.querySelector('.sites-section .section-title-icon');
+    if (websitesIcon) {
+        websitesIcon.innerHTML = createIcon('globe');
+    }
+
+    // 项目展示图标
+    const projectsIcon = document.querySelector('.projects-section .section-title-icon');
+    if (projectsIcon) {
+        projectsIcon.innerHTML = createIcon('code');
+    }
+}
 
 // 调色盘功能已移除 - 该函数已禁用
 function initCircularColorPalette() {

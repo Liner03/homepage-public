@@ -2412,8 +2412,9 @@
             document.getElementById('sectionItemsView').style.display = 'block';
 
             // 设置标题
+            const titleIcon = createIcon(section.icon.replace('fa-', ''));
             document.getElementById('currentSectionTitle').innerHTML = `
-                <i class="fas ${section.icon}"></i> ${section.title}
+                ${titleIcon} ${section.title}
             `;
 
             // 渲染项目列表
