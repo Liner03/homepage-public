@@ -864,39 +864,35 @@
                 </div>
             </div>
 
-            <!-- 访问统计 -->
-            <div class="card">
-                <div class="card-header">
-                    <h2>📈 访问统计（最近7天）</h2>
-                    <button class="btn btn-primary" onclick="refreshVisitStats()">刷新</button>
+            <!-- 访问统计概览 -->
+            <div class="cards-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+                <div class="mini-card">
+                    <h3>📊 7日平均</h3>
+                    <div class="value" id="avgVisits">-</div>
                 </div>
-                <div class="card-body">
-                    <div id="visitStatsContent" class="loading">加载中...</div>
+                <div class="mini-card">
+                    <h3>📈 7日峰值</h3>
+                    <div class="value" id="maxVisits">-</div>
+                </div>
+                <div class="mini-card">
+                    <h3>⚙️ 系统状态</h3>
+                    <div class="value" style="font-size: 18px;" id="systemStatus">-</div>
+                </div>
+                <div class="mini-card">
+                    <h3>⏱️ 运行时间</h3>
+                    <div class="value" style="font-size: 18px;" id="systemUptime">-</div>
                 </div>
             </div>
 
-            <!-- 功能卡片布局 -->
-            <div class="cards-grid">
-                <!-- 主题设置 -->
-                <div class="mini-card">
-                    <h3>🎨 全局主题色</h3>
-                    <div id="themePreview" style="margin: 15px 0;">
-                        <div class="loading">加载中...</div>
-                    </div>
-                    <div class="actions">
-                        <button class="btn btn-primary" onclick="refreshTheme()">刷新</button>
-                        <button class="btn btn-danger" onclick="deleteTheme()">删除</button>
-                    </div>
+            <!-- 访问趋势图 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>📈 访问趋势（最近7天）</h2>
+                    <button class="btn btn-primary" onclick="refreshVisitStats()">刷新</button>
                 </div>
-
-                <!-- 系统信息 -->
-                <div class="mini-card">
-                    <h3>⚙️ 系统信息</h3>
-                    <div id="systemInfo" style="margin: 15px 0; font-size: 14px;">
+                <div class="card-body">
+                    <div id="visitStatsChart" style="height: 200px; display: flex; align-items: flex-end; gap: 12px; padding: 20px 0;">
                         <div class="loading">加载中...</div>
-                    </div>
-                    <div class="actions">
-                        <button class="btn btn-primary" onclick="refreshSystemInfo()">刷新</button>
                     </div>
                 </div>
             </div>
@@ -1394,86 +1390,89 @@
         }
 
         async function refreshVisitStats() {
-            const content = document.getElementById('visitStatsContent');
-            content.innerHTML = '<div class="loading">加载中...</div>';
+            const chartContainer = document.getElementById('visitStatsChart');
+            chartContainer.innerHTML = '<div class="loading">加载中...</div>';
 
             try {
                 const response = await fetch('/admin/api/visit-stats');
                 const data = await response.json();
 
                 if (data.stats && data.stats.length > 0) {
-                    let html = '<table class="data-table"><thead><tr><th>日期</th><th>访问次数</th></tr></thead><tbody>';
-                    data.stats.forEach(stat => {
-                        html += `<tr><td>${stat.date}</td><td>${stat.count}</td></tr>`;
-                    });
-                    html += '</tbody></table>';
-                    content.innerHTML = html;
-                } else {
-                    content.innerHTML = '<div class="empty">暂无数据</div>';
-                }
-            } catch (error) {
-                content.innerHTML = '<div class="empty">加载失败</div>';
-            }
-        }
+                    const stats = data.stats;
 
-        async function refreshTheme() {
-            const preview = document.getElementById('themePreview');
-            preview.innerHTML = '<div class="loading">加载中...</div>';
+                    // 计算统计数据
+                    const counts = stats.map(s => s.count);
+                    const maxCount = Math.max(...counts);
+                    const avgCount = Math.round(counts.reduce((a, b) => a + b, 0) / counts.length);
 
-            try {
-                const response = await fetch('/api/theme');
-                const data = await response.json();
+                    // 更新统计卡片
+                    document.getElementById('avgVisits').textContent = avgCount;
+                    document.getElementById('maxVisits').textContent = maxCount;
 
-                if (data.success && data.data) {
-                    const theme = data.data;
-                    const color = `rgb(${theme.r}, ${theme.g}, ${theme.b})`;
-                    preview.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <div style="width: 60px; height: 60px; background: ${color}; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"></div>
-                            <div style="font-size: 12px;">
-                                <div>RGB: ${theme.r}, ${theme.g}, ${theme.b}</div>
+                    // 绘制柱状图
+                    let chartHTML = '';
+                    stats.forEach(stat => {
+                        const height = maxCount > 0 ? (stat.count / maxCount * 100) : 0;
+                        const dateLabel = stat.date.slice(5); // 只显示 MM-DD
+
+                        chartHTML += `
+                            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                                <div style="font-size: 12px; font-weight: 600; color: var(--text-primary);">${stat.count}</div>
+                                <div style="width: 100%; height: 150px; display: flex; align-items: flex-end;">
+                                    <div style="width: 100%; height: ${height}%; background: linear-gradient(180deg, var(--accent) 0%, rgba(0, 113, 227, 0.6) 100%); border-radius: 8px 8px 0 0; transition: all 0.3s ease;"></div>
+                                </div>
+                                <div style="font-size: 11px; color: var(--text-secondary);">${dateLabel}</div>
                             </div>
-                        </div>
-                    `;
+                        `;
+                    });
+
+                    chartContainer.innerHTML = chartHTML;
+                    chartContainer.style.display = 'flex';
                 } else {
-                    preview.innerHTML = '<div style="color: #999; font-size: 13px;">未设置主题</div>';
+                    chartContainer.innerHTML = '<div class="empty">暂无数据</div>';
                 }
             } catch (error) {
-                preview.innerHTML = '<div style="color: #999; font-size: 13px;">加载失败</div>';
-            }
-        }
-
-        async function deleteTheme() {
-            if (!confirm('确定要删除全局主题色吗？')) return;
-
-            try {
-                const response = await fetch('/api/theme', { method: 'DELETE' });
-                if (response.ok) {
-                    alert('主题色已删除');
-                    refreshTheme();
-                }
-            } catch (error) {
-                alert('删除失败');
+                chartContainer.innerHTML = '<div class="empty">加载失败</div>';
             }
         }
 
         async function refreshSystemInfo() {
-            const info = document.getElementById('systemInfo');
-            info.innerHTML = '<div class="loading">加载中...</div>';
+            const statusEl = document.getElementById('systemStatus');
+            const uptimeEl = document.getElementById('systemUptime');
+
+            statusEl.textContent = '...';
+            uptimeEl.textContent = '...';
 
             try {
                 const response = await fetch('/health');
                 const data = await response.json();
 
-                info.innerHTML = `
-                    <div style="line-height: 1.8;">
-                        <div><strong>状态：</strong><span class="badge badge-success">${data.status}</span></div>
-                        <div><strong>存储：</strong>${data.storage.visit.toUpperCase()}</div>
-                        <div style="font-size: 12px; color: #999; margin-top: 5px;">${new Date(data.timestamp).toLocaleString('zh-CN')}</div>
-                    </div>
-                `;
+                // 更新系统状态
+                if (data.status === 'ok') {
+                    statusEl.innerHTML = '<span style="color: var(--success);">● 正常</span>';
+                } else {
+                    statusEl.innerHTML = '<span style="color: var(--danger);">● 异常</span>';
+                }
+
+                // 计算运行时间（如果有 uptime 字段）
+                if (data.uptime) {
+                    const hours = Math.floor(data.uptime / 3600);
+                    const minutes = Math.floor((data.uptime % 3600) / 60);
+                    if (hours > 24) {
+                        const days = Math.floor(hours / 24);
+                        uptimeEl.textContent = `${days}天`;
+                    } else if (hours > 0) {
+                        uptimeEl.textContent = `${hours}小时`;
+                    } else {
+                        uptimeEl.textContent = `${minutes}分钟`;
+                    }
+                } else {
+                    // 使用时间戳计算
+                    uptimeEl.textContent = new Date(data.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                }
             } catch (error) {
-                info.innerHTML = '<div style="color: #999; font-size: 13px;">加载失败</div>';
+                statusEl.innerHTML = '<span style="color: var(--danger);">● 错误</span>';
+                uptimeEl.textContent = '--';
             }
         }
 
@@ -3161,7 +3160,6 @@
             // 加载概览数据
             loadStats();
             refreshVisitStats();
-            refreshTheme();
             refreshSystemInfo();
             refreshLanguageConfig();
             refreshDiaryStatus();
