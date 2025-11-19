@@ -1,417 +1,125 @@
 # 🏠 个人主页项目
 
 ## 🌐 在线演示
-**我的站点：** [https://edxx.de](https://edxx.de)
-**原作者演示：** [http://home.loadke.tech/](http://home.loadke.tech/)
+**我的站点：** _[待部署]_
+**原作者演示：** [https://edxx.de](https://edxx.de)
 
 ## 👨‍💻 项目信息
 **原作者：** [阿布白（IonRh）](https://github.com/IonRh)
 **原项目地址：** [https://github.com/IonRh/homepage-public](https://github.com/IonRh/homepage-public)
 
-
-> 🚀 使用原生 HTML、CSS、JS 构建，未依赖任何框架或插件，保证轻量高效。
+**二开作者：** [zduu](https://github.com/zduu)
+**二开项目地址：** [https://github.com/zduu/homepage-public](https://github.com/zduu/homepage-public)
 
 ## ✨ 项目功能
 
 - 🎨 **简洁美观** - 提供清爽的主页展示界面
 - 📱 **响应式设计** - 完美适配手机、平板、桌面等各种设备
 - ⚡ **极速加载** - 优化性能，提升用户浏览体验
-- 📊 **GitHub 统计** - 自动获取并显示真实的 GitHub 贡献数据
+- 📊 **GitHub 统计** - 通过第三方 API 获取完整的 GitHub 贡献数据（无需 Token）
 - 🌍 **访客信息** - 显示访客 IP 地址和地理位置
-- ⚙️ **配置驱动** - 所有内容通过配置文件统一管理
-- 🧭 **访问统计** - 展示今日/累计访问次数（支持本地存储、独立后端或 Cloudflare KV）
-- 🔧 **模块化设计** - 第三个标签页支持多种类型：日记统计、项目展示、自定义内容，或完全禁用
+- ⚙️ **配置驱动** - 通过可视化后台管理所有配置，无需手动编辑文件
+- 🧭 **访问统计** - 展示今日/累计访问次数（支持 JSON/SQLite/Cloudflare KV）
+- 🔧 **模块化设计** - 第三个标签页支持多种类型：日记统计（支持 RSS）、项目展示、自定义内容，或完全禁用
 - 🎯 **个性化** - 支持自定义标签、项目、技能展示
-- 🌈 **背景调色盘** - 圆形HSL调色盘，支持实时背景颜色个性化定制（连续点击主题按钮4次开启）
-- 🚀 **独立后端** - 新增 Node.js 后端支持，无需 Cloudflare，可自由部署（详见下方）
+- 🛠️ **可视化管理** - 内置管理后台，零门槛配置
+- 📝 **日记统计** - 支持 RSS 订阅源统计，自动计算写作天数和连续记录
+- 💎 **图标系统** - 使用 Heroicons，提供丰富的 SVG 图标库
 
-## 🎯 部署方式选择
+## 🎯 部署方式
 
-本项目支持三种部署方式，根据你的需求选择：
+### ⚠️ 重要提示
 
-### 方式一：纯静态部署（最简单）
-- ✅ **适合场景**：个人主页、简单展示
-- ✅ **优点**：零成本、部署简单、访问快速
-- ⚠️ **限制**：访问统计等功能仅在浏览器本地存储，不跨设备同步
-- 📦 **平台**：GitHub Pages、Vercel、Netlify 等
+本项目**必须使用 Node.js 后端**，不支持纯静态部署。
 
-### 方式二：独立后端部署（推荐✨）
-- ✅ **适合场景**：需要真实访问统计、跨设备数据同步
-- ✅ **优点**：完全自主控制、支持多种存储方式（JSON/SQLite/Cloudflare KV）
-- ✅ **特点**：轻量级 Node.js 后端，一键启动
-- 📦 **平台**：任何支持 Node.js 的服务器、VPS、云主机
+**为什么？**
+- GitHub 贡献日历需要后端代理第三方 API（避免 CORS）
+- 日记统计需要后端解析 RSS 订阅源
+- 管理后台需要后端提供 API 接口
+- 前端配置、主题色等功能都依赖后端存储
 
-### 方式三：Cloudflare Pages + Functions
-- ✅ **适合场景**：全球 CDN 加速 + 免费后端
-- ✅ **优点**：全球分布、高可用、免费额度充足
-- ℹ️ **说明**：项目已内置 Functions 代码（`functions/` 目录）
-- 📦 **平台**：Cloudflare Pages
+### 支持的部署方式
 
-## 🌈 背景调色盘功能
+✅ **Node.js 后端部署**（唯一支持的方式）
+- VPS / 云主机（Ubuntu、CentOS 等）
+- Docker 容器部署
+- 任何支持 Node.js 的服务器
 
-### 功能特性
-- **🎨 圆形HSL调色盘**：360°全色域颜色选择，支持任意颜色定制
-- **👆 智能触发**：连续快速点击主题按钮4次开启（暗色主题下会自动切换到亮色主题）
-- **💡 进度提示**：第3次点击显示"再点击1次"，第4次显示"调色盘已开启"
-- **👁️ 实时预览**：鼠标悬停预览颜色效果，点击确认选择
-- **🔄 重置功能**：支持一键重置为默认蓝色主题
-- **📱 响应式设计**：完美适配桌面、平板、手机等各种设备
-- **🌐 跨浏览器兼容**：Chrome、Safari、Firefox等浏览器完美居中显示
-- **🌙 主题优先级**：调色盘仅在亮色主题下可用，暗色主题时会自动切换到亮色主题
-- **💾 本地存储**：颜色设置自动保存到浏览器本地存储
-- **☁️ 全局持久化**：支持跨客户端同步（需要部署API服务和配置KV存储）
-
-### 使用方法
-1. **开启调色盘**：连续快速点击主题切换按钮4次（暗色主题下会自动切换到亮色主题后开启）
-2. **选择颜色**：鼠标在色环上移动预览效果，点击确认选择
-3. **重置颜色**：点击"重置默认"按钮恢复默认蓝色主题
-4. **主题切换**：切换到暗色主题将显示默认暗色背景，不受调色盘影响
-
-### 高级功能：全局持久化
-如需启用跨客户端同步功能，可使用Cloudflare Pages Functions + KV存储：
-
-```bash
-# 1. 项目已包含 functions/api/theme.js 文件，部署后自动生效
-# 2. 在Cloudflare Pages项目中绑定KV命名空间
-# 3. 无需额外配置，调色盘将自动检测并使用 /api/theme 端点
-```
-
-**配置步骤**：
-1. 在 Cloudflare Dashboard 创建 KV 命名空间（例如：`homepage-data`）
-2. 在 Pages 项目设置 → Functions → KV 绑定中，将变量名设为 `CHECKIN_KV`
-3. 部署后调色盘和访问统计都会自动支持跨设备同步
-
-**状态提示**：
-- 🎨 全局主题色已更新：成功保存到云端
-- 📱 仅本地生效：KV存储未配置或网络连接失败
-- ⚠️ 保存失败：服务异常，已降级为本地存储
-
-## 🔧 自定义栏目功能
-
-### 支持的栏目类型
-
-- **日记统计** - 显示写作天数、连续记录等统计信息
-- **项目展示** - 展示个人项目，支持GitHub链接和演示地址
-- **学习记录** - 显示学习进度、完成课程等信息
-- **阅读统计** - 展示读书数量、页数等阅读数据
-- **自定义内容** - 完全自定义HTML和JavaScript
-- **完全禁用** - 隐藏第三个标签页
-
-### 快速配置
-
-编辑 `modules/custom-section-config.js` 文件：
-
-```javascript
-const CUSTOM_SECTION_CONFIG = {
-    enabled: true,           // 是否启用
-    type: 'diary',          // 类型：diary | projects | custom
-    title: '日记',          // 标签页标题
-    icon: 'fas fa-book',    // 图标
-    config: {
-        // 具体配置...
-    }
-};
-```
-
-详细配置说明请参考 `modules/README.md`。
+❌ **不支持的部署方式**
+- 纯静态部署（GitHub Pages、Netlify、Vercel 等）
+- Cloudflare Pages（除非手动补全所有 Functions）
 
 ## 🚀 快速开始
 
-### 选项一：独立 Node.js 后端（推荐⭐）
+### 本地开发
 
 ```bash
-# 克隆项目
-git clone https://github.com/zduu/homepage-public.git
+# 1. 克隆项目
+git clone https://github.com/Liner03/homepage-public.git
 cd homepage-public
 
-# 🔧 第一步：创建前端配置文件（重要！）
+# 2. 创建前端配置文件
 cp config.example.js config.js
-# 编辑 config.js，修改你的个人信息（GitHub 用户名等）
+# 编辑 config.js，修改 github.username
 
-# 🔧 第二步：配置并启动后端
+# 3. 配置并启动后端
 cd backend
-
-# 安装依赖
 npm install
-
-# 复制并配置环境变量
 cp .env.example .env
-# 编辑 .env 文件，设置 GITHUB_TOKEN（可选）和存储方式
 
-# 启动后端服务
+# 4. 编辑 .env 文件
+# - 修改管理员账号密码（重要！）
+# - 选择存储方式：json（默认）| sqlite | cloudflare
+
+# 5. 启动服务
 npm start
 
-# 访问 http://localhost:3000
+# 6. 访问
+# 前端：http://localhost:3000
+# 后台：http://localhost:3000/admin/login
 ```
 
-> ⚠️ **重要提示**：必须先在项目根目录创建 `config.js` 文件（从 `config.example.js` 复制），否则前端会报错 `CONFIG is not defined`。
+### 生产环境部署
 
-**配置访问统计存储方式：**
-编辑 `backend/.env` 文件：
-```bash
-# 选择存储方式: json（默认） | sqlite | cloudflare
-VISIT_STORAGE=json
-
-# GitHub Token（可选，用于精确贡献日历）
-# 获取方式：https://github.com/settings/tokens
-# 详细说明见下方"如何获取 GITHUB_TOKEN"章节
-GITHUB_TOKEN=your_github_token_here
-```
-
-> 💡 **获取 GitHub Token**：访问 https://github.com/settings/tokens 创建新 Token，选择"只读公共仓库"权限即可。详细步骤见本文档后面的"如何获取 GITHUB_TOKEN"章节。
-
-### 选项二：Python 本地服务器（简单测试）
-
-```bash
-# 克隆项目
-git clone https://github.com/zduu/homepage-public.git
-cd homepage-public
-
-# 创建前端配置文件
-cp config.example.js config.js
-# 编辑 config.js，修改你的个人信息
-
-# 启动本地服务器（含可选 GraphQL 代理，端口 8002）
-# 可选：设置 GitHub Token 以启用"精确贡献日历"
-# Windows PowerShell
-#setx GITHUB_TOKEN "ghp_your_token"   # 永久；或使用当前会话：
-$env:GITHUB_TOKEN="ghp_your_token"
-python start.py
-
-# 纯静态方式（不含代理）
-python -m http.server 8000
-# 或 Node.js
-npx http-server -p 8000
-```
-
-- 使用 `python start.py` 时，访问 `http://localhost:8002`
-- 使用内置/Node 静态服务器时，访问 `http://localhost:8000`
-
-### 选项三：纯静态部署（最简单）
-
-1. 创建配置文件：`cp config.example.js config.js`
-2. 编辑 `config.js`，修改你的个人信息
-3. 将项目文件部署到静态托管平台（GitHub Pages、Vercel、Netlify 等）
-4. 访问统计等功能将使用浏览器本地存储
-
-### 环境变量与配置示例
-- `.env.example`：环境变量示例（复制为 `.env`，不会被提交到 Git）
-- `.env`：本地私密环境变量（已在 `.gitignore` 中忽略）
-- `config.example.js`：配置示例（复制为 `config.js` 并修改）
-
-```bash
-# 初始化示例
-cp .env.example .env   # Windows 可用：copy .env.example .env
-cp config.example.js config.js   # Windows：copy config.example.js config.js
-```
-
-
-## ⚙️ 配置说明
-
-所有个人信息都在 `config.js` 文件中统一管理，修改后刷新页面即可看到效果。
-
-### 🔧 核心配置
-
-<details>
-<summary><strong>📋 个人信息配置</strong></summary>
-
-```javascript
-personal: {
-    name: "你的名字",                    // 显示在页面标题
-    title: "你的职位",                   // 显示在头像下方
-    quote: "你的个人格言",               // 个人座右铭
-    location: "你的位置",                // 地理位置
-    status: "你的状态",                  // 当前状态
-    avatar: "./static/1.png",            // 头像图片路径
-    favicon: "./static/f2.png"           // 网站图标路径
-}
-```
-</details>
-
-<details>
-<summary><strong>🐙 GitHub 配置</strong></summary>
-
-```javascript
-github: {
-
-> 贡献日历数据来源配置（可选）：
->
-> ```js
-> github: {
->   username: "你的GitHub用户名",
->   profileUrl: "https://github.com/你的用户名",
->   // 'auto'：优先使用代理获取精确数据，失败回退 events
->   // 'proxy'：仅使用代理（需要后端支持）
->   // 'events'：仅使用 events 估算（无需后端，默认 Cloudflare 静态可用）
->   calendarSource: 'auto',
->   calendarProxyEndpoint: '/api/github/contributions'
-> }
-> ```
-
-    username: "你的GitHub用户名",         // ⚠️ 重要：影响统计数据获取
-    profileUrl: "https://github.com/你的用户名"
-}
-```
-</details>
-
-<details>
-<summary><strong>🔗 社交链接配置</strong></summary>
-
-```javascript
-social: {
-    github: "https://github.com/你的用户名",
-    email: "你的邮箱@example.com",
-    telegram: "https://t.me/你的用户名"
-}
-```
-</details>
-
-<details>
-<summary><strong>🏷️ 标签和展示配置</strong></summary>
-
-```javascript
-// 个人标签
-tags: ["标签1", "标签2", "标签3"],
-
-// 网站展示
-websites: [
-    {
-        name: "网站名称",
-        description: "网站描述",
-        url: "https://your-website.com",
-        icon: "图标链接"
-    }
-],
-
-// 项目展示
-projects: [
-    {
-        name: "项目名称",
-        description: "项目描述",
-        url: "https://github.com/username/project",
-        icon: "项目图标链接"
-    }
-],
-
-// 技能展示
-skills: [
-    {
-        name: "技能名称",
-        icon: "技能图标链接"
-    }
-]
-```
-</details>
-
-<details>
-<summary><strong>📝 页面文本配置</strong></summary>
-
-```javascript
-texts: {
-    githubStats: {
-        totalCommitsLabel: "总计贡献：",
-        totalCommitsText: "过去一年共提交了",
-        // ... 更多文本配置
-    },
-    sectionTitles: {
-        welcome: "欢迎您",
-        websites: "我的站点",
-        // ... 更多标题配置
-    }
-}
-```
-</details>
-## 📈 访问统计功能
-
-本项目内置简易的“访问统计”模块，默认使用浏览器本地存储记录访问数据：
-
-- 今日访问：统计当前自然日内的访问次数
-- 累计访问：自首次访问以来的总访问次数
-- 页面刷新即自动增加一次访问计数
-- 按钮保留（占位），访问统计模式下无效
-
-### 存储方式
-
-- 默认：localStorage（刷新/重启浏览器仍保留；清除"站点数据"或无痕模式会清空）
-- 可选：Cloudflare KV 永久存储（与调色盘共用同一个命名空间 `CHECKIN_KV`）
-
-#### 启用 KV（可选）
-
-1) 访问统计云端接口：`functions/api/daily-visit.js`
-   - 写入：`POST /api/daily-visit`，请求体：`{ date: 'YYYY-MM-DD', timestamp: number }`
-     - 返回：`{ todayCount, totalCount, isNewVisit, message }`
-   - 查询：`GET /api/daily-visit?date=YYYY-MM-DD`（date 可省略，默认当天）
-     - 返回：`{ todayCount, totalCount, date }`
-   - 服务端自动按 IP 做每日去重，无需在前端传 IP
-
-2) Cloudflare Pages → Settings → Functions → KV namespace bindings：
-   - Variable name: `CHECKIN_KV`
-   - KV namespace: 选择你的命名空间（例如 `homepage-data`）
-
-3) 前端自动探测 KV 可用性：
-   - 若函数返回 `501`（未配置）或出错，将回退到本地存储
-   - KV 可用时，页面右下角状态会显示“存储：远程（KV）”
-
-4) KV 中的键名（可在 Cloudflare Dashboard 的 KV 浏览器中查看）：
-   - 当日计数：`daily-visit:YYYY-MM-DD`
-   - 累计计数：`daily-visit:total`
-   - 当日去重标记：`daily-visit:ip:YYYY-MM-DD:<client-ip>`（24 小时过期）
-
-补充：签到与主题色接口同样复用 `CHECKIN_KV` 命名空间（见 `functions/api/checkin.js` 与 `functions/api/theme.js`）。
-
-### 注意
-
-- 跨浏览器/设备/域名不会共享本地访问数据
-- 如需跨设备统计，请启用 KV，并在前端生成的 `checkin:uid` 基础上进行关联（项目已内置生成/持久化 uid 的方法）
-
-
-
-### 🖼️ 图片资源
-
-推荐使用在线图标服务，避免本地文件管理：
-
-- **头像图片**：建议使用 [Gravatar](https://gravatar.com/) 或 [GitHub头像](https://github.com/username.png)
-- **技能图标**：推荐 [DevIcons](https://devicons.github.io/devicon/) 或 [Simple Icons](https://simpleicons.org/)
-- **项目图标**：推荐 [Icons8](https://icons8.com/) 或 [Iconify](https://iconify.design/)
-
-## 🚀 部署指南
-
-### 独立后端部署（推荐✨）
-
-适合需要完整功能（访问统计、主题同步等）且希望自主控制的用户。
-
-#### 1. VPS / 云主机部署
+#### 方式一：使用 PM2（推荐）
 
 ```bash
 # 在服务器上克隆项目
-git clone https://github.com/zduu/homepage-public.git
-cd homepage-public/backend
+git clone https://github.com/Liner03/homepage-public.git
+cd homepage-public
 
-# 安装依赖
+# 配置前端
+cp config.example.js config.js
+# 编辑 config.js
+
+# 配置后端
+cd backend
 npm install --production
-
-# 配置环境变量
 cp .env.example .env
-nano .env  # 编辑配置
+nano .env  # 修改配置
 
-# 使用 PM2 启动（推荐）
+# 安装并使用 PM2
 npm install -g pm2
-pm2 start server.js --name homepage-backend
+pm2 start server.js --name homepage
 pm2 save
 pm2 startup  # 设置开机自启
-
-# 或使用 systemd（详见 backend/README.md）
 ```
 
-**配置要点：**
+#### 方式二：使用 Docker
+
 ```bash
-# backend/.env
-PORT=3000
-VISIT_STORAGE=sqlite          # 生产环境推荐使用 sqlite
-GITHUB_TOKEN=your_token_here  # 可选
+# 在项目根目录执行
+docker-compose up -d
+
+# 查看日志
+docker-compose logs -f backend
+
+# 停止服务
+docker-compose down
 ```
 
-**Nginx 反向代理配置：**
+#### Nginx 反向代理（可选）
+
 ```nginx
 server {
     listen 80;
@@ -430,187 +138,227 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
+
+    # 管理后台
+    location /admin/ {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
 }
 ```
 
-#### 2. 访问统计存储方式对比
+## 🛠️ 配置说明
 
-| 存储方式 | 适用场景 | 性能 | 配置难度 |
-|---------|---------|------|---------|
-| **JSON** | 个人站点、低流量 | ⭐⭐⭐ | ✅ 极简 |
-| **SQLite** | 中等流量、生产环境 | ⭐⭐⭐⭐⭐ | ✅ 简单 |
-| **Cloudflare KV** | 全球分布、高可用 | ⭐⭐⭐⭐ | ⚠️ 需要账号 |
+### 环境变量配置（`.env` 文件）
 
-**推荐配置：**
-- 个人主页（< 1000 PV/天）：`VISIT_STORAGE=json`
-- 生产环境（> 1000 PV/天）：`VISIT_STORAGE=sqlite`
-- 已有 Cloudflare：`VISIT_STORAGE=cloudflare`
+编辑 `backend/.env`：
 
-#### 3. 数据持久化
+```bash
+# 服务器配置
+PORT=3000
+NODE_ENV=development
+
+# 访问统计存储方式：json | sqlite | cloudflare
+VISIT_STORAGE=json
+
+# 管理后台账号配置（⚠️ 重要：请修改默认密码！）
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=change_this_password_123
+SESSION_SECRET=change_this_secret_key_random_string
+
+# 数据存储路径
+DATA_DIR=./data
+```
+
+### 存储方式选择
+
+| 存储方式 | 优点 | 缺点 |
+|---------|------|------|
+| **JSON** | 零依赖、易调试、配置简单 | 大流量下性能较低、不支持并发写入 |
+| **SQLite** | 高性能、支持并发、适合生产环境 | 需要安装 better-sqlite3 依赖 |
+| **Cloudflare KV** | 全球分布、高可用、免费额度充足 | 需要 Cloudflare 账号和配置 |
+
+## 🛠️ 管理后台
+
+### 访问后台
+
+```
+http://localhost:3000/admin/login
+```
+
+### 默认账号
+
+```
+用户名：admin
+密码：change_this_password_123
+```
+
+⚠️ **安全提示**：首次部署后请立即修改默认密码！
+
+### 后台功能
+
+后台提供完整的可视化配置界面，**无需手动编辑任何配置文件**：
+
+| 功能模块 | 说明 |
+|---------|------|
+| 📊 **仪表板** | 查看访问统计、签到用户、系统信息 |
+| ⚙️ **前端配置** | 修改个人信息、社交链接、项目、技能等（替代手动编辑 `config.js`） |
+| 🌐 **语言配置** | 自定义所有文本内容（支持多语言） |
+| 📝 **日记配置** | 配置日记 RSS 订阅源、自定义模块 |
+| 🎨 **栏目管理** | 新增、删除、隐藏栏目 |
+
+### 功能特点
+
+- ✅ **零门槛配置** - 点击即可修改，无需懂代码
+- ✅ **实时保存** - 修改后自动保存到 `backend/data/data.json`
+- ✅ **数据持久化** - 所有配置永久保存
+- ✅ **安全认证** - 基于 session 的身份验证
+
+## 📝 日记统计功能
+
+### 功能特性
+
+- 📊 **RSS 统计** - 自动读取 RSS 订阅源，统计文章数量
+- 📅 **写作天数** - 自动计算从第一篇到最新的天数
+- 🔥 **连续记录** - 统计最长连续写作天数
+- 🎨 **自定义模块** - 支持添加自定义统计项
+
+### 配置方式
+
+**推荐：使用管理后台配置**
+
+1. 访问 `/admin/diary-config`
+2. 填写 RSS 订阅地址（如：`https://your-blog.com/feed.xml`）
+3. 选择认证方式（可选）
+4. 保存配置
+
+**可选：手动编辑配置文件**
+
+编辑 `modules/custom-section-config.js`：
+
+```javascript
+const CUSTOM_SECTION_CONFIG = {
+    enabled: true,
+    type: 'diary',  // diary | projects | custom | disabled
+    title: '日记',
+    icon: 'fas fa-book',
+    config: {
+        endpoint: "https://your-blog.com/feed.xml",
+        authType: "x-api-key",  // 可选
+        apiKey: ""  // 可选
+    }
+};
+```
+
+### 支持的栏目类型
+
+| 类型 | 说明 | 适用场景 |
+|------|------|---------|
+| **diary** | 日记统计（支持 RSS） | 个人博客、写作记录 |
+| **projects** | 项目展示 | GitHub 项目集合 |
+| **custom** | 自定义内容 | 任意 HTML + JS |
+| **disabled** | 完全禁用 | 只需两个标签页 |
+
+## 💎 图标系统
+
+本项目使用 **Heroicons** 作为图标库，提供丰富的 SVG 图标。
+
+### 推荐资源
+
+- **头像图片**：[Gravatar](https://gravatar.com/) 或 [GitHub 头像](https://github.com/username.png)
+- **项目图标**：[Heroicons](https://heroicons.com/)
+- **技能图标**：[DevIcons](https://devicons.github.io/devicon/) 或 [Simple Icons](https://simpleicons.org/)
+
+## 📊 GitHub 贡献日历
+
+### 数据来源
+
+本项目使用**第三方 API** 获取完整的 GitHub 贡献数据，**无需配置 GITHUB_TOKEN**。
+
+**API 地址：** `https://gh-calendar.rschristian.dev/user/{username}`
+
+### 优势
+
+- ✅ **无需 Token** - 完全公开访问，零配置
+- ✅ **完整数据** - 包含组织私有仓库的贡献（与 GitHub Profile 一致）
+- ✅ **后端代理** - 避免 CORS 问题
+- ✅ **自动缓存** - 减少 API 调用，提升性能
+
+### 技术实现
+
+前端调用后端代理：
+```
+前端 → /api/github/contributions-third-party
+     → 后端代理 → https://gh-calendar.rschristian.dev/user/{username}
+```
+
+如果第三方 API 失败，页面会显示错误提示，需要检查网络连接。
+
+详见 `GITHUB_API_LIMITATIONS.md` 文档。
+
+## 📈 访问统计功能
+
+### 数据持久化
 
 数据保存在 `backend/data/` 目录：
+
 ```
 backend/data/
-├── data.json          # 主题、签到数据
+├── data.json          # 前端配置、主题色、签到数据
 ├── visit-stats.json   # 访问统计（JSON 模式）
 └── visit-stats.db     # 访问统计（SQLite 模式）
 ```
 
-**备份数据：**
+### 数据备份
+
 ```bash
 # 定期备份 data 目录
 tar -czf backup-$(date +%Y%m%d).tar.gz backend/data/
 ```
 
-### Cloudflare Pages 部署
-
-1. **准备工作**
-   - 修改 `config.js` 中的 `github.username`
-   - 如需“精确贡献日历”，你有两种选择：
-     - 纯静态部署（默认，简单）：把 `github.calendarSource` 设为 `'events'` 或 `'auto'`（自动回退），无需后端
-     - 使用 Pages Functions（可选）：保持 `calendarSource: 'auto'` 或 `'proxy'`，并提供 `/api/github/contributions` 函数（示例可向我索取）
-
-2. **部署步骤**
-   - Fork 本仓库到你的 GitHub
-   - 登录 [Cloudflare Pages](https://pages.cloudflare.com/)
-   - 连接 GitHub 仓库
-   - 构建设置：
-     - 构建命令：留空（本项目为纯静态）
-     - 构建输出目录：`/`
-   - 部署完成后绑定自定义域名
-
-### 如何获取 GITHUB_TOKEN（只读、最低权限）
-1. 打开 https://github.com/settings/tokens
-2. 推荐使用 Fine-grained token（或经典 Token 也可）
-3. 权限选择：只读公共仓库即可（无需私有权限）
-4. 复制 Token，粘贴到 `.env` 的 `GITHUB_TOKEN=` 后
-5. 切勿将 `.env` 提交到 Git（已被忽略）
-
-### 在 Cloudflare 中使用
-- 纯静态 Cloudflare Pages：无需 Token，也能展示“估算版”贡献日历（events）。
-  - 建议在 `config.js`：`calendarSource: 'events'` 或保留 `'auto'`（自动回退）
-- Cloudflare Pages Functions（可选，启用“精确日历”）：
-  - 新建函数 `/api/github/contributions`，读取环境变量 `GITHUB_TOKEN`，实现与 README 前文一致的 GraphQL 代理
-  - 在 Pages 的项目设置中新增环境变量 `GITHUB_TOKEN`
-  - 前端配置保持：
-    ```js
-    github: {
-      calendarSource: 'auto',
-      calendarProxyEndpoint: '/api/github/contributions'
-    }
-    ```
-  - 部署后，前端将优先调用该端点获取精确数据，失败时回退到 events
-
-## 启用 Cloudflare Pages Functions（精确贡献日历）
-
-本仓库已内置函数：`functions/api/github/contributions.js`
-
-1) 在 Cloudflare Pages 项目 → Settings → Environment variables，新建：
-   - `GITHUB_TOKEN` = 你的 Token（只读、最低权限；若需私有贡献计入，请使用你本人账号 Token，并在 GitHub 个人设置中勾选“Include private contributions”）
-
-2) 部署后，前端无需改动或仅保持：
-```js
-// config.js 中（默认已是 auto）
-github: {
-  calendarSource: 'auto',
-  calendarProxyEndpoint: '/api/github/contributions'
-}
-```
-
-3) 验证
-- 打开你的站点，切换到“日历”视图，应显示完整 1 年绿色格子；若函数异常，前端会自动回退到 events 估算
-
-4) 常见问题
-- 403/401：检查 GITHUB_TOKEN 是否正确、未过期
-- 数据缺天：GraphQL 正常，但你账号近年无活动；或私有贡献未在 GitHub 个人设置中勾选显示
-- 跨域：本函数默认 `Access-Control-Allow-Origin: *`，同源 Pages 一般无跨域问题
-
-
-
-3. **可选：启用精确贡献日历（Pages Functions）**
-   - 在项目中添加一个函数 `functions/api/github/contributions.js`（或 .ts），读取环境变量 `GITHUB_TOKEN`，实现与 README 顶部 GraphQL 查询一致的代理逻辑
-   - 在 Cloudflare 项目的 Pages 设置里添加环境变量 `GITHUB_TOKEN`
-   - 部署后，确保 `config.js` 中：
-     ```js
-     github: {
-       calendarSource: 'auto',
-       calendarProxyEndpoint: '/api/github/contributions'
-     }
-     ```
-
-### 本地精确日历（可选）
-- 如果你只想本地预览“精确贡献日历”，可使用本仓库的 `start.py`：
-  ```powershell
-  # Windows PowerShell（当前会话）
-  $env:GITHUB_TOKEN="ghp_your_token"
-  python start.py  # 打开 http://localhost:8002
-  ```
-  ```bash
-  # macOS/Linux
-  export GITHUB_TOKEN="ghp_your_token"
-  python3 start.py
-  ```
-- Cloudflare Pages 部署仍为纯静态，不依赖该脚本
-
-   - 前端会优先通过该端点获取精确数据，失败时自动回退到 events
-
-### GitHub Pages 部署
-
-```bash
-# 推送到 GitHub
-git add .
-git commit -m "Update personal homepage-public"
-git push origin main
-
-# 在仓库设置中启用 GitHub Pages
-```
-
-### Vercel 部署
-
-```bash
-npm i -g vercel
-vercel
-```
-
-## 🔧 统一KV配置（可选）
-
-本项目的调色盘和访问统计功能都可以使用同一个 Cloudflare KV 命名空间进行跨设备数据同步：
-
-### 功能对比
-| 功能 | 本地存储 | 云端同步（KV） |
-|------|----------|----------------|
-| 背景调色盘 | ✅ 浏览器本地 | ✅ 跨设备同步 |
-| 访问统计 | ✅ 浏览器本地 | ✅ 跨设备统计 |
-| 配置要求 | 无 | 需要绑定KV命名空间 |
-
-### 一键配置步骤
-1. **创建KV命名空间**：在 Cloudflare Dashboard 创建一个命名空间（例如：`homepage-data`）
-2. **绑定到项目**：Pages项目设置 → Functions → KV namespace bindings
-   - Variable name: `CHECKIN_KV`
-   - KV namespace: 选择刚创建的命名空间
-3. **部署生效**：重新部署后，调色盘和访问统计会自动启用云端同步
-
-### 状态指示
-- 🎨 全局主题色已更新：调色盘成功同步到云端
-- 📊 远程（KV）：访问统计使用云端存储
-- 📱 仅本地生效：KV 未配置或网络异常
-
 ## 🔍 部署前检查清单
 
-- [ ] 个人信息已更新
-- [ ] GitHub 用户名配置正确
-- [ ] 所有图标链接可访问
-- [ ] 社交链接有效
-- [ ] 本地测试正常
-- [ ] 移动端适配良好
+- [ ] 创建 `config.js` 文件并修改 `github.username`
+- [ ] 修改管理后台默认密码（`backend/.env`）
+- [ ] 选择合适的存储方式（JSON/SQLite）
+- [ ] 配置好服务器环境（Node.js >= 14）
+- [ ] 本地测试正常（运行后访问测试）
+- [ ] 准备好域名和 SSL 证书（生产环境）
 
 ## 📝 注意事项
 
-- ✅ 修改配置后刷新页面即可看到效果
-- ✅ GitHub统计数据为真实API数据，非模拟数据
+- ✅ 所有配置都可以通过管理后台修改，无需手动编辑文件
+- ✅ GitHub 统计数据为真实 API 数据，无需 Token
 - ✅ 支持完全自定义所有页面内容
+- ⚠️ **必须使用 Node.js 后端，不支持纯静态部署**
 - ⚠️ **请保留原作者信息，遵守开源协议**
-- 💡 如遇问题，欢迎提交 [Issue](https://github.com/zduu/homepage-public/issues)
+- 💡 如遇问题，欢迎提交 [Issue](https://github.com/Liner03/homepage-public/issues)
+
+## 🔧 常见问题
+
+### 1. 为什么不支持纯静态部署？
+
+因为项目依赖后端提供以下关键功能：
+- GitHub 贡献日历代理（避免 CORS）
+- 日记 RSS 统计
+- 管理后台 API
+- 前端配置存储
+
+### 2. 可以部署到 Vercel/Netlify 吗？
+
+不建议。虽然这些平台支持 Serverless Functions，但项目的后端架构基于 Express.js，需要完整的 Node.js 运行环境。
+
+### 3. SQLite 安装失败怎么办？
+
+```bash
+# 使用预编译版本
+npm install --build-from-source=better-sqlite3
+```
+
+### 4. 忘记管理员密码怎么办？
+
+编辑 `backend/.env` 文件，修改 `ADMIN_PASSWORD`，重启服务即可。
 
 ## 📄 开源协议
 
@@ -619,6 +367,7 @@ vercel
 ## 🙏 致谢
 
 感谢原作者 [阿布白（IonRh）](https://github.com/IonRh) 提供的优秀开源项目。
+感谢二开作者 [zduu](https://github.com/zduu) 对项目的持续改进。
 
 ---
 
