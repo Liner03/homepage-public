@@ -119,27 +119,37 @@ function createAdminRouter(config, dataStorage, visitStorage) {
     }
   });
 
-  // API: 导出访问统计数据
+  // API: 导出全站配置数据
   router.get('/api/visit-stats/export', requireAuth, async (req, res) => {
     try {
-      // 检查存储适配器是否支持导出功能
-      if (typeof visitStorage.exportData !== 'function') {
-        return res.status(501).json({
-          success: false,
-          message: '当前存储方式不支持导出功能'
-        });
+      // 1. 导出访问统计数据
+      let visitData = { daily: {}, total: 0 };
+      if (typeof visitStorage.exportData === 'function') {
+        visitData = await visitStorage.exportData();
       }
 
-      const data = await visitStorage.exportData();
+      // 2. 导出所有配置数据（从 dataStorage）
+      const allData = dataStorage.loadData();
 
-      // 构建导出数据结构
+      // 构建完整的导出数据结构
       const exportData = {
         version: '1.0',
         exportDate: new Date().toISOString(),
         storageType: config.visitStorage,
         data: {
-          daily: data.daily || {},
-          total: data.total || 0
+          // 访问统计数据
+          visitStats: {
+            daily: visitData.daily || {},
+            total: visitData.total || 0
+          },
+          // 所有配置数据
+          config: {
+            theme: allData.theme || null,
+            'language-config': allData['language-config'] || null,
+            'language-tags': allData['language-tags'] || null,
+            'diary-config': allData['diary-config'] || null,
+            sections: allData.sections || null
+          }
         }
       };
 
@@ -156,7 +166,7 @@ function createAdminRouter(config, dataStorage, visitStorage) {
     }
   });
 
-  // API: 导入访问统计数据
+  // API: 导入全站配置数据
   router.post('/api/visit-stats/import', requireAuth, async (req, res) => {
     try {
       const { data, mode } = req.body;
@@ -176,29 +186,59 @@ function createAdminRouter(config, dataStorage, visitStorage) {
         });
       }
 
-      // 检查存储适配器是否支持导入功能
-      if (typeof visitStorage.importData !== 'function') {
-        return res.status(501).json({
-          success: false,
-          message: '当前存储方式不支持导入功能'
-        });
+      const importedData = data.data;
+      const results = [];
+
+      // 1. 导入访问统计数据
+      if (importedData.visitStats && typeof visitStorage.importData === 'function') {
+        const visitResult = await visitStorage.importData(importedData.visitStats, mode);
+        results.push(`访问统计: ${visitResult.message}`);
       }
 
-      // 执行导入
-      const result = await visitStorage.importData(data.data, mode);
+      // 2. 导入配置数据
+      if (importedData.config) {
+        const currentData = dataStorage.loadData();
+        const configData = importedData.config;
 
-      if (result.success) {
-        res.json({
-          success: true,
-          message: result.message,
-          mode: mode
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: result.message
-        });
+        if (mode === 'replace') {
+          // 替换模式：完全覆盖配置
+          const newData = {
+            theme: configData.theme || null,
+            'language-config': configData['language-config'] || null,
+            'language-tags': configData['language-tags'] || null,
+            'diary-config': configData['diary-config'] || null,
+            sections: configData.sections || null
+          };
+          dataStorage.saveData(newData);
+          results.push('配置数据: 已替换');
+        } else {
+          // 合并模式：合并配置（导入的数据覆盖现有数据）
+          if (configData.theme !== null && configData.theme !== undefined) {
+            currentData.theme = configData.theme;
+          }
+          if (configData['language-config']) {
+            currentData['language-config'] = configData['language-config'];
+          }
+          if (configData['language-tags']) {
+            currentData['language-tags'] = configData['language-tags'];
+          }
+          if (configData['diary-config']) {
+            currentData['diary-config'] = configData['diary-config'];
+          }
+          if (configData.sections) {
+            currentData.sections = configData.sections;
+          }
+          dataStorage.saveData(currentData);
+          results.push('配置数据: 已合并');
+        }
       }
+
+      res.json({
+        success: true,
+        message: results.join(', '),
+        mode: mode,
+        details: results
+      });
     } catch (error) {
       console.error('导入数据失败:', error);
       res.status(500).json({

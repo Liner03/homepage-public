@@ -900,37 +900,44 @@
             <!-- 数据迁移 -->
             <div class="card">
                 <div class="card-header">
-                    <h2>💾 数据导出/导入</h2>
+                    <h2>💾 全站数据导出/导入</h2>
                 </div>
                 <div class="card-body">
                     <div style="margin-bottom: 20px; padding: 15px; background: rgba(0, 113, 227, 0.05); border-radius: 10px; border-left: 4px solid var(--accent);">
                         <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">
                             <i class="fas fa-info-circle" style="color: var(--accent); margin-right: 8px;"></i>
-                            切换存储方式前，请先导出数据。切换后可以导入之前导出的 JSON 数据。
+                            导出/导入包含：访问统计、主题配置、语言配置、语言标签、日记配置、栏目配置等全站所有数据。切换存储方式前请先导出备份。
                         </p>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <!-- 导出卡片 -->
                         <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
-                            <h3 style="font-size: 16px; margin-bottom: 10px;">📤 导出数据</h3>
-                            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 15px;">
-                                导出当前所有访问统计数据为 JSON 格式
+                            <h3 style="font-size: 16px; margin-bottom: 10px;">📤 导出全站数据</h3>
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">
+                                导出内容包括：
                             </p>
+                            <ul style="font-size: 12px; color: var(--text-secondary); margin-bottom: 15px; padding-left: 20px;">
+                                <li>访问统计数据</li>
+                                <li>主题色配置</li>
+                                <li>语言配置与标签</li>
+                                <li>日记配置</li>
+                                <li>栏目配置</li>
+                            </ul>
                             <button class="btn btn-primary" onclick="exportVisitData()" style="width: 100%;">
-                                <i class="fas fa-download"></i> 导出数据
+                                <i class="fas fa-download"></i> 导出全站数据
                             </button>
                         </div>
 
                         <!-- 导入卡片 -->
                         <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
-                            <h3 style="font-size: 16px; margin-bottom: 10px;">📥 导入数据</h3>
+                            <h3 style="font-size: 16px; margin-bottom: 10px;">📥 导入全站数据</h3>
                             <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 15px;">
-                                从 JSON 文件导入访问统计数据
+                                从 JSON 文件导入全站配置数据
                             </p>
                             <div style="margin-bottom: 10px;">
                                 <select id="importMode" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-primary); color: var(--text-primary); margin-bottom: 10px;">
-                                    <option value="merge">合并模式（累加数据）</option>
+                                    <option value="merge">合并模式（覆盖已有配置）</option>
                                     <option value="replace">替换模式（清空后导入）</option>
                                 </select>
                             </div>
@@ -1497,13 +1504,13 @@
 
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = `visit-stats-export-${new Date().toISOString().slice(0, 10)}.json`;
+                    link.download = `homepage-data-export-${new Date().toISOString().slice(0, 10)}.json`;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
                     URL.revokeObjectURL(url);
 
-                    showAlert('success', '数据导出成功！');
+                    showAlert('success', '全站数据导出成功！');
                 } else {
                     showAlert('danger', result.message || '导出失败');
                 }
