@@ -31,9 +31,14 @@ function createAdminRouter(config, dataStorage, visitStorage) {
     res.sendFile(path.join(__dirname, '../public/admin/dashboard.html'));
   });
 
-  // 配置管理页面
-  router.get('/config.html', requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/admin/config.html'));
+  // 前端配置页面
+  router.get('/frontend-config', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/admin/frontend-config.html'));
+  });
+
+  // 语言配置页面
+  router.get('/language-config', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/admin/language-config.html'));
   });
 
   // 日记配置页面

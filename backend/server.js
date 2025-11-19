@@ -370,6 +370,297 @@ app.get('/api/sections', (req, res) => {
   }
 });
 
+// ==================== 语言配置 API ====================
+
+// 8. 获取语言配置 - GET（公开API，前端使用）
+app.get('/api/language-config', (req, res) => {
+  try {
+    let languageConfig = dataStorage.get('language-config');
+
+    // 如果没有配置，返回默认配置
+    if (!languageConfig) {
+      languageConfig = {
+        'JavaScript': 'js',
+        'Python': 'py',
+        'TypeScript': 'ts',
+        'CSS': 'css',
+        'HTML': 'css',
+        'Java': 'py',
+        'C++': 'py',
+        'C': 'py',
+        'Go': 'py',
+        'Rust': 'py',
+        'Vue': 'js',
+        'React': 'js',
+        'PHP': 'py',
+        'Ruby': 'py',
+        'Swift': 'py',
+        'Kotlin': 'py',
+        'Dart': 'py',
+        'Shell': 'py'
+      };
+      // 保存默认配置
+      dataStorage.set('language-config', languageConfig);
+    }
+
+    res.json({
+      success: true,
+      data: languageConfig
+    });
+  } catch (error) {
+    console.error('获取语言配置失败:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// 9. 保存语言配置 - POST（需要认证，后台管理使用）
+app.post('/api/language-config', (req, res) => {
+  try {
+    const newConfig = req.body;
+
+    // 验证配置格式
+    if (!newConfig || typeof newConfig !== 'object') {
+      return res.status(400).json({
+        success: false,
+        message: '无效的配置数据'
+      });
+    }
+
+    // 验证每个语言配置
+    for (const [language, cssClass] of Object.entries(newConfig)) {
+      if (typeof language !== 'string' || typeof cssClass !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: `语言 "${language}" 的配置格式错误`
+        });
+      }
+    }
+
+    // 保存配置
+    dataStorage.set('language-config', newConfig);
+
+    res.json({
+      success: true,
+      message: '语言配置保存成功'
+    });
+  } catch (error) {
+    console.error('保存语言配置失败:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// 10. 更新单个语言配置 - PUT
+app.put('/api/language-config/:language', (req, res) => {
+  try {
+    const language = decodeURIComponent(req.params.language);
+    const { cssClass } = req.body;
+
+    if (!cssClass || typeof cssClass !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'CSS类名不能为空'
+      });
+    }
+
+    // 获取当前配置
+    let languageConfig = dataStorage.get('language-config') || {};
+
+    // 更新或添加语言配置
+    languageConfig[language] = cssClass;
+
+    // 保存配置
+    dataStorage.set('language-config', languageConfig);
+
+    res.json({
+      success: true,
+      message: `语言 "${language}" 配置已更新`
+    });
+  } catch (error) {
+    console.error('更新语言配置失败:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// 11. 删除语言配置 - DELETE
+app.delete('/api/language-config/:language', (req, res) => {
+  try {
+    const language = decodeURIComponent(req.params.language);
+
+    // 获取当前配置
+    let languageConfig = dataStorage.get('language-config') || {};
+
+    // 检查语言是否存在
+    if (!languageConfig[language]) {
+      return res.status(404).json({
+        success: false,
+        message: `语言 "${language}" 不存在`
+      });
+    }
+
+    // 删除语言配置
+    delete languageConfig[language];
+
+    // 保存配置
+    dataStorage.set('language-config', languageConfig);
+
+    res.json({
+      success: true,
+      message: `语言 "${language}" 配置已删除`
+    });
+  } catch (error) {
+    console.error('删除语言配置失败:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// 12. 重置语言配置为默认值 - POST
+app.post('/api/language-config/reset', (req, res) => {
+  try {
+    const defaultConfig = {
+      'JavaScript': 'js',
+      'Python': 'py',
+      'TypeScript': 'ts',
+      'CSS': 'css',
+      'HTML': 'css',
+      'Java': 'py',
+      'C++': 'py',
+      'C': 'py',
+      'Go': 'py',
+      'Rust': 'py',
+      'Vue': 'js',
+      'React': 'js',
+      'PHP': 'py',
+      'Ruby': 'py',
+      'Swift': 'py',
+      'Kotlin': 'py',
+      'Dart': 'py',
+      'Shell': 'py'
+    };
+
+    dataStorage.set('language-config', defaultConfig);
+
+    res.json({
+      success: true,
+      message: '语言配置已重置为默认值',
+      data: defaultConfig
+    });
+  } catch (error) {
+    console.error('重置语言配置失败:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// ==================== 语言标签管理 API ====================
+
+// 13. 获取语言标签 - GET（公开API，前端使用）
+app.get('/api/language-tags', (req, res) => {
+  try {
+    let languageTags = dataStorage.get('language-tags');
+
+    // 如果没有配置，返回默认标签（新格式：无百分比）
+    if (!languageTags) {
+      languageTags = [
+        { lang: 'JavaScript' },
+        { lang: 'Python' },
+        { lang: 'TypeScript' },
+        { lang: 'CSS' }
+      ];
+      dataStorage.set('language-tags', languageTags);
+    }
+
+    res.json({
+      success: true,
+      data: languageTags
+    });
+  } catch (error) {
+    console.error('获取语言标签失败:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// 14. 保存语言标签 - POST（需要认证，后台管理使用）
+app.post('/api/language-tags', (req, res) => {
+  try {
+    const newTags = req.body.tags || req.body;
+
+    // 验证数据格式
+    if (!Array.isArray(newTags)) {
+      return res.status(400).json({
+        success: false,
+        message: '无效的数据格式'
+      });
+    }
+
+    // 验证每个标签（新格式：仅需要 lang 字段）
+    for (const tag of newTags) {
+      if (!tag.lang || typeof tag.lang !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: '语言名称不能为空'
+        });
+      }
+    }
+
+    // 保存标签
+    dataStorage.set('language-tags', newTags);
+
+    res.json({
+      success: true,
+      message: '语言标签保存成功'
+    });
+  } catch (error) {
+    console.error('保存语言标签失败:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// 15. 重置语言标签为默认值 - POST
+app.post('/api/language-tags/reset', (req, res) => {
+  try {
+    const defaultTags = [
+      { lang: 'JavaScript' },
+      { lang: 'Python' },
+      { lang: 'TypeScript' },
+      { lang: 'CSS' }
+    ];
+
+    dataStorage.set('language-tags', defaultTags);
+
+    res.json({
+      success: true,
+      message: '语言标签已重置为默认值',
+      data: defaultTags
+    });
+  } catch (error) {
+    console.error('重置语言标签失败:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 // ==================== 日记配置 API ====================
 
 // 8. 获取日记配置 - GET（公开API）

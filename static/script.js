@@ -319,8 +319,8 @@ async function fetchGitHubContributions(username, forceRefresh = false) {
             events = [];
         }
 
-        // 使用GitHub用户数据进行统计（可能是降级后的数据）
-        const githubStats = calculateGitHubStats(userData, repos, events);
+        // 获取语言标签（从后台配置）
+        const languageTags = await fetchLanguageTags();
 
         // 2) 渲染贡献日历：使用第三方API获取完整数据
         let calendarData = null;
@@ -340,7 +340,7 @@ async function fetchGitHubContributions(username, forceRefresh = false) {
             currentStreak: statsFromCalendar.currentStreak,
             activeDays: statsFromCalendar.activeDays,
             activeRate: statsFromCalendar.activeRate,
-            languages: githubStats.languages
+            languages: languageTags
         });
         renderContribCalendar(calendarData);
 
@@ -872,14 +872,31 @@ function updateGitHubDisplay(data) {
     }
 
     // 更新语言统计
-    if (data.languages && data.languages.length > 0) {
-        const languageContainer = document.querySelector('.language-tag').parentElement;
-        const languageHTML = data.languages.map(({ lang, percent }) => {
-            const className = getLanguageClass(lang);
-            return `<span class="language-tag ${className}">${lang} (${percent}%)</span>`;
-        }).join('');
+    const languageTag = document.querySelector('.language-tag');
+    if (languageTag && languageTag.parentElement) {
+        const languageContainer = languageTag.parentElement;
+        // 找到整个 stats-line 区域（包含"主要语言："标题）
+        const statsLine = languageTag.closest('.stats-line');
 
-        languageContainer.innerHTML = languageHTML;
+        if (data.languages && data.languages.length > 0) {
+            // 有语言数据，显示并更新（所有标签使用统一样式）
+            const languageHTML = data.languages.map(({ lang, percent }) => {
+                return `<span class="language-tag">${lang} (${percent}%)</span>`;
+            }).join('');
+
+            languageContainer.innerHTML = languageHTML;
+
+            // 显示整个 stats-line 区域
+            if (statsLine) {
+                statsLine.style.display = '';
+            }
+        } else {
+            // 没有语言数据，隐藏整个 stats-line 区域（包括标题）
+            if (statsLine) {
+                statsLine.style.display = 'none';
+                console.log('语言标签数据为空，已隐藏整个主要语言区域');
+            }
+        }
     }
 }
 
@@ -1136,9 +1153,49 @@ function getCSSVar(name){
 })();
 
 
-// 获取语言对应的CSS类名
+// 全局语言配置缓存
+let languageConfigCache = null;
+
+// 获取语言配置（从API）
+async function fetchLanguageConfig() {
+    try {
+        const response = await fetch('/api/language-config');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        const result = await response.json();
+        if (result.success && result.data) {
+            languageConfigCache = result.data;
+            return result.data;
+        }
+    } catch (error) {
+        console.warn('获取语言配置失败，使用默认配置:', error);
+        // 返回默认配置
+        languageConfigCache = {
+            'JavaScript': 'js',
+            'Python': 'py',
+            'TypeScript': 'ts',
+            'CSS': 'css',
+            'HTML': 'css',
+            'Java': 'py',
+            'C++': 'py',
+            'C': 'py',
+            'Go': 'py',
+            'Rust': 'py'
+        };
+        return languageConfigCache;
+    }
+}
+
+// 获取语言对应的CSS类名（同步版本，使用缓存）
 function getLanguageClass(language) {
-    const langMap = {
+    // 如果缓存存在，直接使用
+    if (languageConfigCache) {
+        return languageConfigCache[language] || 'py';
+    }
+
+    // 如果缓存不存在，返回默认值（这种情况应该很少见）
+    const defaultMap = {
         'JavaScript': 'js',
         'Python': 'py',
         'TypeScript': 'ts',
@@ -1151,7 +1208,27 @@ function getLanguageClass(language) {
         'Rust': 'py'
     };
 
-    return langMap[language] || 'py';
+    return defaultMap[language] || 'py';
+}
+
+// 获取语言标签（从后台API）
+async function fetchLanguageTags() {
+    try {
+        const response = await fetch('/api/language-tags');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        const result = await response.json();
+        if (result.success && result.data && result.data.length > 0) {
+            return result.data;
+        }
+        // 如果没有数据，返回 null，不渲染语言区域
+        return null;
+    } catch (error) {
+        console.warn('获取语言标签失败，不渲染主要语言区域:', error);
+        // 返回 null，不渲染语言区域
+        return null;
+    }
 }
 
 // 数字动画函数
@@ -1817,8 +1894,8 @@ function fetchVisitorIP() {
         }
     }
 
-    // 执行获取
-    fetchWithFallback();
+    // 执行获取并返回 Promise
+    return fetchWithFallback();
 }
 
 // 时间线增强动画
@@ -1924,45 +2001,72 @@ function createParticles() {
     document.head.appendChild(style);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    addAnimationStyles();
-    addPulseAnimation();
+// 隐藏全局 loading 并显示内容
+function hideGlobalLoading() {
+    const loadingEl = document.getElementById('global-loading');
+    const mainContainer = document.querySelector('.main-container');
 
-    // 初始化自定义栏目（替代原日记统计）
-    if (typeof initCustomSection === 'function') {
-        initCustomSection();
+    if (loadingEl) {
+        loadingEl.classList.add('hide');
+        // 等待动画完成后移除元素
+        setTimeout(() => {
+            loadingEl.remove();
+        }, 500);
     }
-    // 获取真实GitHub数据
-    fetchVisitorIP()
-    fetchGitHubContributions(GITHUB_USERNAME);
 
-    // 初始化签到
-    initCheckin();
+    if (mainContainer) {
+        // 显示主容器
+        mainContainer.style.transition = 'opacity 0.5s ease';
+        mainContainer.style.opacity = '1';
+    }
+}
 
-    // 检测是否为移动设备
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        addAnimationStyles();
+        addPulseAnimation();
 
-    if (!isMobile) {
-        // 只在非移动设备上加载动画
-        initSkillIcons();
-        initCardEffects();
-        initScrollAnimations();
-        initTypewriterEffect();
-        createParticles();
-        initSocialLinks();
-        initTimelineAnimation();
+        // 并行加载所有关键数据
+        await Promise.all([
+            // 初始化语言配置
+            fetchLanguageConfig(),
+            // 获取真实GitHub数据（包含语言标签）
+            fetchGitHubContributions(GITHUB_USERNAME),
+            // 初始化访客IP
+            fetchVisitorIP(),
+            // 初始化签到
+            initCheckin()
+        ]);
+
+        // 初始化自定义栏目（替代原日记统计）
+        if (typeof initCustomSection === 'function') {
+            initCustomSection();
+        }
+
+        // 检测是否为移动设备
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+
+        if (!isMobile) {
+            // 只在非移动设备上加载动画
+            initSkillIcons();
+            initCardEffects();
+            initScrollAnimations();
+            initTypewriterEffect();
+            createParticles();
+            initSocialLinks();
+            initTimelineAnimation();
+        }
+
+        // 所有数据加载完成，隐藏 loading
+        hideGlobalLoading();
+    } catch (error) {
+        console.error('初始化失败:', error);
+        // 即使出错也要隐藏 loading
+        hideGlobalLoading();
     }
 });
 
-// 添加页面加载动画
-window.addEventListener('load', () => {
-    document.body.style.opacity = '0';
-    document.body.style.transition = 'opacity 0.5s ease';
-
-    setTimeout(() => {
-        document.body.style.opacity = '1';
-    }, 100);
-});
+// 页面加载动画已由全局 loading 接管
 
 // 添加开发者工具检测和信息提示
 function detectDevTools() {

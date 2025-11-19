@@ -69,9 +69,18 @@
 
   </head>
 <body>
+    <!-- Apple 极简加载动画 -->
+    <div id="global-loading" class="global-loading">
+        <div class="apple-loading">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+
     <!-- 移除原有的主题切换按钮，改为JavaScript动态创建 -->
 
-    <div class="main-container">
+    <div class="main-container" style="opacity: 0;">
         <!-- 左侧个人信息 -->
         <aside class="sidebar">
             <section class="profile-section">
