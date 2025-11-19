@@ -293,8 +293,11 @@
 }
 
 /* 主题切换图标动画 */
-.theme-toggle i {
+.theme-toggle .theme-icon svg {
+    width: 20px;
+    height: 20px;
     transition: transform 0.3s ease;
+    display: block;
 }
 
 /* 主题切换按钮透明样式 */
@@ -305,7 +308,7 @@
     box-shadow: none !important;
 }
 
-.theme-toggle.switching i {
+.theme-toggle.switching .theme-icon svg {
     transform: rotate(180deg);
 }
 

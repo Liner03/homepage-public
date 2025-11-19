@@ -17,10 +17,11 @@ function createViewportFixedThemeButton() {
     button.className = 'theme-toggle';
     button.title = '切换主题';
     
-    // 创建图标
-    const icon = document.createElement('i');
+    // 创建图标容器
+    const icon = document.createElement('span');
     icon.id = 'theme-icon';
-    icon.className = 'fas fa-sun';
+    icon.className = 'theme-icon';
+    icon.innerHTML = HeroIcons.sun;
     
     button.appendChild(icon);
     container.appendChild(button);
@@ -219,10 +220,10 @@ class ThemeManager {
     updateThemeIcon(theme) {
         if (this.themeIcon) {
             if (theme === 'dark') {
-                this.themeIcon.className = 'fas fa-moon';
+                this.themeIcon.innerHTML = HeroIcons.moon;
                 this.themeToggle.title = '切换到亮色模式';
             } else {
-                this.themeIcon.className = 'fas fa-sun';
+                this.themeIcon.innerHTML = HeroIcons.sun;
                 this.themeToggle.title = '切换到暗色模式';
             }
         }
