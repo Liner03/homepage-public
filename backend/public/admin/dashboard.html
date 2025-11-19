@@ -97,6 +97,10 @@
             font-weight: 500;
             transition: var(--transition);
             box-shadow: var(--shadow-sm);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .logout-btn:hover {
@@ -107,6 +111,11 @@
 
         .logout-btn:active {
             transform: translateY(0);
+        }
+
+        .logout-btn .btn-icon svg {
+            width: 16px;
+            height: 16px;
         }
 
         /* ========== Container ========== */
