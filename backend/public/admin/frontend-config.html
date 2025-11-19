@@ -367,6 +367,16 @@
                     </div>
 
                     <hr>
+                    <h4>🔤 语言标签</h4>
+                    <div class="form-field" style="grid-column: 1 / -1;">
+                        <label>语言标签配置</label>
+                        <textarea id="language_tags_input"
+                                  placeholder="JavaScript, Python, TypeScript, CSS"
+                                  style="width: 100%; min-height: 100px; padding: 10px 12px; border: 1px solid var(--input-border); border-radius: 8px; background: var(--input-bg); font-size: 14px; color: var(--text-primary); font-family: 'SF Mono', Monaco, monospace; resize: vertical;"></textarea>
+                        <small>多个语言标签用逗号分隔</small>
+                    </div>
+
+                    <hr>
                     <h4>📝 文本配置</h4>
                     <div class="form-field">
                         <label>GitHub 统计 - 总提交标签</label>
@@ -770,25 +780,81 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
 `;
         }
 
+        // ==================== 语言标签管理 ====================
+        async function loadLanguageTags() {
+            try {
+                const response = await fetch('/api/language-tags');
+                const result = await response.json();
+
+                if (result.success && result.data && result.data.length > 0) {
+                    // 将数据转换为逗号分隔的格式（仅语言名称）
+                    const tagsText = result.data.map(tag => tag.lang).join(', ');
+                    document.getElementById('language_tags_input').value = tagsText;
+                }
+            } catch (error) {
+                console.error('加载语言标签失败:', error);
+            }
+        }
+
+        function parseLanguageTags() {
+            const input = document.getElementById('language_tags_input').value.trim();
+            if (!input) return [];
+
+            // 简单的逗号分隔解析，仅保存语言名称
+            const tags = [];
+            const items = input.split(',').map(s => s.trim()).filter(s => s);
+
+            for (const lang of items) {
+                if (lang) {
+                    tags.push({ lang });
+                }
+            }
+
+            return tags;
+        }
+
+        async function saveLanguageTags() {
+            const tags = parseLanguageTags();
+
+            try {
+                const response = await fetch('/api/language-tags', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tags })
+                });
+
+                const result = await response.json();
+                return result.success;
+            } catch (error) {
+                console.error('保存语言标签失败:', error);
+                return false;
+            }
+        }
+
         // ==================== 保存配置 ====================
         async function saveFormMode() {
             const configObj = getConfigFromForm();
             const content = generateConfigCode(configObj);
 
             try {
-                const response = await fetch('/admin/api/config/frontend', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content })
-                });
+                // 同时保存前端配置和语言标签
+                const [configResult, tagsResult] = await Promise.all([
+                    fetch('/admin/api/config/frontend', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content })
+                    }).then(r => r.json()),
+                    saveLanguageTags()
+                ]);
 
-                const data = await response.json();
-
-                if (data.success) {
+                if (configResult.success && tagsResult) {
                     frontendConfigRaw = content;
                     showAlert('success', '配置已保存！');
+                } else if (configResult.success) {
+                    frontendConfigRaw = content;
+                    showAlert('success', '前端配置已保存，但语言标签保存失败');
                 } else {
-                    showAlert('danger', '保存失败: ' + data.message);
+                    showAlert('danger', '保存失败: ' + configResult.message);
                 }
             } catch (error) {
                 showAlert('danger', '保存失败: ' + error.message);
@@ -821,6 +887,7 @@ const CONFIG = ${JSON.stringify(configObj, null, 2)};
         // ==================== 页面加载 ====================
         document.addEventListener('DOMContentLoaded', function() {
             loadFrontendConfig();
+            loadLanguageTags();
         });
     </script>
 </body>

@@ -41,11 +41,6 @@ function createAdminRouter(config, dataStorage, visitStorage) {
     res.sendFile(path.join(__dirname, '../public/admin/language-config.html'));
   });
 
-  // 语言标签管理页面
-  router.get('/language-tags', requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/admin/language-tags.html'));
-  });
-
   // 日记配置页面
   router.get('/diary-config', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, '../public/admin/diary-config.html'));

@@ -572,13 +572,13 @@ app.get('/api/language-tags', (req, res) => {
   try {
     let languageTags = dataStorage.get('language-tags');
 
-    // 如果没有配置，返回默认标签
+    // 如果没有配置，返回默认标签（新格式：无百分比）
     if (!languageTags) {
       languageTags = [
-        { lang: 'JavaScript', percent: 35 },
-        { lang: 'Python', percent: 25 },
-        { lang: 'TypeScript', percent: 20 },
-        { lang: 'CSS', percent: 20 }
+        { lang: 'JavaScript' },
+        { lang: 'Python' },
+        { lang: 'TypeScript' },
+        { lang: 'CSS' }
       ];
       dataStorage.set('language-tags', languageTags);
     }
@@ -599,7 +599,7 @@ app.get('/api/language-tags', (req, res) => {
 // 14. 保存语言标签 - POST（需要认证，后台管理使用）
 app.post('/api/language-tags', (req, res) => {
   try {
-    const newTags = req.body;
+    const newTags = req.body.tags || req.body;
 
     // 验证数据格式
     if (!Array.isArray(newTags)) {
@@ -609,18 +609,12 @@ app.post('/api/language-tags', (req, res) => {
       });
     }
 
-    // 验证每个标签
+    // 验证每个标签（新格式：仅需要 lang 字段）
     for (const tag of newTags) {
       if (!tag.lang || typeof tag.lang !== 'string') {
         return res.status(400).json({
           success: false,
           message: '语言名称不能为空'
-        });
-      }
-      if (typeof tag.percent !== 'number' || tag.percent < 0 || tag.percent > 100) {
-        return res.status(400).json({
-          success: false,
-          message: `"${tag.lang}" 的百分比必须在 0-100 之间`
         });
       }
     }
@@ -645,10 +639,10 @@ app.post('/api/language-tags', (req, res) => {
 app.post('/api/language-tags/reset', (req, res) => {
   try {
     const defaultTags = [
-      { lang: 'JavaScript', percent: 35 },
-      { lang: 'Python', percent: 25 },
-      { lang: 'TypeScript', percent: 20 },
-      { lang: 'CSS', percent: 20 }
+      { lang: 'JavaScript' },
+      { lang: 'Python' },
+      { lang: 'TypeScript' },
+      { lang: 'CSS' }
     ];
 
     dataStorage.set('language-tags', defaultTags);
