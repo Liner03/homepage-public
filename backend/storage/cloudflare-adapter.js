@@ -131,6 +131,137 @@ class CloudflareAdapter {
       throw error;
     }
   }
+
+  /**
+   * 列出所有键（支持前缀过滤）
+   */
+  async kvList(prefix = '') {
+    const url = `${this.baseUrl}/keys${prefix ? `?prefix=${prefix}` : ''}`;
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${this.apiToken}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`KV LIST 失败: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.result || [];
+  }
+
+  /**
+   * 批量删除键
+   */
+  async kvDeleteBulk(keys) {
+    const url = `${this.baseUrl}/bulk`;
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${this.apiToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(keys)
+    });
+
+    if (!response.ok) {
+      throw new Error(`KV DELETE BULK 失败: ${response.statusText}`);
+    }
+
+    return true;
+  }
+
+  /**
+   * 导出所有访问数据
+   * @returns {Object} { daily: {}, total: number }
+   */
+  async exportData() {
+    try {
+      // 列出所有 daily-visit: 开头的键（排除 IP 键）
+      const keys = await this.kvList('daily-visit:');
+
+      const daily = {};
+      let total = 0;
+
+      // 遍历所有键，获取数据
+      for (const key of keys) {
+        const keyName = key.name;
+
+        // 跳过 IP 记录和 total 键
+        if (keyName.startsWith('daily-visit:ip:')) {
+          continue;
+        }
+
+        if (keyName === 'daily-visit:total') {
+          const totalRaw = await this.kvGet(keyName);
+          total = totalRaw ? parseInt(totalRaw) : 0;
+        } else if (keyName.startsWith('daily-visit:')) {
+          // 提取日期 (daily-visit:YYYY-MM-DD)
+          const date = keyName.replace('daily-visit:', '');
+          const countRaw = await this.kvGet(keyName);
+          daily[date] = countRaw ? parseInt(countRaw) : 0;
+        }
+      }
+
+      return { daily, total };
+    } catch (error) {
+      console.error('导出数据失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 导入访问数据
+   * @param {Object} importData - { daily: {}, total: number }
+   * @param {string} mode - "merge" 或 "replace"
+   * @returns {Object} { success: boolean, message: string }
+   */
+  async importData(importData, mode = 'merge') {
+    try {
+      if (mode === 'replace') {
+        // 清空现有数据
+        const keys = await this.kvList('daily-visit:');
+        const keysToDelete = keys
+          .filter(k => !k.name.startsWith('daily-visit:ip:')) // 保留 IP 记录（会自动过期）
+          .map(k => k.name);
+
+        if (keysToDelete.length > 0) {
+          await this.kvDeleteBulk(keysToDelete);
+        }
+
+        // 插入新数据
+        for (const [date, count] of Object.entries(importData.daily || {})) {
+          await this.kvPut(`daily-visit:${date}`, count.toString());
+        }
+
+        // 更新总数
+        await this.kvPut('daily-visit:total', (importData.total || 0).toString());
+
+        return { success: true, message: '数据已替换' };
+      } else if (mode === 'merge') {
+        // 合并每日数据
+        for (const [date, count] of Object.entries(importData.daily || {})) {
+          const todayKey = `daily-visit:${date}`;
+          const existingRaw = await this.kvGet(todayKey);
+          const existingCount = existingRaw ? parseInt(existingRaw) : 0;
+          await this.kvPut(todayKey, (existingCount + count).toString());
+        }
+
+        // 累加总数
+        const totalRaw = await this.kvGet('daily-visit:total');
+        const existingTotal = totalRaw ? parseInt(totalRaw) : 0;
+        await this.kvPut('daily-visit:total', (existingTotal + (importData.total || 0)).toString());
+
+        return { success: true, message: '数据已合并' };
+      } else {
+        return { success: false, message: '无效的导入模式' };
+      }
+    } catch (error) {
+      console.error('导入数据失败:', error);
+      return { success: false, message: error.message };
+    }
+  }
 }
 
 module.exports = CloudflareAdapter;

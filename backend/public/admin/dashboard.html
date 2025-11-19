@@ -97,6 +97,10 @@
             font-weight: 500;
             transition: var(--transition);
             box-shadow: var(--shadow-sm);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .logout-btn:hover {
@@ -107,6 +111,11 @@
 
         .logout-btn:active {
             transform: translateY(0);
+        }
+
+        .logout-btn .btn-icon svg {
+            width: 16px;
+            height: 16px;
         }
 
         /* ========== Container ========== */
@@ -154,6 +163,17 @@
             background: var(--accent);
             color: white;
             box-shadow: var(--shadow-sm);
+        }
+
+        .nav-tab .tab-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-tab .tab-icon svg {
+            width: 18px;
+            height: 18px;
         }
 
         .nav-tab.active::after {
@@ -300,6 +320,20 @@
             font-weight: 700;  /* SF Pro Display Bold */
             color: var(--text-primary);
             letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-icon svg {
+            width: 22px;
+            height: 22px;
         }
 
         .card-body {
@@ -377,6 +411,17 @@
         .btn:active {
             transform: scale(0.96);
             transition: transform 0.1s;
+        }
+
+        .btn .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn .btn-icon svg {
+            width: 16px;
+            height: 16px;
         }
 
         .btn-primary {
@@ -817,10 +862,10 @@
             <h1>管理后台</h1>
             <div style="display: flex; gap: 12px; align-items: center;">
                 <button id="headerSaveBtn" class="btn btn-primary" onclick="saveCurrentTab()" style="display: none; min-height: 40px; padding: 10px 20px;">
-                    <i class="fas fa-save"></i> 保存配置
+                    <span class="btn-icon"></span> 保存配置
                 </button>
                 <button class="logout-btn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> 退出登录
+                    <span class="btn-icon"></span> 退出登录
                 </button>
             </div>
         </div>
@@ -830,21 +875,76 @@
         <!-- Tab 导航 -->
         <div class="nav-tabs">
             <button class="nav-tab active" onclick="switchMainTab('overview')">
-                <i class="fas fa-chart-line"></i> 概览
+                <span class="tab-icon"></span> 概览
             </button>
             <button class="nav-tab" onclick="switchMainTab('frontend')">
-                <i class="fas fa-palette"></i> 前端配置
+                <span class="tab-icon"></span> 前端配置
             </button>
             <button class="nav-tab" onclick="switchMainTab('backend')">
-                <i class="fas fa-cog"></i> 后端配置
+                <span class="tab-icon"></span> 后端配置
             </button>
             <button class="nav-tab" onclick="switchMainTab('sections')">
-                <i class="fas fa-th-large"></i> 栏目管理
+                <span class="tab-icon"></span> 栏目管理
             </button>
             <button class="nav-tab" onclick="switchMainTab('settings')">
-                <i class="fas fa-user"></i> 用户设置
+                <span class="tab-icon"></span> 用户设置
             </button>
         </div>
+        <script>
+        // 初始化图标
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab 图标
+            const tabs = document.querySelectorAll('.nav-tab');
+            const tabIconMap = {
+                'overview': 'chart-bar',
+                'frontend': 'swatch',
+                'backend': 'cog',
+                'sections': 'squares-2x2',
+                'settings': 'user'
+            };
+
+            tabs.forEach(tab => {
+                const tabName = tab.getAttribute('onclick').match(/switchMainTab\('(\w+)'\)/)[1];
+                const iconSpan = tab.querySelector('.tab-icon');
+                if (iconSpan && tabIconMap[tabName]) {
+                    iconSpan.innerHTML = createIcon(tabIconMap[tabName]);
+                }
+            });
+
+            // 按钮图标映射
+            const buttonIconMap = {
+                'headerSaveBtn': 'save',
+                'exportDataBtn': 'arrow-down',
+                'importDataBtn': 'arrow-up',
+                'backToSectionsBtn': 'arrow-left',
+                'addItemBtn': 'plus'
+            };
+
+            Object.entries(buttonIconMap).forEach(([btnId, iconName]) => {
+                const btn = document.querySelector(`#${btnId} .btn-icon`);
+                if (btn) {
+                    btn.innerHTML = createIcon(iconName);
+                }
+            });
+
+            // 退出登录按钮
+            const logoutBtn = document.querySelector('.logout-btn .btn-icon');
+            if (logoutBtn) {
+                logoutBtn.innerHTML = createIcon('arrow-right-on-rectangle');
+            }
+
+            // 栏目管理标题图标和新建栏目按钮
+            const sectionsHeaderIcon = document.querySelector('#sectionsListView .card-header h2 .header-icon');
+            if (sectionsHeaderIcon) {
+                sectionsHeaderIcon.innerHTML = createIcon('squares-2x2');
+            }
+
+            const createSectionBtn = document.querySelector('#sectionsListView .btn-primary .btn-icon');
+            if (createSectionBtn) {
+                createSectionBtn.innerHTML = createIcon('plus');
+            }
+        });
+        </script>
 
         <!-- 概览 Tab -->
         <div id="tab-overview" class="tab-pane active">
@@ -893,6 +993,56 @@
                 <div class="card-body">
                     <div id="visitStatsChart" style="height: 200px; display: flex; align-items: flex-end; gap: 12px; padding: 20px 0;">
                         <div class="loading">加载中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据迁移 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>💾 全站数据导出/导入</h2>
+                </div>
+                <div class="card-body">
+                    <div style="margin-bottom: 20px; padding: 15px; background: rgba(0, 113, 227, 0.05); border-radius: 10px; border-left: 4px solid var(--accent);">
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">
+                            <i class="fas fa-info-circle" style="color: var(--accent); margin-right: 8px;"></i>
+                            导出/导入包含：访问统计、主题配置、语言配置、语言标签、日记配置、栏目配置等全站所有数据。切换存储方式前请先导出备份。
+                        </p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <!-- 导出卡片 -->
+                        <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
+                            <h3 style="font-size: 16px; margin-bottom: 10px;">📤 导出全站数据</h3>
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">
+                                导出内容包括：
+                            </p>
+                            <ul style="font-size: 12px; color: var(--text-secondary); margin-bottom: 15px; padding-left: 20px;">
+                                <li>访问统计数据（每日/总计）</li>
+                                <li>所有配置数据（主题、语言、日记、栏目、签到等）</li>
+                            </ul>
+                            <button class="btn btn-primary" onclick="exportVisitData()" style="width: 100%;" id="exportDataBtn">
+                                <span class="btn-icon"></span> 导出全站数据
+                            </button>
+                        </div>
+
+                        <!-- 导入卡片 -->
+                        <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
+                            <h3 style="font-size: 16px; margin-bottom: 10px;">📥 导入全站数据</h3>
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 15px;">
+                                从 JSON 文件导入全站配置数据
+                            </p>
+                            <div style="margin-bottom: 10px;">
+                                <select id="importMode" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-primary); color: var(--text-primary); margin-bottom: 10px;">
+                                    <option value="merge">合并模式（覆盖已有配置）</option>
+                                    <option value="replace">替换模式（清空后导入）</option>
+                                </select>
+                            </div>
+                            <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleImportFile(event)">
+                            <button class="btn btn-secondary" onclick="document.getElementById('importFileInput').click()" style="width: 100%;" id="importDataBtn">
+                                <span class="btn-icon"></span> 选择文件导入
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1062,22 +1212,6 @@
                                 <input type="text" id="CF_API_TOKEN" name="CF_API_TOKEN">
                             </div>
                         </div>
-
-                        <hr>
-
-                        <h4>🔐 管理后台配置</h4>
-
-                        <div class="form-field">
-                            <label for="ADMIN_USERNAME">管理员用户名</label>
-                            <input type="text" id="ADMIN_USERNAME" name="ADMIN_USERNAME" placeholder="admin">
-                            <small>修改密码请前往"用户设置" Tab</small>
-                        </div>
-
-                        <div class="form-field">
-                            <label for="SESSION_SECRET">Session 密钥</label>
-                            <input type="text" id="SESSION_SECRET" name="SESSION_SECRET" placeholder="随机字符串">
-                            <small>用于加密 session，建议使用长随机字符串</small>
-                        </div>
                     </form>
                 </div>
             </div>
@@ -1091,9 +1225,9 @@
             <div id="sectionsListView">
                 <div class="card">
                     <div class="card-header">
-                        <h2><i class="fas fa-th-large"></i> 栏目管理</h2>
+                        <h2><span class="header-icon"></span> 栏目管理</h2>
                         <button class="btn btn-primary" onclick="showCreateSectionModal()">
-                            <i class="fas fa-plus"></i> 新建栏目
+                            <span class="btn-icon"></span> 新建栏目
                         </button>
                     </div>
                     <div class="card-body">
@@ -1112,13 +1246,13 @@
                 <div class="card">
                     <div class="card-header">
                         <div style="display: flex; align-items: center; gap: 12px;">
-                            <button class="btn btn-secondary" onclick="backToSectionsList()" style="padding: 10px;">
-                                <i class="fas fa-arrow-left"></i>
+                            <button class="btn btn-secondary" onclick="backToSectionsList()" style="padding: 10px;" id="backToSectionsBtn">
+                                <span class="btn-icon"></span>
                             </button>
                             <h2 id="currentSectionTitle">栏目名称</h2>
                         </div>
-                        <button class="btn btn-primary" onclick="showAddItemModal()">
-                            <i class="fas fa-plus"></i> 添加项目
+                        <button class="btn btn-primary" onclick="showAddItemModal()" id="addItemBtn">
+                            <span class="btn-icon"></span> 添加项目
                         </button>
                     </div>
                     <div class="card-body">
@@ -1280,6 +1414,39 @@
                     </form>
                 </div>
             </div>
+
+            <div class="card" style="margin-top: 30px;">
+                <div class="card-header">
+                    <h2>🔐 管理后台配置</h2>
+                </div>
+                <div class="card-body">
+                    <form id="adminConfigForm" class="form-grid" style="max-width: 600px;">
+                        <div class="form-field">
+                            <label for="settings_ADMIN_USERNAME">管理员用户名</label>
+                            <input type="text" id="settings_ADMIN_USERNAME" name="ADMIN_USERNAME" placeholder="admin">
+                            <small>用于登录管理后台的用户名</small>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="settings_SESSION_SECRET">Session 密钥</label>
+                            <input type="text" id="settings_SESSION_SECRET" name="SESSION_SECRET" placeholder="随机字符串">
+                            <small>用于加密 session cookie，防止会话劫持。建议使用长随机字符串（32字符以上）</small>
+                        </div>
+
+                        <div style="padding: 15px; background: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107; border-radius: 8px; margin-top: 10px;">
+                            <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">
+                                <strong>⚠️ 安全提示：</strong>
+                            </p>
+                            <ul style="margin: 8px 0 0 20px; color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
+                                <li><strong>Session 密钥</strong>用于加密和签名 session cookie，保护您的登录会话安全</li>
+                                <li>建议使用强随机字符串，可使用命令生成：<code style="background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 4px;">openssl rand -hex 32</code></li>
+                                <li>修改任何配置后需要<strong>重启服务器</strong>才能生效</li>
+                                <li>修改 Session 密钥会导致所有用户登出，需要重新登录</li>
+                            </ul>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1316,6 +1483,8 @@
                 loadEnvConfig();
             } else if (tabName === 'sections') {
                 loadSectionManagement();
+            } else if (tabName === 'settings') {
+                loadAdminConfig();
             }
         }
 
@@ -1326,7 +1495,8 @@
                     document.getElementById('envForm').dispatchEvent(new Event('submit'));
                     break;
                 case 'settings':
-                    document.getElementById('passwordForm').dispatchEvent(new Event('submit'));
+                    // 保存密码和管理后台配置
+                    saveAdminConfig();
                     break;
                 case 'sections':
                     // 栏目管理保存逻辑
@@ -1433,6 +1603,102 @@
                 }
             } catch (error) {
                 chartContainer.innerHTML = '<div class="empty">加载失败</div>';
+            }
+        }
+
+        // ==================== 数据导出/导入功能 ====================
+
+        async function exportVisitData() {
+            try {
+                const response = await fetch('/admin/api/visit-stats/export');
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    // 创建 JSON 文件并下载
+                    const dataStr = JSON.stringify(result.data, null, 2);
+                    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(dataBlob);
+
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `homepage-data-export-${new Date().toISOString().slice(0, 10)}.json`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+
+                    showAlert('success', '全站数据导出成功！');
+                } else {
+                    showAlert('danger', result.message || '导出失败');
+                }
+            } catch (error) {
+                console.error('Export error:', error);
+                showAlert('danger', '导出失败: ' + error.message);
+            }
+        }
+
+        async function handleImportFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // 检查文件类型
+            if (!file.name.endsWith('.json')) {
+                showAlert('danger', '请选择 JSON 文件');
+                return;
+            }
+
+            try {
+                // 读取文件内容
+                const fileContent = await file.text();
+                const importData = JSON.parse(fileContent);
+
+                // 验证数据格式
+                if (!importData.version || !importData.data) {
+                    showAlert('danger', '无效的数据格式');
+                    return;
+                }
+
+                // 获取导入模式
+                const mode = document.getElementById('importMode').value;
+
+                // 确认导入
+                const confirmMessage = mode === 'replace'
+                    ? '替换模式将清空当前所有数据，确定要继续吗？'
+                    : '合并模式将累加数据，确定要继续吗？';
+
+                if (!confirm(confirmMessage)) {
+                    event.target.value = ''; // 清空文件选择
+                    return;
+                }
+
+                // 执行导入
+                const response = await fetch('/admin/api/visit-stats/import', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        data: importData,
+                        mode: mode
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('success', result.message);
+                    // 刷新统计数据
+                    await refreshStats();
+                    await refreshVisitStats();
+                } else {
+                    showAlert('danger', result.message || '导入失败');
+                }
+            } catch (error) {
+                console.error('Import error:', error);
+                showAlert('danger', '导入失败: ' + error.message);
+            } finally {
+                // 清空文件选择，以便可以重复导入同一个文件
+                event.target.value = '';
             }
         }
 
@@ -1906,6 +2172,65 @@
         });
 
         // ==================== 用户设置 Tab ====================
+
+        // 加载管理后台配置
+        async function loadAdminConfig() {
+            try {
+                const response = await fetch('/admin/api/config/env');
+                const data = await response.json();
+
+                if (data.success) {
+                    const envData = data.data;
+
+                    // 填充用户名和 Session 密钥
+                    const usernameInput = document.getElementById('settings_ADMIN_USERNAME');
+                    const sessionSecretInput = document.getElementById('settings_SESSION_SECRET');
+
+                    if (usernameInput && envData.ADMIN_USERNAME) {
+                        usernameInput.value = envData.ADMIN_USERNAME;
+                    }
+                    if (sessionSecretInput && envData.SESSION_SECRET) {
+                        sessionSecretInput.value = envData.SESSION_SECRET;
+                    }
+                }
+            } catch (error) {
+                console.error('加载管理后台配置失败:', error);
+            }
+        }
+
+        // 保存管理后台配置
+        async function saveAdminConfig() {
+            try {
+                const username = document.getElementById('settings_ADMIN_USERNAME').value;
+                const sessionSecret = document.getElementById('settings_SESSION_SECRET').value;
+
+                const envData = {};
+                if (username.trim()) {
+                    envData.ADMIN_USERNAME = username.trim();
+                }
+                if (sessionSecret.trim()) {
+                    envData.SESSION_SECRET = sessionSecret.trim();
+                }
+
+                const response = await fetch('/admin/api/config/env', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(envData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('settingsAlert', 'warning', '配置已保存！请重启服务器使配置生效。');
+                } else {
+                    showAlert('settingsAlert', 'danger', '保存失败: ' + data.message);
+                }
+            } catch (error) {
+                showAlert('settingsAlert', 'danger', '保存失败: ' + error.message);
+            }
+        }
+
+        // 修改密码
         document.getElementById('passwordForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -2108,7 +2433,9 @@
                             ${sections.map(section => `
                                 <tr style="${section.hidden ? 'opacity: 0.5;' : ''}">
                                     <td style="text-align: center;">
-                                        <i class="fas ${section.icon}" style="font-size: 20px; color: var(--accent);"></i>
+                                        <div style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; color: var(--accent);">
+                                            ${createIcon(section.icon.replace('fa-', ''))}
+                                        </div>
                                     </td>
                                     <td>
                                         <strong>${section.title}</strong>
@@ -2173,8 +2500,9 @@
             document.getElementById('sectionItemsView').style.display = 'block';
 
             // 设置标题
+            const titleIcon = createIcon(section.icon.replace('fa-', ''));
             document.getElementById('currentSectionTitle').innerHTML = `
-                <i class="fas ${section.icon}"></i> ${section.title}
+                ${titleIcon} ${section.title}
             `;
 
             // 渲染项目列表
@@ -2517,6 +2845,13 @@
             } catch (error) {
                 console.error('隐藏栏目失败:', error);
             }
+        }
+
+        // 生成配置代码
+        function generateConfigCode(configObj) {
+            return `// Copy to config.js and edit your own info
+const CONFIG = ${JSON.stringify(configObj, null, 2)};
+`;
         }
 
         // 保存栏目数据到后端
@@ -3376,8 +3711,10 @@
         }
 
         .icon-display {
-            width: 16px;
-            height: 16px;
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            vertical-align: middle;
             color: var(--accent);
         }
     </style>

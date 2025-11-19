@@ -119,6 +119,150 @@ function createAdminRouter(config, dataStorage, visitStorage) {
     }
   });
 
+  // API: 导出全站配置数据
+  router.get('/api/visit-stats/export', requireAuth, async (req, res) => {
+    try {
+      // 1. 导出访问统计数据
+      let visitData = { daily: {}, total: 0 };
+      if (typeof visitStorage.exportData === 'function') {
+        visitData = await visitStorage.exportData();
+      }
+
+      // 2. 导出所有配置数据（从 dataStorage）
+      const allData = dataStorage.loadData();
+
+      // 3. 导出栏目配置（从 sections.json）
+      const sections = configManager.getSections();
+
+      // 构建完整的导出数据结构
+      const exportData = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        storageType: config.visitStorage,
+        data: {
+          // 访问统计数据
+          visitStats: {
+            daily: visitData.daily || {},
+            total: visitData.total || 0
+          },
+          // 所有配置数据（导出 data.json 中的所有字段）
+          config: allData || {},
+          // 栏目配置（从 sections.json）
+          sections: sections || []
+        }
+      };
+
+      res.json({
+        success: true,
+        data: exportData
+      });
+    } catch (error) {
+      console.error('导出数据失败:', error);
+      res.status(500).json({
+        success: false,
+        message: '导出失败: ' + error.message
+      });
+    }
+  });
+
+  // API: 导入全站配置数据
+  router.post('/api/visit-stats/import', requireAuth, async (req, res) => {
+    try {
+      const { data, mode } = req.body;
+
+      // 验证参数
+      if (!data || !data.data) {
+        return res.status(400).json({
+          success: false,
+          message: '无效的导入数据格式'
+        });
+      }
+
+      if (!['merge', 'replace'].includes(mode)) {
+        return res.status(400).json({
+          success: false,
+          message: '无效的导入模式，必须是 "merge" 或 "replace"'
+        });
+      }
+
+      const importedData = data.data;
+      const results = [];
+
+      // 1. 导入访问统计数据
+      if (importedData.visitStats && typeof visitStorage.importData === 'function') {
+        const visitResult = await visitStorage.importData(importedData.visitStats, mode);
+        results.push(`访问统计: ${visitResult.message}`);
+      }
+
+      // 2. 导入配置数据
+      if (importedData.config) {
+        const currentData = dataStorage.loadData();
+        const configData = importedData.config;
+
+        if (mode === 'replace') {
+          // 替换模式：完全覆盖配置（使用导入的所有字段）
+          dataStorage.saveData(configData);
+          results.push('配置数据: 已替换');
+        } else {
+          // 合并模式：合并配置（导入的数据覆盖现有数据）
+          const mergedData = { ...currentData };
+
+          // 遍历导入的所有字段，覆盖到现有数据
+          for (const [key, value] of Object.entries(configData)) {
+            if (value !== null && value !== undefined) {
+              mergedData[key] = value;
+            }
+          }
+
+          dataStorage.saveData(mergedData);
+          results.push('配置数据: 已合并');
+        }
+      }
+
+      // 3. 导入栏目配置
+      if (importedData.sections !== undefined) {
+        if (mode === 'replace') {
+          // 替换模式：完全覆盖栏目配置
+          configManager.saveSections(importedData.sections || []);
+          results.push('栏目配置: 已替换');
+        } else {
+          // 合并模式：导入的栏目覆盖现有栏目（按 ID 匹配）
+          const currentSections = configManager.getSections() || [];
+          const importedSections = importedData.sections || [];
+
+          // 创建一个映射以便快速查找
+          const sectionMap = new Map();
+          currentSections.forEach(section => {
+            sectionMap.set(section.id, section);
+          });
+
+          // 更新或添加导入的栏目
+          importedSections.forEach(section => {
+            sectionMap.set(section.id, section);
+          });
+
+          // 转换回数组
+          const mergedSections = Array.from(sectionMap.values());
+          configManager.saveSections(mergedSections);
+          results.push('栏目配置: 已合并');
+        }
+      }
+
+      res.json({
+        success: true,
+        message: results.join(', '),
+        mode: mode,
+        details: results
+      });
+    } catch (error) {
+      console.error('导入数据失败:', error);
+      res.status(500).json({
+        success: false,
+        message: '导入失败: ' + error.message
+      });
+    }
+  });
+
   // ==================== 配置管理 API ====================
 
   // API: 获取 .env 配置

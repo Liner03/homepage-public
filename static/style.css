@@ -293,8 +293,11 @@
 }
 
 /* 主题切换图标动画 */
-.theme-toggle i {
+.theme-toggle .theme-icon svg {
+    width: 20px;
+    height: 20px;
     transition: transform 0.3s ease;
+    display: block;
 }
 
 /* 主题切换按钮透明样式 */
@@ -305,7 +308,7 @@
     box-shadow: none !important;
 }
 
-.theme-toggle.switching i {
+.theme-toggle.switching .theme-icon svg {
     transform: rotate(180deg);
 }
 
@@ -1031,33 +1034,48 @@ body::before {
 
 .language-tag {
     display: inline-block;
-    padding: 2px 6px;
-    border-radius: 4px;
+    padding: 4px 10px;
+    border-radius: 6px;
     font-size: 12px;
     font-weight: 500;
-    margin-right: 6px;
-    margin-bottom: 2px;
+    margin-right: 8px;
+    margin-bottom: 4px;
     font-family: 'Monaco', 'Menlo', monospace;
+    background: rgba(116, 185, 255, 0.15);
+    border: 1px solid rgba(116, 185, 255, 0.3);
+    color: var(--text-primary);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: default;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.language-tag.js {
-    background: rgb(132 157 195 / 57%);
-    color: #212121;
+.language-tag:hover {
+    transform: translateY(-1px);
+    background: rgba(116, 185, 255, 0.25);
+    border-color: rgba(116, 185, 255, 0.5);
+    box-shadow: 0 4px 12px rgba(116, 185, 255, 0.3);
 }
 
-.language-tag.py {
-    background: rgb(132 157 195 / 57%);
-    color: #212121;
+/* 暗色主题适配 */
+[data-theme="dark"] .language-tag {
+    background: rgba(93, 173, 226, 0.15);
+    border-color: rgba(93, 173, 226, 0.3);
 }
 
-.language-tag.ts {
-    background: rgb(132 157 195 / 57%);
-    color: #212121;
+[data-theme="dark"] .language-tag:hover {
+    background: rgba(93, 173, 226, 0.25);
+    border-color: rgba(93, 173, 226, 0.5);
+    box-shadow: 0 4px 12px rgba(93, 173, 226, 0.3);
 }
 
+/* 移除旧的语言特定样式（不再使用） */
+.language-tag.js,
+.language-tag.py,
+.language-tag.ts,
 .language-tag.css {
-    background: rgb(132 157 195 / 57%);
-    color: #212121;
+    /* 这些类名不再使用，保持向后兼容 */
+    background: rgba(116, 185, 255, 0.15);
+    border: 1px solid rgba(116, 185, 255, 0.3);
 }
 
 /* 站点和项目部分 */
@@ -1080,6 +1098,39 @@ body::before {
     font-weight: 600;
     color: var(--text-primary);
     transition: color 0.3s ease;
+}
+
+/* 栏目标题中的 SVG 图标样式 */
+section h2 svg,
+.checkin-title svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+/* 固定标题图标样式 */
+.section-title-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.section-title-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* 位置和职位信息图标 */
+.info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 4px;
+}
+
+.info-icon svg {
+    width: 14px;
+    height: 14px;
 }
 
 .sites-grid, .projects-grid {
@@ -1333,8 +1384,9 @@ body::before {
 
     .language-tag {
         font-size: 11px;
-        padding: 2px 5px;
-        margin-right: 4px;
+        padding: 3px 8px;
+        margin-right: 6px;
+        margin-bottom: 3px;
     }
 
     /* 移动端日历适配 */
@@ -1521,7 +1573,9 @@ body::before {
 
     .language-tag {
         font-size: 10px;
-        padding: 1px 4px;
+        padding: 2px 6px;
+        margin-right: 4px;
+        margin-bottom: 2px;
     }
 }
 
@@ -1616,6 +1670,26 @@ footer a {
     justify-content: center !important;
     opacity: 0.5 !important;
     vertical-align: middle !important;
+}
+
+.github-refresh-icon svg {
+    width: 16px !important;
+    height: 16px !important;
+    display: block !important;
+    transition: transform 0.2s ease !important;
+}
+
+.github-refresh-icon.spinning svg {
+    animation: spin 1s linear infinite !important;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .github-refresh-icon:hover:not(:disabled) {

@@ -17,10 +17,11 @@ function createViewportFixedThemeButton() {
     button.className = 'theme-toggle';
     button.title = '切换主题';
     
-    // 创建图标
-    const icon = document.createElement('i');
+    // 创建图标容器
+    const icon = document.createElement('span');
     icon.id = 'theme-icon';
-    icon.className = 'fas fa-sun';
+    icon.className = 'theme-icon';
+    icon.innerHTML = HeroIcons.sun;
     
     button.appendChild(icon);
     container.appendChild(button);
@@ -219,10 +220,10 @@ class ThemeManager {
     updateThemeIcon(theme) {
         if (this.themeIcon) {
             if (theme === 'dark') {
-                this.themeIcon.className = 'fas fa-moon';
+                this.themeIcon.innerHTML = HeroIcons.moon;
                 this.themeToggle.title = '切换到亮色模式';
             } else {
-                this.themeIcon.className = 'fas fa-sun';
+                this.themeIcon.innerHTML = HeroIcons.sun;
                 this.themeToggle.title = '切换到暗色模式';
             }
         }
@@ -440,30 +441,32 @@ function addRefreshButton(username) {
     const refreshBtn = document.createElement('button');
     refreshBtn.id = 'github-refresh-btn';
     refreshBtn.className = 'github-refresh-icon';
-    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+    refreshBtn.innerHTML = HeroIcons['arrow-path'];
     refreshBtn.title = '刷新GitHub数据';
 
     refreshBtn.addEventListener('click', async () => {
         refreshBtn.disabled = true;
-        refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        refreshBtn.classList.add('spinning');
         refreshBtn.title = '正在刷新...';
 
         try {
             // 强制刷新GitHub数据
             await fetchGitHubContributions(username, true);
-            refreshBtn.innerHTML = '<i class="fas fa-check"></i>';
+            refreshBtn.classList.remove('spinning');
+            refreshBtn.innerHTML = HeroIcons.check;
             refreshBtn.title = '刷新完成';
             setTimeout(() => {
-                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                refreshBtn.innerHTML = HeroIcons['arrow-path'];
                 refreshBtn.title = '刷新GitHub数据';
                 refreshBtn.disabled = false;
             }, 2000);
         } catch (error) {
             console.error('刷新失败:', error);
-            refreshBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+            refreshBtn.classList.remove('spinning');
+            refreshBtn.innerHTML = HeroIcons['exclamation-triangle'];
             refreshBtn.title = '刷新失败，点击重试';
             setTimeout(() => {
-                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                refreshBtn.innerHTML = HeroIcons['arrow-path'];
                 refreshBtn.title = '刷新GitHub数据';
                 refreshBtn.disabled = false;
             }, 3000);
@@ -880,8 +883,11 @@ function updateGitHubDisplay(data) {
 
         if (data.languages && data.languages.length > 0) {
             // 有语言数据，显示并更新（所有标签使用统一样式）
-            const languageHTML = data.languages.map(({ lang, percent }) => {
-                return `<span class="language-tag">${lang} (${percent}%)</span>`;
+            const languageHTML = data.languages.map(item => {
+                // 兼容两种格式：{ lang: 'JavaScript' } 或 { lang: 'JavaScript', percent: 35 }
+                const langName = item.lang || item;
+                // 不显示百分比，只显示语言名称
+                return `<span class="language-tag">${langName}</span>`;
             }).join('');
 
             languageContainer.innerHTML = languageHTML;

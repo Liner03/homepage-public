@@ -114,6 +114,63 @@ class JsonAdapter {
       data.ips = ips;
     }
   }
+
+  /**
+   * 导出所有访问数据
+   * @returns {Object} { daily: {}, total: number }
+   */
+  async exportData() {
+    const data = this.loadData();
+    return {
+      daily: data.daily || {},
+      total: data.total || 0
+    };
+  }
+
+  /**
+   * 导入访问数据
+   * @param {Object} importData - { daily: {}, total: number }
+   * @param {string} mode - "merge" 或 "replace"
+   * @returns {Object} { success: boolean, message: string }
+   */
+  async importData(importData, mode = 'merge') {
+    try {
+      const currentData = this.loadData();
+
+      if (mode === 'replace') {
+        // 替换模式：清空现有数据，导入新数据
+        const newData = {
+          daily: importData.daily || {},
+          total: importData.total || 0,
+          ips: {} // 清空 IP 记录
+        };
+        this.saveData(newData);
+        return { success: true, message: '数据已替换' };
+      } else if (mode === 'merge') {
+        // 合并模式：合并每日数据，累加总数
+        const mergedDaily = { ...currentData.daily };
+
+        // 合并每日数据（相同日期的访问量相加）
+        for (const [date, count] of Object.entries(importData.daily || {})) {
+          mergedDaily[date] = (mergedDaily[date] || 0) + count;
+        }
+
+        const mergedData = {
+          daily: mergedDaily,
+          total: currentData.total + (importData.total || 0),
+          ips: currentData.ips || {} // 保留现有 IP 记录
+        };
+
+        this.saveData(mergedData);
+        return { success: true, message: '数据已合并' };
+      } else {
+        return { success: false, message: '无效的导入模式' };
+      }
+    } catch (error) {
+      console.error('导入数据失败:', error);
+      return { success: false, message: error.message };
+    }
+  }
 }
 
 module.exports = JsonAdapter;
