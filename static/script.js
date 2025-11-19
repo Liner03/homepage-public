@@ -441,30 +441,32 @@ function addRefreshButton(username) {
     const refreshBtn = document.createElement('button');
     refreshBtn.id = 'github-refresh-btn';
     refreshBtn.className = 'github-refresh-icon';
-    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+    refreshBtn.innerHTML = HeroIcons['arrow-path'];
     refreshBtn.title = '刷新GitHub数据';
 
     refreshBtn.addEventListener('click', async () => {
         refreshBtn.disabled = true;
-        refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        refreshBtn.classList.add('spinning');
         refreshBtn.title = '正在刷新...';
 
         try {
             // 强制刷新GitHub数据
             await fetchGitHubContributions(username, true);
-            refreshBtn.innerHTML = '<i class="fas fa-check"></i>';
+            refreshBtn.classList.remove('spinning');
+            refreshBtn.innerHTML = HeroIcons.check;
             refreshBtn.title = '刷新完成';
             setTimeout(() => {
-                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                refreshBtn.innerHTML = HeroIcons['arrow-path'];
                 refreshBtn.title = '刷新GitHub数据';
                 refreshBtn.disabled = false;
             }, 2000);
         } catch (error) {
             console.error('刷新失败:', error);
-            refreshBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+            refreshBtn.classList.remove('spinning');
+            refreshBtn.innerHTML = HeroIcons['exclamation-triangle'];
             refreshBtn.title = '刷新失败，点击重试';
             setTimeout(() => {
-                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                refreshBtn.innerHTML = HeroIcons['arrow-path'];
                 refreshBtn.title = '刷新GitHub数据';
                 refreshBtn.disabled = false;
             }, 3000);

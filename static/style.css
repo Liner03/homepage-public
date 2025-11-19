@@ -1639,6 +1639,26 @@ footer a {
     vertical-align: middle !important;
 }
 
+.github-refresh-icon svg {
+    width: 16px !important;
+    height: 16px !important;
+    display: block !important;
+    transition: transform 0.2s ease !important;
+}
+
+.github-refresh-icon.spinning svg {
+    animation: spin 1s linear infinite !important;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .github-refresh-icon:hover:not(:disabled) {
     opacity: 0.9 !important;
     color: var(--text-primary) !important;
