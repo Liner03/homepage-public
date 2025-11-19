@@ -399,8 +399,8 @@ app.get('/api/language-config', (req, res) => {
         'Dart': 'py',
         'Shell': 'py'
       };
-      // 保存默认配置
-      dataStorage.set('language-config', languageConfig);
+      // 注释掉自动保存，避免污染 data.json（该功能已被语言标签替代）
+      // dataStorage.set('language-config', languageConfig);
     }
 
     res.json({
