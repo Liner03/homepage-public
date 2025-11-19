@@ -69,11 +69,26 @@
 
   </head>
 <body>
-    <!-- 全局加载动画 -->
+    <!-- Apple 风格全局加载动画 -->
     <div id="global-loading" class="global-loading">
-        <div class="loading-spinner">
-            <div class="spinner-ring"></div>
-            <div class="loading-text">加载中...</div>
+        <div class="apple-loading">
+            <!-- 多层渐变圆环 -->
+            <div class="loading-orb orb-1"></div>
+            <div class="loading-orb orb-2"></div>
+            <div class="loading-orb orb-3"></div>
+            <div class="loading-orb orb-4"></div>
+            <div class="loading-orb orb-5"></div>
+
+            <!-- 中心光晕 -->
+            <div class="center-glow"></div>
+
+            <!-- 优雅的加载文字 -->
+            <div class="loading-text">
+                <span class="text-dot">正</span>
+                <span class="text-dot">在</span>
+                <span class="text-dot">加</span>
+                <span class="text-dot">载</span>
+            </div>
         </div>
     </div>
 
