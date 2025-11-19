@@ -1038,19 +1038,31 @@ body::before {
     margin-right: 8px;
     margin-bottom: 4px;
     font-family: 'Monaco', 'Menlo', monospace;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%);
-    border: 1px solid rgba(99, 102, 241, 0.25);
+    background: rgba(116, 185, 255, 0.15);
+    border: 1px solid rgba(116, 185, 255, 0.3);
     color: var(--text-primary);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: default;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .language-tag:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-    border-color: rgba(99, 102, 241, 0.4);
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+    background: rgba(116, 185, 255, 0.25);
+    border-color: rgba(116, 185, 255, 0.5);
+    box-shadow: 0 4px 12px rgba(116, 185, 255, 0.3);
+}
+
+/* 暗色主题适配 */
+[data-theme="dark"] .language-tag {
+    background: rgba(93, 173, 226, 0.15);
+    border-color: rgba(93, 173, 226, 0.3);
+}
+
+[data-theme="dark"] .language-tag:hover {
+    background: rgba(93, 173, 226, 0.25);
+    border-color: rgba(93, 173, 226, 0.5);
+    box-shadow: 0 4px 12px rgba(93, 173, 226, 0.3);
 }
 
 /* 移除旧的语言特定样式（不再使用） */
@@ -1059,9 +1071,8 @@ body::before {
 .language-tag.ts,
 .language-tag.css {
     /* 这些类名不再使用，保持向后兼容 */
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%);
-    border: 1px solid rgba(99, 102, 241, 0.25);
-    color: var(--text-primary);
+    background: rgba(116, 185, 255, 0.15);
+    border: 1px solid rgba(116, 185, 255, 0.3);
 }
 
 /* 站点和项目部分 */
