@@ -156,6 +156,17 @@
             box-shadow: var(--shadow-sm);
         }
 
+        .nav-tab .tab-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-tab .tab-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
         .nav-tab.active::after {
             content: '';
             position: absolute;
@@ -300,6 +311,20 @@
             font-weight: 700;  /* SF Pro Display Bold */
             color: var(--text-primary);
             letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-icon svg {
+            width: 22px;
+            height: 22px;
         }
 
         .card-body {
@@ -377,6 +402,17 @@
         .btn:active {
             transform: scale(0.96);
             transition: transform 0.1s;
+        }
+
+        .btn .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn .btn-icon svg {
+            width: 16px;
+            height: 16px;
         }
 
         .btn-primary {
@@ -817,10 +853,10 @@
             <h1>管理后台</h1>
             <div style="display: flex; gap: 12px; align-items: center;">
                 <button id="headerSaveBtn" class="btn btn-primary" onclick="saveCurrentTab()" style="display: none; min-height: 40px; padding: 10px 20px;">
-                    <i class="fas fa-save"></i> 保存配置
+                    <span class="btn-icon"></span> 保存配置
                 </button>
                 <button class="logout-btn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> 退出登录
+                    <span class="btn-icon"></span> 退出登录
                 </button>
             </div>
         </div>
@@ -830,21 +866,76 @@
         <!-- Tab 导航 -->
         <div class="nav-tabs">
             <button class="nav-tab active" onclick="switchMainTab('overview')">
-                <i class="fas fa-chart-line"></i> 概览
+                <span class="tab-icon"></span> 概览
             </button>
             <button class="nav-tab" onclick="switchMainTab('frontend')">
-                <i class="fas fa-palette"></i> 前端配置
+                <span class="tab-icon"></span> 前端配置
             </button>
             <button class="nav-tab" onclick="switchMainTab('backend')">
-                <i class="fas fa-cog"></i> 后端配置
+                <span class="tab-icon"></span> 后端配置
             </button>
             <button class="nav-tab" onclick="switchMainTab('sections')">
-                <i class="fas fa-th-large"></i> 栏目管理
+                <span class="tab-icon"></span> 栏目管理
             </button>
             <button class="nav-tab" onclick="switchMainTab('settings')">
-                <i class="fas fa-user"></i> 用户设置
+                <span class="tab-icon"></span> 用户设置
             </button>
         </div>
+        <script>
+        // 初始化图标
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab 图标
+            const tabs = document.querySelectorAll('.nav-tab');
+            const tabIconMap = {
+                'overview': 'chart-bar',
+                'frontend': 'swatch',
+                'backend': 'cog',
+                'sections': 'squares-2x2',
+                'settings': 'user'
+            };
+
+            tabs.forEach(tab => {
+                const tabName = tab.getAttribute('onclick').match(/switchMainTab\('(\w+)'\)/)[1];
+                const iconSpan = tab.querySelector('.tab-icon');
+                if (iconSpan && tabIconMap[tabName]) {
+                    iconSpan.innerHTML = createIcon(tabIconMap[tabName]);
+                }
+            });
+
+            // 按钮图标映射
+            const buttonIconMap = {
+                'headerSaveBtn': 'save',
+                'exportDataBtn': 'arrow-down',
+                'importDataBtn': 'arrow-up',
+                'backToSectionsBtn': 'arrow-left',
+                'addItemBtn': 'plus'
+            };
+
+            Object.entries(buttonIconMap).forEach(([btnId, iconName]) => {
+                const btn = document.querySelector(`#${btnId} .btn-icon`);
+                if (btn) {
+                    btn.innerHTML = createIcon(iconName);
+                }
+            });
+
+            // 退出登录按钮
+            const logoutBtn = document.querySelector('.logout-btn .btn-icon');
+            if (logoutBtn) {
+                logoutBtn.innerHTML = createIcon('arrow-right-on-rectangle');
+            }
+
+            // 栏目管理标题图标和新建栏目按钮
+            const sectionsHeaderIcon = document.querySelector('#sectionsListView .card-header h2 .header-icon');
+            if (sectionsHeaderIcon) {
+                sectionsHeaderIcon.innerHTML = createIcon('squares-2x2');
+            }
+
+            const createSectionBtn = document.querySelector('#sectionsListView .btn-primary .btn-icon');
+            if (createSectionBtn) {
+                createSectionBtn.innerHTML = createIcon('plus');
+            }
+        });
+        </script>
 
         <!-- 概览 Tab -->
         <div id="tab-overview" class="tab-pane active">
@@ -921,8 +1012,8 @@
                                 <li>访问统计数据（每日/总计）</li>
                                 <li>所有配置数据（主题、语言、日记、栏目、签到等）</li>
                             </ul>
-                            <button class="btn btn-primary" onclick="exportVisitData()" style="width: 100%;">
-                                <i class="fas fa-download"></i> 导出全站数据
+                            <button class="btn btn-primary" onclick="exportVisitData()" style="width: 100%;" id="exportDataBtn">
+                                <span class="btn-icon"></span> 导出全站数据
                             </button>
                         </div>
 
@@ -939,8 +1030,8 @@
                                 </select>
                             </div>
                             <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleImportFile(event)">
-                            <button class="btn btn-secondary" onclick="document.getElementById('importFileInput').click()" style="width: 100%;">
-                                <i class="fas fa-upload"></i> 选择文件导入
+                            <button class="btn btn-secondary" onclick="document.getElementById('importFileInput').click()" style="width: 100%;" id="importDataBtn">
+                                <span class="btn-icon"></span> 选择文件导入
                             </button>
                         </div>
                     </div>
@@ -1141,9 +1232,9 @@
             <div id="sectionsListView">
                 <div class="card">
                     <div class="card-header">
-                        <h2><i class="fas fa-th-large"></i> 栏目管理</h2>
+                        <h2><span class="header-icon"></span> 栏目管理</h2>
                         <button class="btn btn-primary" onclick="showCreateSectionModal()">
-                            <i class="fas fa-plus"></i> 新建栏目
+                            <span class="btn-icon"></span> 新建栏目
                         </button>
                     </div>
                     <div class="card-body">
@@ -1162,13 +1253,13 @@
                 <div class="card">
                     <div class="card-header">
                         <div style="display: flex; align-items: center; gap: 12px;">
-                            <button class="btn btn-secondary" onclick="backToSectionsList()" style="padding: 10px;">
-                                <i class="fas fa-arrow-left"></i>
+                            <button class="btn btn-secondary" onclick="backToSectionsList()" style="padding: 10px;" id="backToSectionsBtn">
+                                <span class="btn-icon"></span>
                             </button>
                             <h2 id="currentSectionTitle">栏目名称</h2>
                         </div>
-                        <button class="btn btn-primary" onclick="showAddItemModal()">
-                            <i class="fas fa-plus"></i> 添加项目
+                        <button class="btn btn-primary" onclick="showAddItemModal()" id="addItemBtn">
+                            <span class="btn-icon"></span> 添加项目
                         </button>
                     </div>
                     <div class="card-body">
@@ -2254,7 +2345,9 @@
                             ${sections.map(section => `
                                 <tr style="${section.hidden ? 'opacity: 0.5;' : ''}">
                                     <td style="text-align: center;">
-                                        <i class="fas ${section.icon}" style="font-size: 20px; color: var(--accent);"></i>
+                                        <div style="display: inline-flex; align-items: center; justify-content: center; color: var(--accent);">
+                                            ${createIcon(section.icon.replace('fa-', ''))}
+                                        </div>
                                     </td>
                                     <td>
                                         <strong>${section.title}</strong>
