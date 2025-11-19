@@ -880,8 +880,11 @@ function updateGitHubDisplay(data) {
 
         if (data.languages && data.languages.length > 0) {
             // 有语言数据，显示并更新（所有标签使用统一样式）
-            const languageHTML = data.languages.map(({ lang, percent }) => {
-                return `<span class="language-tag">${lang} (${percent}%)</span>`;
+            const languageHTML = data.languages.map(item => {
+                // 兼容两种格式：{ lang: 'JavaScript' } 或 { lang: 'JavaScript', percent: 35 }
+                const langName = item.lang || item;
+                // 不显示百分比，只显示语言名称
+                return `<span class="language-tag">${langName}</span>`;
             }).join('');
 
             languageContainer.innerHTML = languageHTML;
