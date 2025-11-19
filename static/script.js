@@ -879,10 +879,9 @@ function updateGitHubDisplay(data) {
         const statsLine = languageTag.closest('.stats-line');
 
         if (data.languages && data.languages.length > 0) {
-            // 有语言数据，显示并更新
+            // 有语言数据，显示并更新（所有标签使用统一样式）
             const languageHTML = data.languages.map(({ lang, percent }) => {
-                const className = getLanguageClass(lang);
-                return `<span class="language-tag ${className}">${lang} (${percent}%)</span>`;
+                return `<span class="language-tag">${lang} (${percent}%)</span>`;
             }).join('');
 
             languageContainer.innerHTML = languageHTML;
