@@ -133,6 +133,82 @@ class SqliteAdapter {
   }
 
   /**
+   * 导出所有访问数据
+   * @returns {Object} { daily: {}, total: number }
+   */
+  async exportData() {
+    try {
+      // 获取所有每日数据
+      const dailyStmt = this.db.prepare('SELECT date, count FROM daily_visits');
+      const dailyRows = dailyStmt.all();
+
+      const daily = {};
+      for (const row of dailyRows) {
+        daily[row.date] = row.count;
+      }
+
+      // 获取总数
+      const totalStmt = this.db.prepare('SELECT count FROM total_visits WHERE id = 1');
+      const totalRow = totalStmt.get();
+      const total = totalRow ? totalRow.count : 0;
+
+      return { daily, total };
+    } catch (error) {
+      console.error('导出数据失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 导入访问数据
+   * @param {Object} importData - { daily: {}, total: number }
+   * @param {string} mode - "merge" 或 "replace"
+   * @returns {Object} { success: boolean, message: string }
+   */
+  async importData(importData, mode = 'merge') {
+    try {
+      const transaction = this.db.transaction(() => {
+        if (mode === 'replace') {
+          // 清空现有数据
+          this.db.prepare('DELETE FROM daily_visits').run();
+          this.db.prepare('DELETE FROM visit_ips').run();
+          this.db.prepare('UPDATE total_visits SET count = 0 WHERE id = 1').run();
+
+          // 插入新数据
+          const insertDaily = this.db.prepare('INSERT INTO daily_visits (date, count) VALUES (?, ?)');
+          for (const [date, count] of Object.entries(importData.daily || {})) {
+            insertDaily.run(date, count);
+          }
+
+          // 更新总数
+          this.db.prepare('UPDATE total_visits SET count = ? WHERE id = 1').run(importData.total || 0);
+        } else if (mode === 'merge') {
+          // 合并每日数据
+          const mergeDaily = this.db.prepare(`
+            INSERT INTO daily_visits (date, count) VALUES (?, ?)
+            ON CONFLICT(date) DO UPDATE SET count = count + excluded.count
+          `);
+
+          for (const [date, count] of Object.entries(importData.daily || {})) {
+            mergeDaily.run(date, count);
+          }
+
+          // 累加总数
+          this.db.prepare('UPDATE total_visits SET count = count + ? WHERE id = 1').run(importData.total || 0);
+        } else {
+          throw new Error('无效的导入模式');
+        }
+      });
+
+      transaction();
+      return { success: true, message: mode === 'replace' ? '数据已替换' : '数据已合并' };
+    } catch (error) {
+      console.error('导入数据失败:', error);
+      return { success: false, message: error.message };
+    }
+  }
+
+  /**
    * 关闭数据库连接
    */
   close() {

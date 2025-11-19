@@ -119,6 +119,95 @@ function createAdminRouter(config, dataStorage, visitStorage) {
     }
   });
 
+  // API: 导出访问统计数据
+  router.get('/api/visit-stats/export', requireAuth, async (req, res) => {
+    try {
+      // 检查存储适配器是否支持导出功能
+      if (typeof visitStorage.exportData !== 'function') {
+        return res.status(501).json({
+          success: false,
+          message: '当前存储方式不支持导出功能'
+        });
+      }
+
+      const data = await visitStorage.exportData();
+
+      // 构建导出数据结构
+      const exportData = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        storageType: config.visitStorage,
+        data: {
+          daily: data.daily || {},
+          total: data.total || 0
+        }
+      };
+
+      res.json({
+        success: true,
+        data: exportData
+      });
+    } catch (error) {
+      console.error('导出数据失败:', error);
+      res.status(500).json({
+        success: false,
+        message: '导出失败: ' + error.message
+      });
+    }
+  });
+
+  // API: 导入访问统计数据
+  router.post('/api/visit-stats/import', requireAuth, async (req, res) => {
+    try {
+      const { data, mode } = req.body;
+
+      // 验证参数
+      if (!data || !data.data) {
+        return res.status(400).json({
+          success: false,
+          message: '无效的导入数据格式'
+        });
+      }
+
+      if (!['merge', 'replace'].includes(mode)) {
+        return res.status(400).json({
+          success: false,
+          message: '无效的导入模式，必须是 "merge" 或 "replace"'
+        });
+      }
+
+      // 检查存储适配器是否支持导入功能
+      if (typeof visitStorage.importData !== 'function') {
+        return res.status(501).json({
+          success: false,
+          message: '当前存储方式不支持导入功能'
+        });
+      }
+
+      // 执行导入
+      const result = await visitStorage.importData(data.data, mode);
+
+      if (result.success) {
+        res.json({
+          success: true,
+          message: result.message,
+          mode: mode
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: result.message
+        });
+      }
+    } catch (error) {
+      console.error('导入数据失败:', error);
+      res.status(500).json({
+        success: false,
+        message: '导入失败: ' + error.message
+      });
+    }
+  });
+
   // ==================== 配置管理 API ====================
 
   // API: 获取 .env 配置
