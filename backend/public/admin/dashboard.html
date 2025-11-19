@@ -985,15 +985,16 @@
             <!-- 更多配置卡片 -->
             <div class="card" style="margin-bottom: 30px;">
                 <div class="card-header">
-                    <h2>🎨 更多配置 (config.js)</h2>
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
-                            <input type="checkbox" id="frontendModeToggle" onchange="toggleFrontendMode()" style="cursor: pointer;">
-                            <span style="font-size: 14px; color: #666;">代码模式</span>
-                        </label>
-                    </div>
+                    <h2>🎨 更多配置</h2>
                 </div>
                 <div class="card-body">
+                    <!-- 模式切换开关 -->
+                    <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; width: fit-content;">
+                            <input type="checkbox" id="frontendModeToggle" onchange="toggleFrontendMode()" style="cursor: pointer;">
+                            <span style="font-size: 14px; color: var(--text-secondary);">代码模式</span>
+                        </label>
+                    </div>
                     <!-- 表单模式 -->
                     <div id="frontendFormMode" style="display: block;">
                         <form id="frontendVisualForm" class="form-grid">
