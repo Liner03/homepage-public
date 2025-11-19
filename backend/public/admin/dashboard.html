@@ -1212,22 +1212,6 @@
                                 <input type="text" id="CF_API_TOKEN" name="CF_API_TOKEN">
                             </div>
                         </div>
-
-                        <hr>
-
-                        <h4>🔐 管理后台配置</h4>
-
-                        <div class="form-field">
-                            <label for="ADMIN_USERNAME">管理员用户名</label>
-                            <input type="text" id="ADMIN_USERNAME" name="ADMIN_USERNAME" placeholder="admin">
-                            <small>修改密码请前往"用户设置" Tab</small>
-                        </div>
-
-                        <div class="form-field">
-                            <label for="SESSION_SECRET">Session 密钥</label>
-                            <input type="text" id="SESSION_SECRET" name="SESSION_SECRET" placeholder="随机字符串">
-                            <small>用于加密 session，建议使用长随机字符串</small>
-                        </div>
                     </form>
                 </div>
             </div>
@@ -1430,6 +1414,39 @@
                     </form>
                 </div>
             </div>
+
+            <div class="card" style="margin-top: 30px;">
+                <div class="card-header">
+                    <h2>🔐 管理后台配置</h2>
+                </div>
+                <div class="card-body">
+                    <form id="adminConfigForm" class="form-grid" style="max-width: 600px;">
+                        <div class="form-field">
+                            <label for="settings_ADMIN_USERNAME">管理员用户名</label>
+                            <input type="text" id="settings_ADMIN_USERNAME" name="ADMIN_USERNAME" placeholder="admin">
+                            <small>用于登录管理后台的用户名</small>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="settings_SESSION_SECRET">Session 密钥</label>
+                            <input type="text" id="settings_SESSION_SECRET" name="SESSION_SECRET" placeholder="随机字符串">
+                            <small>用于加密 session cookie，防止会话劫持。建议使用长随机字符串（32字符以上）</small>
+                        </div>
+
+                        <div style="padding: 15px; background: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107; border-radius: 8px; margin-top: 10px;">
+                            <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">
+                                <strong>⚠️ 安全提示：</strong>
+                            </p>
+                            <ul style="margin: 8px 0 0 20px; color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
+                                <li><strong>Session 密钥</strong>用于加密和签名 session cookie，保护您的登录会话安全</li>
+                                <li>建议使用强随机字符串，可使用命令生成：<code style="background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 4px;">openssl rand -hex 32</code></li>
+                                <li>修改任何配置后需要<strong>重启服务器</strong>才能生效</li>
+                                <li>修改 Session 密钥会导致所有用户登出，需要重新登录</li>
+                            </ul>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1466,6 +1483,8 @@
                 loadEnvConfig();
             } else if (tabName === 'sections') {
                 loadSectionManagement();
+            } else if (tabName === 'settings') {
+                loadAdminConfig();
             }
         }
 
@@ -1476,7 +1495,8 @@
                     document.getElementById('envForm').dispatchEvent(new Event('submit'));
                     break;
                 case 'settings':
-                    document.getElementById('passwordForm').dispatchEvent(new Event('submit'));
+                    // 保存密码和管理后台配置
+                    saveAdminConfig();
                     break;
                 case 'sections':
                     // 栏目管理保存逻辑
@@ -2152,6 +2172,65 @@
         });
 
         // ==================== 用户设置 Tab ====================
+
+        // 加载管理后台配置
+        async function loadAdminConfig() {
+            try {
+                const response = await fetch('/admin/api/config/env');
+                const data = await response.json();
+
+                if (data.success) {
+                    const envData = data.data;
+
+                    // 填充用户名和 Session 密钥
+                    const usernameInput = document.getElementById('settings_ADMIN_USERNAME');
+                    const sessionSecretInput = document.getElementById('settings_SESSION_SECRET');
+
+                    if (usernameInput && envData.ADMIN_USERNAME) {
+                        usernameInput.value = envData.ADMIN_USERNAME;
+                    }
+                    if (sessionSecretInput && envData.SESSION_SECRET) {
+                        sessionSecretInput.value = envData.SESSION_SECRET;
+                    }
+                }
+            } catch (error) {
+                console.error('加载管理后台配置失败:', error);
+            }
+        }
+
+        // 保存管理后台配置
+        async function saveAdminConfig() {
+            try {
+                const username = document.getElementById('settings_ADMIN_USERNAME').value;
+                const sessionSecret = document.getElementById('settings_SESSION_SECRET').value;
+
+                const envData = {};
+                if (username.trim()) {
+                    envData.ADMIN_USERNAME = username.trim();
+                }
+                if (sessionSecret.trim()) {
+                    envData.SESSION_SECRET = sessionSecret.trim();
+                }
+
+                const response = await fetch('/admin/api/config/env', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(envData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('settingsAlert', 'warning', '配置已保存！请重启服务器使配置生效。');
+                } else {
+                    showAlert('settingsAlert', 'danger', '保存失败: ' + data.message);
+                }
+            } catch (error) {
+                showAlert('settingsAlert', 'danger', '保存失败: ' + error.message);
+            }
+        }
+
+        // 修改密码
         document.getElementById('passwordForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
