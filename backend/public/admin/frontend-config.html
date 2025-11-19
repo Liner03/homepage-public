@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>更多配置 - 管理后台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --apple-blue: #007AFF;
+            --apple-blue-hover: #0051D5;
+            --apple-green: #34C759;
+            --apple-red: #FF3B30;
+            --apple-orange: #FF9500;
+
+            --bg-primary: #F5F5F7;
+            --bg-secondary: #FFFFFF;
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --input-bg: rgba(0, 0, 0, 0.03);
+            --input-border: rgba(0, 0, 0, 0.15);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+
+            --ease-out: cubic-bezier(0, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--apple-blue);
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 16px;
+            transition: var(--ease-out) 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--apple-blue-hover);
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            margin-bottom: 24px;
+        }
+
+        .mode-switch {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .mode-switch label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+            width: fit-content;
+        }
+
+        .mode-switch input[type="checkbox"] {
+            cursor: pointer;
+        }
+
+        .mode-switch span {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-grid h4 {
+            grid-column: 1 / -1;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 10px;
+        }
+
+        .form-grid hr {
+            grid-column: 1 / -1;
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 10px 0;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-field label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-field input,
+        .form-field select {
+            padding: 10px 12px;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            font-size: 14px;
+            color: var(--text-primary);
+            transition: var(--ease-out) 0.2s;
+        }
+
+        .form-field input:focus,
+        .form-field select:focus {
+            outline: none;
+            border-color: var(--apple-blue);
+            background: white;
+        }
+
+        .form-field small {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .code-editor {
+            width: 100%;
+            min-height: 500px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            resize: vertical;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .code-editor:focus {
+            outline: none;
+            border-color: var(--apple-blue);
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--ease-out) 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--apple-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--apple-blue-hover);
+        }
+
+        .btn-danger {
+            background: var(--apple-red);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #D70015;
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: #d1f4e0;
+            color: #0f5132;
+            border-left: 4px solid var(--apple-green);
+        }
+
+        .alert-danger {
+            background: #ffe5e5;
+            color: #8b1a1a;
+            border-left: 4px solid var(--apple-red);
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="dashboard" class="back-link">
+            ← 返回管理面板
+        </a>
+
+        <div class="header">
+            <h1>🎨 更多配置</h1>
+            <p>配置个人信息、GitHub 账号、社交链接、网站内容等</p>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <div class="card">
+            <!-- 模式切换 -->
+            <div class="mode-switch">
+                <label>
+                    <input type="checkbox" id="frontendModeToggle" onchange="toggleFrontendMode()">
+                    <span>代码模式</span>
+                </label>
+            </div>
+
+            <!-- 表单模式 -->
+            <div id="frontendFormMode" style="display: block;">
+                <form id="frontendVisualForm" class="form-grid">
+                    <p style="grid-column: 1 / -1; color: var(--text-secondary); margin-bottom: 10px; font-size: 14px;">
+                        通过可视化表单编辑前端配置
+                    </p>
+
+                    <h4>👤 个人信息</h4>
+                    <div class="form-field">
+                        <label>姓名</label>
+                        <input type="text" id="personal_name" placeholder="Your Name">
+                    </div>
+                    <div class="form-field">
+                        <label>标题</label>
+                        <input type="text" id="personal_title" placeholder="Your Title">
+                    </div>
+                    <div class="form-field">
+                        <label>座右铭</label>
+                        <input type="text" id="personal_quote" placeholder="Your motto">
+                    </div>
+                    <div class="form-field">
+                        <label>位置</label>
+                        <input type="text" id="personal_location" placeholder="Somewhere">
+                    </div>
+                    <div class="form-field">
+                        <label>状态</label>
+                        <input type="text" id="personal_status" placeholder="Coding">
+                    </div>
+                    <div class="form-field">
+                        <label>头像路径</label>
+                        <input type="text" id="personal_avatar" placeholder="./static/1.png">
+                        <small>相对于网站根目录的路径</small>
+                    </div>
+                    <div class="form-field">
+                        <label>网站图标路径</label>
+                        <input type="text" id="personal_favicon" placeholder="./static/f2.png">
+                        <small>相对于网站根目录的路径</small>
+                    </div>
+
+                    <hr>
+                    <h4>🐙 GitHub 配置</h4>
+                    <div class="form-field">
+                        <label>GitHub 用户名</label>
+                        <input type="text" id="github_username" placeholder="your-github">
+                    </div>
+                    <div class="form-field">
+                        <label>日历数据源</label>
+                        <select id="github_calendarSource">
+                            <option value="auto">自动 (优先后端代理)</option>
+                            <option value="direct">直接请求 GitHub</option>
+                            <option value="proxy">仅使用后端代理</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>日历代理端点</label>
+                        <input type="text" id="github_calendarProxyEndpoint" placeholder="/api/github/contributions">
+                        <small>后端代理 API 路径</small>
+                    </div>
+
+                    <hr>
+                    <h4 style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>🔗 社交链接</span>
+                        <button type="button" class="btn btn-primary" onclick="addSocialLink()" style="font-size: 12px; padding: 6px 12px;">+ 添加链接</button>
+                    </h4>
+                    <div id="socialLinksContainer" style="grid-column: 1 / -1;">
+                        <!-- 社交链接列表将动态插入这里 -->
+                    </div>
+
+                    <hr>
+                    <h4>🏷️ 标签</h4>
+                    <div class="form-field">
+                        <label>标签（逗号分隔）</label>
+                        <input type="text" id="tags_input" placeholder="tag1, tag2, tag3">
+                        <small>多个标签用逗号分隔</small>
+                    </div>
+
+                    <hr>
+                    <h4>📝 文本配置</h4>
+                    <div class="form-field">
+                        <label>GitHub 统计 - 总提交标签</label>
+                        <input type="text" id="texts_githubStats_totalCommitsLabel" placeholder="总计贡献：">
+                    </div>
+                    <div class="form-field">
+                        <label>GitHub 统计 - 总提交文本</label>
+                        <input type="text" id="texts_githubStats_totalCommitsText" placeholder="过去一年共提交了">
+                    </div>
+                    <div class="form-field">
+                        <label>GitHub 统计 - 总提交单位</label>
+                        <input type="text" id="texts_githubStats_totalCommitsUnit" placeholder="次代码">
+                    </div>
+                    <div class="form-field">
+                        <label>区块标题 - 欢迎</label>
+                        <input type="text" id="texts_sectionTitles_welcome" placeholder="欢迎您">
+                    </div>
+                    <div class="form-field">
+                        <label>区块标题 - 访客IP</label>
+                        <input type="text" id="texts_sectionTitles_visitorIP" placeholder="访客IP: ">
+                    </div>
+                    <div class="form-field">
+                        <label>页脚 - 作者链接</label>
+                        <input type="text" id="texts_footer_authorUrl" placeholder="https://example.com">
+                        <small>页脚格式：Powered by {姓名}，年份自动获取</small>
+                    </div>
+                </form>
+
+                <div class="action-bar">
+                    <button type="button" class="btn btn-primary" onclick="saveFormMode()">
+                        💾 保存配置
+                    </button>
+                </div>
+            </div>
+
+            <!-- 代码模式 -->
+            <div id="frontendCodeMode" style="display: none;">
+                <form id="frontendCodeForm">
+                    <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">
+                        直接编辑 config.js 代码
+                    </p>
+
+                    <textarea id="frontendConfigEditor" class="code-editor" placeholder="加载中..."></textarea>
+                </form>
+
+                <div class="action-bar">
+                    <button type="button" class="btn btn-primary" onclick="saveCodeMode()">
+                        💾 保存配置
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 全局变量 ====================
+        let frontendConfigRaw = '';
+        let socialLinksData = [];
+        let socialLinkIdCounter = 0;
+        let websitesData = [];
+        let websiteIdCounter = 0;
+        let projectsData = [];
+        let projectIdCounter = 0;
+        let skillsData = [];
+        let skillIdCounter = 0;
+        let timelineData = [];
+        let timelineIdCounter = 0;
+
+        // ==================== 工具函数 ====================
+        function showAlert(type, message) {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type} show`;
+            alert.textContent = message;
+
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 3000);
+        }
+
+        // ==================== 社交链接管理 ====================
+        function addSocialLink(title = '', url = '', icon = '') {
+            const id = socialLinkIdCounter++;
+            const linkData = { id, title, url, icon };
+            socialLinksData.push(linkData);
+            renderSocialLink(linkData);
+        }
+
+        function renderSocialLink(linkData) {
+            const container = document.getElementById('socialLinksContainer');
+            const linkDiv = document.createElement('div');
+            linkDiv.id = `social-link-${linkData.id}`;
+            linkDiv.style.cssText = 'display: grid; grid-template-columns: 1fr 2fr 1fr auto; gap: 10px; margin-bottom: 15px; padding: 15px; background: var(--bg-primary); border-radius: 8px;';
+
+            linkDiv.innerHTML = `
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">标题</label>
+                    <input type="text" value="${linkData.title}" onchange="updateSocialLink(${linkData.id}, 'title', this.value)" placeholder="GitHub">
+                </div>
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">链接</label>
+                    <input type="text" value="${linkData.url}" onchange="updateSocialLink(${linkData.id}, 'url', this.value)" placeholder="https://github.com/xxx">
+                </div>
+                <div class="form-field" style="margin: 0;">
+                    <label style="font-size: 12px;">图标 (可选)</label>
+                    <input type="text" value="${linkData.icon}" onchange="updateSocialLink(${linkData.id}, 'icon', this.value)" placeholder="github">
+                    <small style="font-size: 10px;">Heroicons 图标名称</small>
+                </div>
+                <div style="display: flex; align-items: flex-end;">
+                    <button type="button" class="btn btn-danger" onclick="removeSocialLink(${linkData.id})" style="padding: 8px 12px;">删除</button>
+                </div>
+            `;
+
+            container.appendChild(linkDiv);
+        }
+
+        function updateSocialLink(id, field, value) {
+            const link = socialLinksData.find(l => l.id === id);
+            if (link) {
+                link[field] = value;
+            }
+        }
+
+        function removeSocialLink(id) {
+            socialLinksData = socialLinksData.filter(l => l.id !== id);
+            const linkDiv = document.getElementById(`social-link-${id}`);
+            if (linkDiv) {
+                linkDiv.remove();
+            }
+        }
+
+        function renderAllSocialLinks() {
+            const container = document.getElementById('socialLinksContainer');
+            container.innerHTML = '';
+            socialLinksData.forEach(link => renderSocialLink(link));
+        }
+
+        // ==================== 模式切换 ====================
+        function toggleFrontendMode() {
+            const toggle = document.getElementById('frontendModeToggle');
+            const formMode = document.getElementById('frontendFormMode');
+            const codeMode = document.getElementById('frontendCodeMode');
+
+            if (toggle.checked) {
+                formMode.style.display = 'none';
+                codeMode.style.display = 'block';
+
+                if (!frontendConfigRaw) {
+                    const configObj = getConfigFromForm();
+                    frontendConfigRaw = generateConfigCode(configObj);
+                }
+                document.getElementById('frontendConfigEditor').value = frontendConfigRaw;
+            } else {
+                formMode.style.display = 'block';
+                codeMode.style.display = 'none';
+
+                const editor = document.getElementById('frontendConfigEditor');
+                if (editor.value && editor.value !== '加载中...') {
+                    frontendConfigRaw = editor.value;
+                    parseConfigToForm(frontendConfigRaw);
+                }
+            }
+        }
+
+        // ==================== 配置加载 ====================
+        async function loadFrontendConfig() {
+            try {
+                const response = await fetch('/admin/api/config/frontend');
+                const data = await response.json();
+
+                if (data.success) {
+                    frontendConfigRaw = data.content;
+
+                    const toggle = document.getElementById('frontendModeToggle');
+                    if (toggle.checked) {
+                        document.getElementById('frontendConfigEditor').value = frontendConfigRaw;
+                    } else {
+                        parseConfigToForm(frontendConfigRaw);
+                    }
+                } else {
+                    showAlert('danger', '加载失败: ' + data.message);
+                }
+            } catch (error) {
+                showAlert('danger', '加载失败: ' + error.message);
+            }
+        }
+
+        // ==================== 配置解析 ====================
+        function parseConfigToForm(code) {
+            try {
+                const configMatch = code.match(/const\s+CONFIG\s*=\s*({[\s\S]*?});/);
+                if (!configMatch) {
+                    console.error('无法解析配置文件');
+                    return;
+                }
+
+                const configObj = eval('(' + configMatch[1] + ')');
+
+                if (configObj.personal) {
+                    document.getElementById('personal_name').value = configObj.personal.name || '';
+                    document.getElementById('personal_title').value = configObj.personal.title || '';
+                    document.getElementById('personal_quote').value = configObj.personal.quote || '';
+                    document.getElementById('personal_location').value = configObj.personal.location || '';
+                    document.getElementById('personal_status').value = configObj.personal.status || '';
+                    document.getElementById('personal_avatar').value = configObj.personal.avatar || '';
+                    document.getElementById('personal_favicon').value = configObj.personal.favicon || '';
+                }
+
+                if (configObj.github) {
+                    document.getElementById('github_username').value = configObj.github.username || '';
+                    document.getElementById('github_calendarSource').value = configObj.github.calendarSource || 'auto';
+                    document.getElementById('github_calendarProxyEndpoint').value = configObj.github.calendarProxyEndpoint || '';
+                }
+
+                if (configObj.social) {
+                    socialLinksData = [];
+                    socialLinkIdCounter = 0;
+
+                    Object.entries(configObj.social).forEach(([title, url]) => {
+                        if (typeof url === 'object' && url.url) {
+                            socialLinksData.push({
+                                id: socialLinkIdCounter++,
+                                title: title,
+                                url: url.url,
+                                icon: url.icon || ''
+                            });
+                        } else {
+                            socialLinksData.push({
+                                id: socialLinkIdCounter++,
+                                title: title,
+                                url: url,
+                                icon: ''
+                            });
+                        }
+                    });
+
+                    renderAllSocialLinks();
+                }
+
+                if (configObj.tags) {
+                    document.getElementById('tags_input').value = configObj.tags.join(', ');
+                }
+
+                if (configObj.websites) {
+                    websitesData = [];
+                    websiteIdCounter = 0;
+                    configObj.websites.forEach(item => {
+                        websitesData.push({
+                            id: websiteIdCounter++,
+                            title: item.title || '',
+                            url: item.url || '',
+                            description: item.description || ''
+                        });
+                    });
+                }
+
+                if (configObj.projects) {
+                    projectsData = [];
+                    projectIdCounter = 0;
+                    configObj.projects.forEach(item => {
+                        projectsData.push({
+                            id: projectIdCounter++,
+                            title: item.title || '',
+                            url: item.url || '',
+                            description: item.description || '',
+                            image: item.image || ''
+                        });
+                    });
+                }
+
+                if (configObj.skills) {
+                    skillsData = [];
+                    skillIdCounter = 0;
+                    configObj.skills.forEach(item => {
+                        skillsData.push({
+                            id: skillIdCounter++,
+                            name: item.name || '',
+                            level: item.level || '',
+                            icon: item.icon || ''
+                        });
+                    });
+                }
+
+                if (configObj.timeline) {
+                    timelineData = [];
+                    timelineIdCounter = 0;
+                    configObj.timeline.forEach(item => {
+                        timelineData.push({
+                            id: timelineIdCounter++,
+                            title: item.title || '',
+                            date: item.date || ''
+                        });
+                    });
+                }
+
+                if (configObj.texts) {
+                    if (configObj.texts.githubStats) {
+                        document.getElementById('texts_githubStats_totalCommitsLabel').value = configObj.texts.githubStats.totalCommitsLabel || '';
+                        document.getElementById('texts_githubStats_totalCommitsText').value = configObj.texts.githubStats.totalCommitsText || '';
+                        document.getElementById('texts_githubStats_totalCommitsUnit').value = configObj.texts.githubStats.totalCommitsUnit || '';
+                    }
+                    if (configObj.texts.sectionTitles) {
+                        document.getElementById('texts_sectionTitles_welcome').value = configObj.texts.sectionTitles.welcome || '';
+                        document.getElementById('texts_sectionTitles_visitorIP').value = configObj.texts.sectionTitles.visitorIP || '';
+                    }
+                    if (configObj.texts.footer) {
+                        document.getElementById('texts_footer_authorUrl').value = configObj.texts.footer.authorUrl || '';
+                    }
+                }
+            } catch (error) {
+                console.error('解析配置失败:', error);
+                showAlert('danger', '解析配置失败: ' + error.message);
+            }
+        }
+
+        // ==================== 配置生成 ====================
+        function getConfigFromForm() {
+            const socialObj = {};
+            socialLinksData.forEach(link => {
+                if (link.title && link.url) {
+                    if (link.icon) {
+                        socialObj[link.title] = {
+                            url: link.url,
+                            icon: link.icon
+                        };
+                    } else {
+                        socialObj[link.title] = link.url;
+                    }
+                }
+            });
+
+            const githubUsername = document.getElementById('github_username').value || "your-github";
+
+            return {
+                personal: {
+                    name: document.getElementById('personal_name').value || "Your Name",
+                    title: document.getElementById('personal_title').value || "Your Title",
+                    quote: document.getElementById('personal_quote').value || "Your motto",
+                    location: document.getElementById('personal_location').value || "Somewhere",
+                    status: document.getElementById('personal_status').value || "Coding",
+                    avatar: document.getElementById('personal_avatar').value || "./static/1.png",
+                    favicon: document.getElementById('personal_favicon').value || "./static/f2.png"
+                },
+                github: {
+                    username: githubUsername,
+                    profileUrl: `https://github.com/${githubUsername}`,
+                    calendarSource: document.getElementById('github_calendarSource').value || "auto",
+                    calendarProxyEndpoint: document.getElementById('github_calendarProxyEndpoint').value || "/api/github/contributions"
+                },
+                social: socialObj,
+                tags: document.getElementById('tags_input').value.split(',').map(t => t.trim()).filter(t => t),
+                timeline: timelineData.map(item => ({
+                    title: item.title,
+                    date: item.date
+                })),
+                websites: websitesData.map(item => ({
+                    title: item.title,
+                    url: item.url,
+                    description: item.description
+                })),
+                projects: projectsData.map(item => ({
+                    title: item.title,
+                    url: item.url,
+                    description: item.description,
+                    image: item.image
+                })),
+                skills: skillsData.map(item => ({
+                    name: item.name,
+                    level: item.level,
+                    icon: item.icon
+                })),
+                texts: {
+                    githubStats: {
+                        totalCommitsLabel: document.getElementById('texts_githubStats_totalCommitsLabel').value || "总计贡献：",
+                        totalCommitsText: document.getElementById('texts_githubStats_totalCommitsText').value || "过去一年共提交了",
+                        totalCommitsUnit: document.getElementById('texts_githubStats_totalCommitsUnit').value || "次代码",
+                        longestStreakLabel: "最长连续：",
+                        longestStreakText: "连续编程",
+                        longestStreakUnit: "天",
+                        mainLanguageLabel: "主要语言："
+                    },
+                    sectionTitles: {
+                        welcome: document.getElementById('texts_sectionTitles_welcome').value || "欢迎您",
+                        visitorIP: document.getElementById('texts_sectionTitles_visitorIP').value || "访客IP: ",
+                        websites: "我的站点",
+                        projects: "项目集",
+                        skills: "技能栈"
+                    },
+                    footer: {
+                        year: new Date().getFullYear().toString(),
+                        text: "Powered by",
+                        author: document.getElementById('personal_name').value || "Your Name",
+                        authorUrl: document.getElementById('texts_footer_authorUrl').value || "https://example.com"
+                    }
+                }
+            };
+        }
+
+        function generateConfigCode(configObj) {
+            return `// Copy to config.js and edit your own info
+const CONFIG = ${JSON.stringify(configObj, null, 2)};
+`;
+        }
+
+        // ==================== 保存配置 ====================
+        async function saveFormMode() {
+            const configObj = getConfigFromForm();
+            const content = generateConfigCode(configObj);
+
+            try {
+                const response = await fetch('/admin/api/config/frontend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    frontendConfigRaw = content;
+                    showAlert('success', '配置已保存！');
+                } else {
+                    showAlert('danger', '保存失败: ' + data.message);
+                }
+            } catch (error) {
+                showAlert('danger', '保存失败: ' + error.message);
+            }
+        }
+
+        async function saveCodeMode() {
+            const content = document.getElementById('frontendConfigEditor').value;
+
+            try {
+                const response = await fetch('/admin/api/config/frontend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    frontendConfigRaw = content;
+                    showAlert('success', '配置已保存！');
+                } else {
+                    showAlert('danger', '保存失败: ' + data.message);
+                }
+            } catch (error) {
+                showAlert('danger', '保存失败: ' + error.message);
+            }
+        }
+
+        // ==================== 页面加载 ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFrontendConfig();
+        });
+    </script>
+</body>
+</html>
