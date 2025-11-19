@@ -1100,6 +1100,13 @@ body::before {
     transition: color 0.3s ease;
 }
 
+/* 栏目标题中的 SVG 图标样式 */
+section h2 svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
 .sites-grid, .projects-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
