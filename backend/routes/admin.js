@@ -131,6 +131,9 @@ function createAdminRouter(config, dataStorage, visitStorage) {
       // 2. 导出所有配置数据（从 dataStorage）
       const allData = dataStorage.loadData();
 
+      // 3. 导出栏目配置（从 sections.json）
+      const sections = configManager.getSections();
+
       // 构建完整的导出数据结构
       const exportData = {
         version: '1.0',
@@ -143,7 +146,9 @@ function createAdminRouter(config, dataStorage, visitStorage) {
             total: visitData.total || 0
           },
           // 所有配置数据（导出 data.json 中的所有字段）
-          config: allData || {}
+          config: allData || {},
+          // 栏目配置（从 sections.json）
+          sections: sections || []
         }
       };
 
@@ -211,6 +216,35 @@ function createAdminRouter(config, dataStorage, visitStorage) {
 
           dataStorage.saveData(mergedData);
           results.push('配置数据: 已合并');
+        }
+      }
+
+      // 3. 导入栏目配置
+      if (importedData.sections !== undefined) {
+        if (mode === 'replace') {
+          // 替换模式：完全覆盖栏目配置
+          configManager.saveSections(importedData.sections || []);
+          results.push('栏目配置: 已替换');
+        } else {
+          // 合并模式：导入的栏目覆盖现有栏目（按 ID 匹配）
+          const currentSections = configManager.getSections() || [];
+          const importedSections = importedData.sections || [];
+
+          // 创建一个映射以便快速查找
+          const sectionMap = new Map();
+          currentSections.forEach(section => {
+            sectionMap.set(section.id, section);
+          });
+
+          // 更新或添加导入的栏目
+          importedSections.forEach(section => {
+            sectionMap.set(section.id, section);
+          });
+
+          // 转换回数组
+          const mergedSections = Array.from(sectionMap.values());
+          configManager.saveSections(mergedSections);
+          results.push('栏目配置: 已合并');
         }
       }
 
